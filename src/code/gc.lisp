@@ -109,6 +109,9 @@
 
 ;;;; GET-BYTES-CONSED
 
+#!+gencgc
+(define-alien-routine "gencgc_raise_to_pseudo_static_generation" void)
+
 ;;; the total number of bytes freed so far (including any freeing
 ;;; which goes on in PURIFY)
 ;;;
@@ -120,6 +123,11 @@
 (defun gc-reinit ()
   (gc-on)
   (gc)
+  ;; Raise the whole dynamic space to the highest generation. The idea
+  ;; is that anything important enough to save in the core is probably
+  ;; not going to get GCd very soon.
+  #!+gencgc
+  (gencgc-raise-to-pseudo-static-generation)
   (setf *n-bytes-freed-or-purified* 0))
 
 (declaim (ftype (function () unsigned-byte) get-bytes-consed))

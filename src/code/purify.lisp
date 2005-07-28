@@ -30,7 +30,8 @@
     (compact-environment-aux name (1- n))
     n)))
 
-(defun purify (&key root-structures (environment-name "Auxiliary"))
+(defun purify (&key root-structures (environment-name "Auxiliary")
+                    compact-only)
   ;; #!+sb-doc
   "This function optimizes garbage collection by moving all currently live
    objects into non-collected storage. ROOT-STRUCTURES is an optional list of
@@ -42,8 +43,11 @@
 
    ENVIRONMENT-NAME is gratuitous documentation for compacted version of the
    current global environment (as seen in SB!C::*INFO-ENVIRONMENT*.) If NIL is
-   supplied, then environment compaction is inhibited."
+   supplied, then environment compaction is inhibited. If COMPACT-ONLY is
+   true, the environment will compacted but the data will not be moved to
+   non-collected storage."
 
   (when environment-name (compact-environment-aux environment-name 200))
-  (%purify (get-lisp-obj-address root-structures)
-           (get-lisp-obj-address nil)))
+  (unless compact-only
+    (%purify (get-lisp-obj-address root-structures)
+             (get-lisp-obj-address nil))))

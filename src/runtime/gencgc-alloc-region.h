@@ -1,5 +1,8 @@
 #ifndef _GENCGC_ALLOC_REGION_H_
 #define _GENCGC_ALLOC_REGION_H_
+typedef signed long page_index_t;
+typedef signed int generation_index_t;
+
 /* Abstract out the data for an allocation region allowing a single
  * routine to be used for allocation and closing. */
 struct alloc_region {
@@ -9,14 +12,14 @@ struct alloc_region {
     void  *end_addr; /* pointer to the byte after the last usable byte */
 
     /* These are needed when closing the region. */
-    long  first_page;
-    long  last_page;
+    page_index_t  first_page;
+    page_index_t  last_page;
     void  *start_addr;
 };
 
 extern struct alloc_region  boxed_region;
 extern struct alloc_region  unboxed_region;
-extern long from_space, new_space;
+extern generation_index_t from_space, new_space;
 extern struct weak_pointer *weak_pointers;
 
 extern void *current_region_free_pointer;

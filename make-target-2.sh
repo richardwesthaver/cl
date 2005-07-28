@@ -34,7 +34,7 @@ echo //doing warm init
 	;; Now that we use the compiler for macros, interpreted
 	;; /SHOW doesn't work until later in init.
         #+sb-show (print "/hello, world!")
-        (sb!ext:purify)
+        (sb!ext:purify #+gencgc :compact-only #+gencgc t)
 
         ;; Until PRINT-OBJECT and other machinery is set up,
 	;; we want limits on printing to avoid infinite output.
@@ -95,5 +95,5 @@ echo //doing warm init
         ;; defined.
         (sb-kernel::ctype-of-cache-clear)
         (setq sb-c::*flame-on-necessarily-undefined-function* t)
-	(sb-ext:save-lisp-and-die "output/sbcl.core" :purify t)
+	(sb-ext:save-lisp-and-die "output/sbcl.core")
 	EOF

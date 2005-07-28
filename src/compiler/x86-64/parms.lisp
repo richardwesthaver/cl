@@ -96,7 +96,9 @@
 (def!constant static-space-end          #x47fff000)
 
 (def!constant dynamic-space-start   #x1000000000)
-(def!constant dynamic-space-end     #x11ffff0000)
+;; XXX XXX temporarily make the dynamic space smaller while hacking the GC.
+;; I don't want to kill the whole computer every time I introduce a GC bug.
+(def!constant dynamic-space-end     #x101fff0000)
 
 (def!constant linkage-table-space-start #x60000000)
 (def!constant linkage-table-space-end   #x63fff000)
@@ -206,6 +208,9 @@
     *fp-constant-1d0*
     *fp-constant-0f0*
     *fp-constant-1f0*
+
+    ;; For GC-AND-SAVE
+    *restart-lisp-function*
 
     ;; The ..SLOT-UNBOUND.. symbol is static in order to optimise the
     ;; common slot unbound check.
