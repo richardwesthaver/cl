@@ -18,7 +18,7 @@
 
 extern void gc_init(void);
 extern void gc_initialize_pointers(void);
-extern void collect_garbage(unsigned last_gen);
+extern void collect_garbage(signed int last_gen);
 extern void gc_init_tables(void);
 
 
