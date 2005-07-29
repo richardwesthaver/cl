@@ -129,6 +129,9 @@ boolean gencgc_enable_verify_zero_fill = 0;
 /* Should we check that free pages are zero filled during gc_free_heap
  * called after Lisp PURIFY? */
 boolean gencgc_zero_check_during_free_heap = 0;
+
+// #define READ_PROTECT_FREE_PAGES
+
 
 /*
  * GC structures and variables
@@ -735,9 +738,16 @@ gc_alloc_new_region(long nbytes, int unboxed, struct alloc_region *alloc_region)
                  * word sizes. -- WHN 19991129 */
                 lose("The new region at %x is not zero.", p);
             }
+        }
     }
-}
 
+#ifdef READ_PROTECT_FREE_PAGES
+    os_protect(page_address(first_page),
+               PAGE_BYTES*(1+last_page-first_page),
+               OS_VM_PROT_ALL);
+#endif
+
+    memset(alloc_region->start_addr, 0, bytes_found);
 }
 
 /* If the record_new_objects flag is 2 then all new regions created
@@ -1085,7 +1095,20 @@ gc_alloc_large(long nbytes, int unboxed, struct alloc_region *alloc_region)
     }
     release_spinlock(&free_pages_lock);
 
-    return((void *)(page_address(first_page)+orig_first_page_bytes_used));
+    {
+        void *start = page_address(first_page)+orig_first_page_bytes_used;
+        void *end = page_address(last_page) + PAGE_BYTES;
+
+        #ifdef READ_PROTECT_FREE_PAGES
+        os_protect(page_address(first_page),
+                   PAGE_BYTES*(1+last_page-first_page),
+                   OS_VM_PROT_ALL);
+        #endif
+
+        memset(start, 0, end - start);
+                       
+        return start;
+    }
 }
 
 page_index_t
@@ -3203,28 +3226,11 @@ free_oldspace(void)
 
 //      fprintf(stderr, "free_oldspace from %d to %d\n", first_page, last_page-1);
 
-        /* Zero pages from first_page to (last_page-1).
-         *
-         * FIXME: Why not use os_zero(..) function instead of
-         * hand-coding this again? (Check other gencgc_unmap_zero
-         * stuff too. */
-        if (gencgc_unmap_zero) {
-            void *page_start, *addr;
-
-            page_start = (void *)page_address(first_page);
-
-            os_invalidate(page_start, PAGE_BYTES*(last_page-first_page));
-            addr = os_validate(page_start, PAGE_BYTES*(last_page-first_page));
-            if (addr == NULL || addr != page_start) {
-                lose("free_oldspace: page moved, 0x%08x ==> 0x%08x",page_start,
-                     addr);
-            }
-        } else {
-            long *page_start;
-
-            page_start = (long *)page_address(first_page);
-            memset(page_start, 0,PAGE_BYTES*(last_page-first_page));
-        }
+        #ifdef READ_PROTECT_FREE_PAGES
+        os_protect(page_address(first_page),
+                   PAGE_BYTES*(last_page-first_page),
+                   OS_VM_PROT_NONE);
+        #endif
     };
 
     bytes_allocated -= bytes_freed;
@@ -4446,7 +4452,9 @@ gencgc_handle_wp_violation(void* fault_addr)
         return 0;
 
     } else {
-        if (page_table[page_index].write_protected) {
+        if (page_table[page_index].allocated == FREE_PAGE_FLAG) {
+            lose("fault in page marked as free: %ld", page_index);
+        } else if (page_table[page_index].write_protected) {
             /* Unprotect the page. */
             os_protect(page_address(page_index), PAGE_BYTES, OS_VM_PROT_ALL);
             page_table[page_index].write_protected_cleared = 1;
@@ -4492,6 +4500,23 @@ gc_set_region_empty(struct alloc_region *region)
     region->end_addr = page_address(0);
 }
 
+void 
+zero_free_pages()
+{
+    page_index_t i;
+
+    for (i = 0; i < last_free_page; i++) {
+        if (page_table[i].allocated == FREE_PAGE_FLAG) {
+#ifdef READ_PROTECT_FREE_PAGES
+            os_protect(page_address(i),
+                       PAGE_BYTES,
+                       OS_VM_PROT_ALL);
+#endif
+            memset(page_address(i), 0, PAGE_BYTES);
+        }
+    }
+}
+
 /* Do a non-conservative GC, and then save a core with the initial
  * function being set to the value of the static symbol
  * SB!VM:RESTART-LISP-FUNCTION */
@@ -4510,6 +4535,7 @@ gc_and_save(char *filename)
     filename = strdup(filename);
 
     collect_garbage(HIGHEST_NORMAL_GENERATION+1);
+    zero_free_pages();
     save_to_filehandle(file, filename, SymbolValue(RESTART_LISP_FUNCTION,0));
     /* Oops. Save still managed to fail. Since we've mangled the stack
      * beyond hope, there's not much we can do.
