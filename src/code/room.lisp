@@ -266,7 +266,7 @@
                     (loop with page-mask = #.(1- +gc-page-size+)
                           for addr of-type sb!vm:word = (sap-int current)
                           for offset = (logand page-mask addr)
-                          while (> addr skip-tests-until-addr)
+                          while (>= addr skip-tests-until-addr)
                           do
                           ;; For some reason binding PAGE with LET
                           ;; conses like mad (but gives no compiler notes...)
@@ -285,7 +285,8 @@
                               (when (and (not (zerop alloc-flag))
                                          (<= offset bytes-used))
                                 (setf skip-tests-until-addr
-                                      (+ addr (the fixnum bytes-used)))
+                                      (+ (logandc2 addr page-mask)
+                                         (the fixnum bytes-used)))
                                 (return-from maybe-skip-page))
                               (setf current (sap+ current
                                                   (- +gc-page-size+ offset)))
