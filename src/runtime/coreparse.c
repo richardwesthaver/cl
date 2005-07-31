@@ -36,6 +36,9 @@
 #include "interr.h"
 #include "thread.h"
 
+#include "validate.h"
+#include "gc-internal.h"
+
 unsigned char build_id[] =
 #include "../../output/build-id.tmp"
 ;
@@ -224,6 +227,21 @@ load_core_file(char *file)
             initial_function = (lispobj)*ptr;
             break;
 
+        case 3880:
+        {
+            size_t size = *ptr;
+            size_t fdoffset = (*(ptr+1) + 1) * (os_vm_page_size);
+            size_t offset = 0; 
+            long bytes_read;
+            lseek(fd, fdoffset, SEEK_SET);
+            while ((bytes_read = read(fd, (char*) page_table + offset, size)) 
+                   > 0)
+            {
+                offset += bytes_read;
+                size -= bytes_read;
+            }
+            break;
+        }
         default:
             lose("unknown core file entry: %ld", (long)val);
         }

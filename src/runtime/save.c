@@ -171,6 +171,18 @@ save_to_filehandle(FILE *file, char *filename, lispobj init_function)
     write_lispobj(3, file);
     write_lispobj(init_function, file);
 
+#ifdef LISP_FEATURE_GENCGC
+    {
+        size_t size = last_free_page*sizeof(struct page);
+        long offset;
+        write_lispobj(3880, file);
+        write_lispobj(4, file);
+        write_lispobj(size, file);
+        offset = write_bytes(file, (char *) page_table, size * N_WORD_BYTES);
+        write_lispobj(offset, file);
+    }
+#endif
+
     write_lispobj(END_CORE_ENTRY_TYPE_CODE, file);
 
     fclose(file);

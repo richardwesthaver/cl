@@ -219,7 +219,7 @@
       (struct page
               (flags unsigned-int)
               (gen int)
-              (bytes-used long)
+              (bytes-used int)
               (prev-page long)
               (next-page long)
               (start long)))
