@@ -233,13 +233,20 @@ load_core_file(char *file)
             size_t fdoffset = (*(ptr+1) + 1) * (os_vm_page_size);
             size_t offset = 0; 
             long bytes_read;
+            long data[4096];
             lseek(fd, fdoffset, SEEK_SET);
-            while ((bytes_read = read(fd, (char*) page_table + offset, size)) 
-                   > 0)
+            while ((bytes_read = read(fd, data, (size < 4096 ? size : 4096 )))
+                    > 0)
             {
-                offset += bytes_read;
+                int i = 0;
                 size -= bytes_read;
+                while (bytes_read) {
+                    bytes_read -= sizeof(long);
+                    page_table[offset++].first_object_offset = data[i++];
+                }
             }
+            fprintf(stderr, "offset=%d\n", offset);
+            page_table[0].gen = 0;
             break;
         }
         default:

@@ -173,13 +173,22 @@ save_to_filehandle(FILE *file, char *filename, lispobj init_function)
 
 #ifdef LISP_FEATURE_GENCGC
     {
-        size_t size = last_free_page*sizeof(struct page);
-        long offset;
-        write_lispobj(3880, file);
-        write_lispobj(4, file);
-        write_lispobj(size, file);
-        offset = write_bytes(file, (char *) page_table, size * N_WORD_BYTES);
-        write_lispobj(offset, file);
+        size_t size = (last_free_page*sizeof(long)+os_vm_page_size-1)
+            &~(os_vm_page_size-1);
+        long *data = calloc(size, 1);
+        if (data) {
+            long offset;
+            int i;
+            for (i = 0; i < last_free_page; i++) {
+                data[i] = page_table[i].first_object_offset;
+            }
+            fprintf(stderr, "lfp=%d\n", last_free_page);
+            write_lispobj(3880, file);
+            write_lispobj(4, file);
+            write_lispobj(size, file);
+            offset = write_bytes(file, (char *) data, size);
+            write_lispobj(offset, file);
+        }
     }
 #endif
 
