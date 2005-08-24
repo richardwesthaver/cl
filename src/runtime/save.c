@@ -182,8 +182,7 @@ save_to_filehandle(FILE *file, char *filename, lispobj init_function)
             for (i = 0; i < last_free_page; i++) {
                 data[i] = page_table[i].first_object_offset;
             }
-            fprintf(stderr, "lfp=%d\n", last_free_page);
-            write_lispobj(3880, file);
+            write_lispobj(PAGE_TABLE_CORE_ENTRY_TYPE_CODE, file);
             write_lispobj(4, file);
             write_lispobj(size, file);
             offset = write_bytes(file, (char *) data, size);

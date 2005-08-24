@@ -50,7 +50,6 @@
 /* forward declarations */
 page_index_t  gc_find_freeish_pages(long *restart_page_ptr, long nbytes, 
                                     int unboxed);
-static void  gencgc_pickup_dynamic(void);
 
 
 /*
@@ -119,7 +118,17 @@ boolean gencgc_enable_verify_zero_fill = 0;
  * called after Lisp PURIFY? */
 boolean gencgc_zero_check_during_free_heap = 0;
 
-// #define READ_PROTECT_FREE_PAGES
+/* When loading a core, don't do a full scan of the memory for the
+ * memory region boundaries. (Set to true by coreparse.c if the core
+ * contained a pagetable entry).
+ */
+boolean gencgc_partial_pickup = 0;
+
+/* If defined, free pages are read-protected to ensure that nothing
+ * accesses them.
+ */
+
+/* #define READ_PROTECT_FREE_PAGES */
 
 
 /*
@@ -2798,6 +2807,7 @@ update_page_write_prot(page_index_t page)
 
     /* Skip if it's already write-protected, pinned, or unboxed */
     if (page_table[page].write_protected
+        /* FIXME: What's the reason for not write-protecting pinned pages? */
         || page_table[page].dont_move
         || (page_table[page].allocated & UNBOXED_PAGE_FLAG))
         return (0);
@@ -2886,7 +2896,6 @@ scavenge_generation(generation_index_t generation)
         page_table[i].write_protected_cleared = 0;
 #endif
 
-//    fprintf(stderr, "scavenge_generation %d\n", generation);
     for_each_page_in_generation(i, next, generation) {
         if ((page_table[i].allocated & BOXED_PAGE_FLAG)
             && (page_table[i].bytes_used != 0)) {
@@ -2908,7 +2917,6 @@ scavenge_generation(generation_index_t generation)
                     || (page_table[last_page+1].first_object_offset == 0))
                     break;
             }
-//          fprintf(stderr, "  from %ld to %ld\n", i, last_page);
             next = page_table[last_page].next_page;
             if (!write_protected) {
                 scavenge(page_address(i),
@@ -3217,7 +3225,6 @@ free_oldspace(void)
             continue;
         }
 
-//      fprintf(stderr, "free_oldspace from %d\n", first_page);
         /* Find the last page of this region. */
         last_page = first_page;
 
@@ -4003,24 +4010,6 @@ remap_free_pages (page_index_t from, page_index_t to)
 
 page_index_t zero_page_iterator = 0;
 
-static void
-print_info (page_index_t old_last_free_page, char *debug) {
-    page_index_t i;
-    long free_pages = 0;
-    long zeroed_pages = 0;
-    for (i = 0; i < old_last_free_page; i++) {
-        if (page_table[i].allocated == FREE_PAGE_FLAG) {
-            free_pages++;
-            if (page_table[i].zeroed) {
-                zeroed_pages++;
-            }
-        }
-    }
-    
-//    fprintf(stderr, "%s: free pages=%ld, zeroed pages=%ld\n",
-//            debug, free_pages, zeroed_pages);
-}
-
 static void 
 zero_some_free_pages (page_index_t old_last_free_page, 
                       generation_index_t collected_gen) 
@@ -4032,9 +4021,7 @@ zero_some_free_pages (page_index_t old_last_free_page,
         remap_ratio = 1.0;
     }
 
-    print_info(old_last_free_page, "A");
     remap_free_pages(last_free_page, old_last_free_page);
-    print_info(old_last_free_page, "B");
    
     next_iterator = zero_page_iterator + last_free_page / remap_ratio;
 
@@ -4051,8 +4038,6 @@ zero_some_free_pages (page_index_t old_last_free_page,
     } else {
         zero_page_iterator = next_iterator;
     }
-
-    print_info(old_last_free_page, "C");
 }
 
 /* GC all generations newer than last_gen, raising the objects in each
@@ -4231,7 +4216,6 @@ gencgc_raise_to_pseudo_static_generation ()
 {
     page_index_t i;
     generation_index_t new_gen = PSEUDO_STATIC_GENERATION; 
-    // HIGHEST_NORMAL_GENERATION;
 
     gc_alloc_update_all_page_tables();
 
@@ -4406,11 +4390,6 @@ gencgc_pickup_dynamic(void)
     long alloc_ptr = SymbolValue(ALLOCATION_POINTER,0);
     lispobj *prev=(lispobj *)page_address(page);
     generation_index_t gen = PSEUDO_STATIC_GENERATION;
-    int partial_pickup = 0;
-    
-    if (page_table[0].gen != -1) {
-        partial_pickup = 1;
-    }
 
     do {
         lispobj *first,*ptr= (lispobj *)page_address(page);
@@ -4425,7 +4404,7 @@ gencgc_pickup_dynamic(void)
         page_table[page].write_protected_cleared = 0;
         page_table[page].dont_move = 0;
 
-        if (!partial_pickup) {
+        if (!gencgc_partial_pickup) {
             first=gc_search_space(prev,(ptr+2)-prev,ptr);
             if(ptr == first)  prev=ptr;
             page_table[page].first_object_offset =

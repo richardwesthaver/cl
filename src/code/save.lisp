@@ -30,7 +30,7 @@
 
 (defun save-lisp-and-die (core-file-name &key
                                          (toplevel #'toplevel-init)
-                                         (purify #!+gencgc :compact-only
+                                         (purify #!+gencgc nil
                                                  #!-gencgc t)
                                          (root-structures ())
                                          (environment-name "auxiliary"))
@@ -53,9 +53,9 @@ The following &KEY arguments are defined:
      somewhat longer than the normal GC which is otherwise done, but
      it's only done once, and subsequent GC's will be done less often
      and will take less time in the resulting core file. See the PURIFY
-     function. If :COMPACT-ONLY (the default on GENCGC) do the environment
-     compaction part of purification, but do not move the data into
-     non-collectable space.
+     function. For platforms that use the generational garbage collector
+     (x86 and x86-64) purification generally results in a loss of
+     performance.
 
   :ROOT-STRUCTURES
      This should be a list of the main entry points in any newly loaded
@@ -125,12 +125,9 @@ sufficiently motivated to do lengthy fixes."
        (purify :root-structures root-structures
                :environment-name environment-name)
        (save-core nil))
-      ((:compact-only)
-       (purify :root-structures root-structures
-               :compact-only t
-               :environment-name environment-name)
-       (save-core t))
       ((nil)
+       (purify :compact-only t
+               :environment-name environment-name)
        (save-core t)))))
 
 (defun deinit ()

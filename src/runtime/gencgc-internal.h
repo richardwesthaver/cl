@@ -130,6 +130,7 @@ new_space_p(lispobj obj)
 }
 
 extern page_index_t last_free_page;
+extern boolean gencgc_partial_pickup;
 
 #if 0
 /* This is useful for checking the integrity of the page linked lists,

@@ -227,7 +227,8 @@ load_core_file(char *file)
             initial_function = (lispobj)*ptr;
             break;
 
-        case 3880:
+#ifdef LISP_FEATURE_GENCGC
+        case PAGE_TABLE_CORE_ENTRY_TYPE_CODE:
         {
             size_t size = *ptr;
             size_t fdoffset = (*(ptr+1) + 1) * (os_vm_page_size);
@@ -245,10 +246,11 @@ load_core_file(char *file)
                     page_table[offset++].first_object_offset = data[i++];
                 }
             }
-            fprintf(stderr, "offset=%d\n", offset);
-            page_table[0].gen = 0;
+            
+            gencgc_partial_pickup = 1;
             break;
         }
+#endif
         default:
             lose("unknown core file entry: %ld", (long)val);
         }
