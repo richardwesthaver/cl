@@ -346,7 +346,6 @@ sufficiently motivated to do lengthy fixes."
   (clrhash sb-c::*emitted-full-calls*) ; Don't immortalize compiler's scratchpad
   ;; Perform static linkage. Functions become un-statically-linked
   ;; on demand, for TRACE, redefinition, etc.
-  #+immobile-code (sb-vm::statically-link-core)
   (finalizers-deinit)
   ;; Try to shrink the pathname cache. It might be largely nulls
   (rebuild-pathname-cache)

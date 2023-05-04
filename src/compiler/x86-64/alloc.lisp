@@ -826,21 +826,37 @@
          (emit-label leave-pa)))
       done))) ; label needed by calc-size-in-bytes
 
-#-immobile-space
 (define-vop (make-fdefn)
   (:policy :fast-safe)
   (:translate make-fdefn)
   (:args (name :scs (descriptor-reg) :to :eval))
   (:results (result :scs (descriptor-reg) :from :argument))
   #+gs-seg (:temporary (:sc unsigned-reg :offset 15) thread-tn)
+  #+compact-fdefn (:temporary (:sc unsigned-reg) temp)
   (:node-var node)
   (:generator 37
     (alloc-other fdefn-widetag fdefn-size result node nil thread-tn
-      (lambda ()
-        (storew name result fdefn-name-slot other-pointer-lowtag)
-        (storew nil-value result fdefn-fun-slot other-pointer-lowtag)
-        (storew (make-fixup 'undefined-tramp :assembly-routine)
-                result fdefn-raw-addr-slot other-pointer-lowtag)))))
+     (lambda ()
+      #+compact-fdefn
+       (progn (inst mov temp name) ; implicitly pinned
+              (inst shl temp 16)
+              (inst or :qword (object-slot-ea result 0 other-pointer-lowtag) temp))
+       #-compact-fdefn (storew name result fdefn-name-slot other-pointer-lowtag)
+       #-linker-space
+       (progn
+         (storew nil-value result fdefn-fun-slot other-pointer-lowtag)
+         (storew (make-fixup 'undefined-tramp :assembly-routine)
+                 result fdefn-raw-addr-slot other-pointer-lowtag))))))
+
+#+compact-fdefn
+(define-vop (fdefn-name)
+  (:policy :fast-safe)
+  (:translate fdefn-name)
+  (:args (fdefn :scs (descriptor-reg) :to :eval))
+  (:results (result :scs (descriptor-reg) :from :argument))
+    (inst mov result +heap-pointer-mask+)
+    ;; misaligned load
+    (inst and result (ea (- 2 other-pointer-lowtag) fdefn)))
 
 (define-vop (make-closure)
   (:info label length stack-allocate-p)

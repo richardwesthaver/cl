@@ -105,6 +105,8 @@ extern lispobj *text_space_highwatermark;
 extern lispobj *fixedobj_free_pointer;
 extern lispobj ALIEN_LINKAGE_TABLE_SPACE_START;
 #endif
+extern lispobj* lisp_linkage_table;
+extern int lisp_linkage_table_n_entries;
 extern os_vm_address_t anon_dynamic_space_start;
 extern lispobj* tlsf_mem_start; // meaningful only if immobile space
 

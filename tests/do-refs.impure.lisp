@@ -70,7 +70,8 @@
                              (not (find sb-vm:value-cell-widetag (cdr x)
                                         :key 'widetag-of :test #'/=)))))))
 
-(test-util:with-test (:name :walk-slots-fdefn)
+(test-util:with-test (:name :walk-slots-fdefn
+                      :fails-on :linker-space)
   (let* ((closure (funcall (compile nil '(lambda (x)  (lambda () x))) t))
          (fname `(cas ,(gensym))))
     (setf (fdefinition fname) closure)

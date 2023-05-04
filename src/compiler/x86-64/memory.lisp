@@ -53,6 +53,12 @@
     ;; Otherwise, it has to remember who "wins". 0 makes it indifferent.
     (inst mov :byte (ea gc-card-table-reg-tn scratch-reg) 0)))
 
+(define-vop (gc-store-barrier)
+  (:args (object :scs (descriptor-reg)))
+  (:temporary (:sc unsigned-reg) temp)
+  (:generator 1
+    (emit-gengc-barrier object nil temp)))
+
 (defun emit-store (ea value val-temp)
   (sc-case value
    (immediate

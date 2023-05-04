@@ -74,3 +74,6 @@ to :INTERPRET, an interpreter will be used.")
   #-64-bit (oddp addr)
   #+ppc64 (= (logand addr #b101) #b100)
   #+(and 64-bit (not ppc64)) (not (logtest (logxor addr 3) 3)))
+
+(define-load-time-global *linker-mutex* (sb-thread:make-mutex :name "linker"))
+(declaim (type sb-thread:mutex *linker-mutex*))

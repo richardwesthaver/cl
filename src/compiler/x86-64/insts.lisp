@@ -26,6 +26,7 @@
             sb-vm::frame-byte-offset sb-vm::rip-tn sb-vm::rbp-tn
             sb-vm::gpr-tn-p sb-vm::stack-tn-p sb-c::tn-reads sb-c::tn-writes
             sb-vm::ymm-reg
+            sb-vm::linkage-addr->name
             sb-vm::registers sb-vm::float-registers sb-vm::stack))) ; SB names
 
 (defconstant +lock-prefix-present+ #x80)
@@ -3389,7 +3390,7 @@
             #+immobile-space
             ((and (eq (fixup-note-kind note) :abs32)
                   (memq flavor ; these all point to fixedobj space
-                        '(:fdefn-call :layout :immobile-symbol :symbol-value)))
+                        '(:layout :immobile-symbol :symbol-value)))
              (push offset abs32-fixups))))))
 
 ;;; Coverage support

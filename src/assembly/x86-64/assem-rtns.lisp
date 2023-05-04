@@ -226,20 +226,17 @@
 (define-assembly-routine (call-symbol
                           (:return-style :none))
     ((:temp fun (any-reg descriptor-reg) rax-offset) ; FUN = the symbol
-     (:temp fdefn (any-reg descriptor-reg) rbx-offset))
-  (%lea-for-lowtag-test fdefn fun other-pointer-lowtag)
-  (inst test :byte fdefn lowtag-mask)
+     (:temp temp (any-reg descriptor-reg) rbx-offset))
+  (%lea-for-lowtag-test temp fun other-pointer-lowtag :qword)
+  (inst test :byte temp lowtag-mask)
   (inst jmp :nz not-callable)
-  (inst cmp :byte (ea (- other-pointer-lowtag) fun) symbol-widetag)
+  (inst cmp :byte (ea temp) symbol-widetag)
   (inst jmp :ne not-callable)
-
-  (loadw fdefn fun symbol-fdefn-slot other-pointer-lowtag)
-  (inst test :dword fdefn fdefn)
+  (inst mov temp (ldb (byte symbol-function-bits 0) -1))
+  (inst and :qword temp (object-slot-ea fun symbol-func-slot other-pointer-lowtag))
   (inst jmp :z UNDEFINED)
-  ;; I think we need this MOV because the undefined-function trap examines RAX
-  ;; to see what FDEFN you tried to call through.
-  (inst mov fun fdefn)
-  (inst jmp (ea (- (* fdefn-raw-addr-slot n-word-bytes) other-pointer-lowtag) fdefn))
+  (inst mov fun temp)
+  (inst jmp (object-slot-ea fun closure-fun-slot fun-pointer-lowtag))
   UNDEFINED
   (inst jmp (make-fixup 'undefined-tramp :assembly-routine))
   NOT-CALLABLE
@@ -249,8 +246,8 @@
   (inst pop (ea n-word-bytes rbp-tn))
   (cerror-call nil 'sb-kernel::object-not-callable-error fun)
   (inst push (ea n-word-bytes rbp-tn))
-  (%lea-for-lowtag-test fdefn fun fun-pointer-lowtag)
-  (inst test :byte rbx-tn lowtag-mask)
+  (%lea-for-lowtag-test temp fun fun-pointer-lowtag)
+  (inst test :byte temp lowtag-mask)
   (inst jmp :nz (make-fixup 'call-symbol :assembly-routine))
   (inst jmp (ea (- (* closure-fun-slot n-word-bytes) fun-pointer-lowtag) fun)))
 

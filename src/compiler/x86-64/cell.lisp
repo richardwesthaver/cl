@@ -181,6 +181,27 @@
           (emit-label STORE)
           (emit-store (ea cell) value val-temp)))))
 
+(define-vop (fast-symbol-function)
+  (:args (symbol :scs (descriptor-reg) :to (:result 1)))
+  (:results (function :scs (descriptor-reg)))
+;  (:policy :fast) ; no policy needed - this doesn't translate anything
+  (:generator 2
+    (inst mov function +heap-pointer-mask+)
+    (inst and :qword function (object-slot-ea symbol symbol-func-slot other-pointer-lowtag))))
+
+(define-vop (safe-symbol-function)
+  (:args (symbol :scs (descriptor-reg) :to (:result 1)))
+  (:results (function :scs (descriptor-reg)))
+  (:policy :fast-safe)
+  (:vop-var vop)
+  (:generator 4
+    (inst mov function +heap-pointer-mask+)
+    (inst and :qword function (object-slot-ea symbol symbol-func-slot other-pointer-lowtag))
+    (let* ((*location-context* (make-restart-location RETRY function))
+           (err-lab (generate-error-code vop 'undefined-fun-error symbol)))
+      (inst jmp :e err-lab))
+    RETRY))
+
 (define-vop (fast-symbol-global-value)
   (:args (object :scs (descriptor-reg immediate)))
   (:results (value :scs (descriptor-reg any-reg)))
@@ -515,22 +536,30 @@
 
 ;;; IR2-CONVERT-GLOBAL-VAR makes direct use of this vop by name,
 ;;; so even though it has a :ref-trans in objdef, we also need the vop.
-(define-vop (fdefn-fun cell-ref)        ; /pfw - alpha
-  (:variant fdefn-fun-slot other-pointer-lowtag))
+(define-vop (fdefn-fun)
+  (:args (fdefn :scs (descriptor-reg) :to (:result 1)))
+  (:results (result :scs (descriptor-reg)))
+  (:temporary (:sc unsigned-reg) null)
+  (:policy :fast-safe)
+  (:translate fdefn-fun)
+  (:generator 2
+    (inst mov null nil-value)
+    (inst mov result +heap-pointer-mask+)
+    (inst and :qword result (object-slot-ea fdefn fdefn-fun-slot other-pointer-lowtag))
+    (inst cmov :z result null)))
 
 (define-vop (safe-fdefn-fun)
   (:translate safe-fdefn-fun)
   (:policy :fast-safe)
-  (:args (object :scs (descriptor-reg) :to (:result 1)))
-  (:results (value :scs (descriptor-reg any-reg)))
+  (:args (fdefn :scs (descriptor-reg) :to (:result 1)))
+  (:results (result :scs (descriptor-reg any-reg)))
   (:vop-var vop)
   (:save-p :compute-only)
   (:generator 10
-    (loadw value object fdefn-fun-slot other-pointer-lowtag)
-    ;; byte comparison works because lowtags of function and nil differ
-    (inst cmp :byte value (logand nil-value #xff))
-    (let* ((*location-context* (make-restart-location RETRY value))
-           (err-lab (generate-error-code vop 'undefined-fun-error object)))
+    (inst mov result +heap-pointer-mask+)
+    (inst and :qword result (object-slot-ea fdefn fdefn-fun-slot other-pointer-lowtag))
+    (let* ((*location-context* (make-restart-location RETRY result))
+           (err-lab (generate-error-code vop 'undefined-fun-error fdefn)))
       (inst jmp :e err-lab))
     RETRY))
 
@@ -542,6 +571,7 @@
   (:temporary (:sc unsigned-reg) raw)
   (:results (result :scs (descriptor-reg)))
   (:generator 38
+    (error "Nope")
     (emit-gengc-barrier fdefn nil raw)
     (inst mov raw (make-fixup 'closure-tramp :assembly-routine))
     (inst cmp :byte (ea (- fun-pointer-lowtag) function)
@@ -549,48 +579,29 @@
     (inst cmov :e raw
           (ea (- (* simple-fun-self-slot n-word-bytes) fun-pointer-lowtag) function))
     (storew function fdefn fdefn-fun-slot other-pointer-lowtag)
-    (storew raw fdefn fdefn-raw-addr-slot other-pointer-lowtag)
+    #-linker-space (storew raw fdefn fdefn-raw-addr-slot other-pointer-lowtag)
     (move result function)))
-#+immobile-code
-(progn
-(define-vop (set-direct-callable-fdefn-fun)
-  (:args (fdefn :scs (descriptor-reg))
-         (function :scs (descriptor-reg))
-         (raw-word :scs (unsigned-reg)))
-  (:vop-var vop)
-  (:generator 38
-    ;; N.B. concerning the use of pseudo-atomic here,
-    ;;      refer to doc/internals-notes/fdefn-gc-safety
-    ;; No barrier here, because fdefns in immobile space rely on the SIGSEGV signal
-    ;; to manage the card marks.
-    (pseudo-atomic ()
-      (storew function fdefn fdefn-fun-slot other-pointer-lowtag)
-      (storew raw-word fdefn fdefn-raw-addr-slot other-pointer-lowtag)
-      ;; Ensure that the header contains a JMP instruction, not INT3.
-      ;; This store is aligned
-      (inst mov :word (ea (- 2 other-pointer-lowtag) fdefn) #x25FF))))
-(define-vop (set-undefined-fdefn-fun)
-  ;; Do not set the raw-addr slot and do not change the header
-  ;; This vop is specifically for SB-C::INSTALL-GUARD-FUNCTION
-  (:args (fdefn :scs (descriptor-reg))
-         (function :scs (descriptor-reg)))
-  (:vop-var vop)
-  (:generator 1 (storew function fdefn fdefn-fun-slot other-pointer-lowtag))))
 
+;;; With linker-space we have to clobber the function slot to 0 while
+;;; leaving the index intact. Also we install an unbound-function trampoline
+;;; if the index was nonzero.
+#-linker-space
 (define-vop (fdefn-makunbound)
   (:policy :fast-safe)
   (:translate fdefn-makunbound)
   (:args (fdefn :scs (descriptor-reg)))
   (:temporary (:sc unsigned-reg) temp)
   (:vop-var vop)
+  (:temporary (:sc unsigned-reg) temp)
   (:generator 38
     ;; Change the JMP instruction to INT3 so that a trap occurs in the fdefn
     ;; itself, otherwise we've no way of knowing what function name was invoked.
     (inst mov :word (ea (- 2 other-pointer-lowtag) fdefn)
           (logand undefined-fdefn-header #xFFFF))
-    ;; Once the opcode is written, the values in 'fun' and 'raw-addr' become irrelevant.
-    ;; These stores act primarily to clear the reference from a GC perspective.
-    (storew nil-value fdefn fdefn-fun-slot other-pointer-lowtag)
+    (inst mov temp (ldb (byte (- 64 symbol-function-bits) symbol-function-bits) -1))
+    ;; read the linker index
+    (inst and :qword temp (object-slot-ea fdefn fdefn-fun-slot other-pointer-lowtag))
+    (storew temp fdefn fdefn-fun-slot other-pointer-lowtag)
     ;; With #+immobile-code we never call via the raw-addr slot for undefined
     ;; functions if the single instruction "call <fdefn>" form is used. The INT3
     ;; raises sigtrap which we catch, then load RAX with the address of the fdefn
@@ -600,6 +611,19 @@
     ;; Technically this could be computed using "LEA temp, [RIP-disp]"
     (inst mov temp (ea (make-fixup 'undefined-tramp :assembly-routine*)))
     (storew temp fdefn fdefn-raw-addr-slot other-pointer-lowtag)))
+
+(define-vop (fname-function)
+  (:args (fname :scs (descriptor-reg) :to (:result 1)))
+  (:results (function :scs (descriptor-reg)))
+  (:generator 1
+    (inst cmp :byte (object-slot-ea fname 0 other-pointer-lowtag) fdefn-widetag)
+    (inst mov function +heap-pointer-mask+)
+    (inst jmp :eq IS-FDEFN)
+    (inst and :qword function (object-slot-ea fname symbol-func-slot other-pointer-lowtag))
+    (inst jmp DONE)
+    IS-FDEFN
+    (inst and :qword function (object-slot-ea fname fdefn-fun-slot other-pointer-lowtag))
+    DONE))
 
 ;;;; binding and unbinding
 

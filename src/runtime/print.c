@@ -471,7 +471,7 @@ static void brief_fun_or_otherptr(lispobj obj)
             brief_otherimm(header);
             if (type == FDEFN_WIDETAG) {  // Try to print name, if a symbol
                 // FIXME: more address validity checks perhaps?
-                lispobj name = ((struct fdefn*)ptr)->name;
+                lispobj name = fdefn_name((struct fdefn*)ptr);
                 if (lowtag_of(name) == OTHER_POINTER_LOWTAG
                     && widetag_of(native_pointer(name)) == SYMBOL_WIDETAG) {
                   printf(" for ");
@@ -503,11 +503,13 @@ static void print_slots(char **slots, int count, lispobj *ptr)
     }
 }
 
+#ifndef LISP_FEATURE_LINKER_SPACE
 lispobj symbol_function(struct symbol* symbol)
 {
     if (symbol->fdefn) return FDEFN(symbol->fdefn)->fun;
     return NIL;
 }
+#endif
 
 static void print_fun_or_otherptr(lispobj obj)
 {
@@ -575,6 +577,11 @@ static void print_fun_or_otherptr(lispobj obj)
         // print_obj doesn't understand raw words, so make it a fixnum
         int pkgid = symbol_package_id(sym) << N_FIXNUM_TAG_BITS;
         print_obj("package_id: ", pkgid);
+#endif
+#ifdef LISP_FEATURE_LINKER_SPACE
+        int fname_index = symbol_linker_index(sym);
+        printf("\nindex: %x linkage_table[index]: %p",
+               fname_index, (void*)lisp_linkage_table[fname_index]);
 #endif
         break;
 
@@ -723,8 +730,16 @@ static void print_fun_or_otherptr(lispobj obj)
         break;
 
     case FDEFN_WIDETAG:
+#ifdef LISP_FEATURE_COMPACT_FDEFN
+        {
+        struct fdefn* f = (struct fdefn*)(ptr - 1);
+        print_obj("name", fdefn_name(f));
+        print_obj("fun", f->fun);
+        printf("index=%d linkage=%p\n", 0, 0);
+        }
+#else
         print_slots(fdefn_slots, 2, ptr);
-        print_obj("entry: ", decode_fdefn_rawfun((struct fdefn*)(ptr-1)));
+#endif
         break;
 
     // Make some vectors printable from C, for when all hell breaks lose

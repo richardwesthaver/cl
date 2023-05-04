@@ -306,6 +306,19 @@ save_to_filehandle(FILE *file, char *filename, lispobj init_function,
     if (nwrote != (int)(sizeof (core_entry_elt_t) * string_words))
         perror(GENERAL_WRITE_FAILURE_MSG);
 
+    /* Prior to the directory of spaces is the name linker table */
+    write_lispobj(LISP_LINKAGE_TABLE_CORE_ENTRY_TYPE_CODE, file);
+    write_lispobj(4, file); // number of words in this core header entry
+    {
+    write_lispobj(lisp_linkage_table_n_entries, file);
+    sword_t data_page =
+        write_bytes(file, (char*)lisp_linkage_table,
+                    ALIGN_UP(lisp_linkage_table_n_entries<<WORD_SHIFT, BACKEND_PAGE_BYTES),
+                    core_start_pos,
+                    COMPRESSION_LEVEL_NONE);
+    write_lispobj(data_page, file);
+    }
+
     write_lispobj(DIRECTORY_CORE_ENTRY_TYPE_CODE, file);
     write_lispobj(/* (word count = N spaces described by 5 words each, plus the
           * entry type code, plus this count itself) */

@@ -1,0 +1,134 @@
+Advantages:
+
+* Linkage entries have 4x the density for any given number of function
+  names (1 word vs 4 for an fden),
+
+* Linkage cell is consumed only if compiled code calls compiled code.
+  (Never wasting a cell on macros, unless at some point the macro was
+  assumed to be a function)
+
+* The linkage table still uses 1-instruction call in the best case,
+  or 2-instruction worst case, which is the same as status quo.
+
+* Remove possible cross-cache-line misaligned store in remove-static-links
+  by doing away with so-called static linking.
+
+* Removes all :FDEFN-CALL and :STATIC-CALL absolute fixups
+
+* No storing machine code in the header of an fdefn, potentially
+  better for CPU by not cross-contaminating code and data.
+
+* Remove restriction on sub-2GC text space.
+
+* Should generally work for #-immobile-space as well with no need to
+  reference code header constants to load an fdefn for call.
+
+Statistics on pristine core:
+- (length (sb-vm:list-allocated-objects :all :type sb-vm:fdefn-widetag))
+  Before: 15282, After: 3229
+
+- number of FBOUNDP symbols: 12017
+
+- number of linkage entries used: 6036
+
+- core size reduced by almost 200K
+
+Pending tasks:
+[x] stepping support - it seems to work
+[ ] use a mutex for assigning linkage index
+[ ] extend linkage index from 16 to 20 bits
+[ ] zeroize and re-use linkage table entry for GC'd symbols
+[ ] reduce invasiveness of the patches
+
+=======
+
+Symbol:
+
+current
+=======
+|   32       |     8 |     8      |    8    |     8    |  HEADER
++------------+-------+---------------------------------+
+| TLS_index  |  gen# | linker_low |  size   |  widetag |
+
+
+|  16 bits     |            48 bits                    |  FUN
++--------------+---------------------------------------+
+| linker_high  |      tagged function pointer          |
+
+
+planned
+=======
+
+1) remove the function slot and the plist slot.
+2) change the 'name' slot to hold either the name
+   or a pointer to a 3-word immobile block:
+   
+symbol without properties:
+  | 16 bits | 48 bits                           |
+  | pkg-id  |  name (OTHER pointer)             |
+
+symbol with properties:
+  | 16 bits |  48 bits                          |
+  | pkg-id  |  payload (untagged pointer)       |
+
+
+if function or plist present then symbol-payload holds:
+
+ +--------------------------------------+
+ | full word: function                  |
+ +--------------------------------------+
+ | full word: plist / globaldb info     |
+ +--------------------------------------+
+ | 20 bits           44 bits            |
+ | index    |  name (shifted pointer)   |
+ +--------------------------------------+
+
+this shortens all symbols by 2 words, and adds back 3 words
+only if a symbol has either a function or properties.
+
+FDEFN:
+
+current
+=======
+|            40 bits          |     8      |   8    |     8    |  word 0: header
++---------------------------------------------------+----------+
+|                             | linker_low |  pad   |  widetag |
+
+|   16 bits      |                    48 bits                  |  word 1
++----------------+---------------------------------------------+
+|  linker_high   |       tagged function pointer               |
+
+
+2 possible ways to reduce fdefns from 4 to 2 words by eliminating
+the name and padding slots:
+
+proposed 1
+==========
+|            48 bits                 |   8         |     8    |  word 0: header
++--------------------------------------------------+----------+
+|        name                        |  linker_low |  widetag |
+
+|  16 bits       |                   48 bits                  |  word 1
++----------------+--------------------------------------------+
+|  linker_high   |      tagged function pointer               |
+
+
+Reading fdefn-name needs pseudo-atomic.
+Reading the tagged function uses a masked load, no pseudo-atomic.
+
+proposed 2
+==========
+|            48 bits                      |   8    |     8    |  word 0: header
++--------------------------------------------------+----------+
+|        function                         |  pad   |  widetag |
+
+|  20 bits       |                   44 bits                  |  word 1
++----------------+--------------------------------------------+
+|   linker       |          name (shifted right 4)            |
+
+
+Reading fdefn-name needs pseudo-atomic.
+Reading the tagged function uses an unaligned masked load, no pseudo-atomic
+
+
+

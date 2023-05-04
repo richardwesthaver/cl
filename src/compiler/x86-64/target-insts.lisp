@@ -176,8 +176,29 @@
   (print-reg/mem-with-width
    value (inst-operand-size-default-qword dstate) t stream dstate))
 
-(defun print-jmp-ea (value stream dstate)
+(defun print-jmp-ea (value stream dstate
+                           &aux (code (seg-code (dstate-segment dstate))))
   (cond ((typep value 'machine-ea)
+         #+linker-space
+         (when (and code
+                    (or (and (eql (machine-ea-base value)
+                                  (car (sb-disassem::dstate-known-register-contents dstate)))
+                             (eq (cdr (sb-disassem::dstate-known-register-contents dstate))
+                                 'sb-vm::lisp-linkage-table-base)
+                             (integerp (machine-ea-disp value))
+                             (not (machine-ea-index value)))
+                        (eq (machine-ea-base value) :rip)))
+           (setf (sb-disassem::dstate-known-register-contents dstate) nil)
+           (let ((name
+                  (if (eq (machine-ea-base value) :rip)
+                      (linkage-addr->name code (+ (dstate-next-addr dstate)
+                                                  (machine-ea-disp value)) :address)
+                      (linkage-addr->name code (machine-ea-disp value) :index))))
+             (when name
+               ;; :COMPUTE won't show the contents of the word
+               (print-mem-ref :compute value :qword stream dstate)
+               (return-from print-jmp-ea
+                 (note (lambda (s) (format s "#'~S" name)) dstate)))))
          (print-mem-ref :ref value :qword stream dstate)
          #+immobile-space
          (when (and (null (machine-ea-base value))
@@ -469,7 +490,7 @@
     (when (and (eql (machine-ea-base value)
                     (car (sb-disassem::dstate-known-register-contents dstate)))
                (eq (cdr (sb-disassem::dstate-known-register-contents dstate))
-                   'alien-linkage)
+                   'sb-vm::alien-linkage-table-base)
                (not (machine-ea-index value))
                (integerp (machine-ea-disp value)))
       (let ((name (sb-impl::alien-linkage-index-to-name
@@ -519,11 +540,12 @@
                                   ((< index (length thread-slot-names))
                                    (aref thread-slot-names index)))))
                (when symbol
-                 (when (and (eq symbol 'sb-vm::alien-linkage-table-base)
+                 (when (and (member symbol '(sb-vm::lisp-linkage-table-base
+                                             sb-vm::alien-linkage-table-base))
                             (eql (logandc2 (sb-disassem::dstate-inst-properties dstate) +rex-r+)
                                  (logior +rex+ +rex-w+ +rex-b+)))
                    (setf (sb-disassem::dstate-known-register-contents dstate)
-                         `(,(reg-num (regrm-inst-reg dchunk-zero dstate)) . alien-linkage)))
+                         `(,(reg-num (regrm-inst-reg dchunk-zero dstate)) . ,symbol)))
                  (return-from print-mem-ref
                    (note (lambda (stream) (format stream "thread.~(~A~)" symbol))
                          dstate))))
@@ -554,10 +576,19 @@
        (addr
         (etypecase value
           (machine-ea
-           ;; Indicate to PRINT-MEM-REF that this is not a memory access.
-           (print-mem-ref :compute value width stream dstate)
-           (when (eq (machine-ea-base value) :rip)
-             (+ (dstate-next-addr dstate) (machine-ea-disp value))))
+           (let ((linkage ; gets cleared by PRINT-MEM-REF
+                  (and (eql (machine-ea-base value)
+                            (car (sb-disassem::dstate-known-register-contents dstate)))
+                       (eq (cdr (sb-disassem::dstate-known-register-contents dstate))
+                           'sb-vm::lisp-linkage-table-base)
+                       (integerp (machine-ea-disp value))
+                       (not (machine-ea-index value)))))
+             ;; Indicate to PRINT-MEM-REF that this is not a memory access.
+             (print-mem-ref :compute value width stream dstate)
+             (cond ((eq (machine-ea-base value) :rip)
+                    (+ (dstate-next-addr dstate) (machine-ea-disp value)))
+                   (linkage
+                    (sap-int (sap+ sb-vm::*linker-table* (machine-ea-disp value)))))))
 
           ((or string integer)
            ;; A label for the EA should not print as itself, but as the decomposed
@@ -584,6 +615,11 @@
       (cond ((stringp addr) ; label
              (note (lambda (s) (format s "= ~A" addr)) dstate))
             (addr
+             (awhen (and (seg-code (dstate-segment dstate))
+                         (linkage-addr->name (seg-code (dstate-segment dstate))
+                                             addr :address))
+               (note (lambda (s) (format s "#'~S" it)) dstate)
+               (return-from lea-print-ea))
              (note (lambda (s) (format s "= #x~x" addr)) dstate))))))
 
 ;;;; interrupt instructions
@@ -639,6 +675,8 @@
          ;; Look for these instruction formats.
          (call-inst (find-inst #xE8 inst-space))
          (jmp-inst (find-inst #xE9 inst-space))
+         (call*-inst (find-inst #x15ff inst-space))
+         (jmp*-inst (find-inst #x25ff inst-space))
          (cond-jmp-inst (find-inst #x800f inst-space))
          (lea-inst (find-inst #x8D inst-space))
          (mov-inst (find-inst #x8B inst-space))
@@ -661,6 +699,13 @@
                   (when (includep operand)
                     (funcall function (+ (dstate-cur-offs dstate) 1)
                              operand inst))))
+               ((or (eq inst jmp*-inst) (eq inst call*-inst))
+                (let ((modrm (sap-ref-8 sap (1+ (dstate-cur-offs dstate)))))
+                  (when (= (logand modrm #b11000111) #b00000101) ; RIP-relative mode
+                    (let ((operand (+ (signed-sap-ref-32 sap (+ (dstate-cur-offs dstate) 2))
+                                      (dstate-next-addr dstate))))
+                      (when (includep operand)
+                        (funcall function (+ (dstate-cur-offs dstate) 2) operand inst))))))
                ((eq inst cond-jmp-inst)
                 ;; jmp CALL-SYMBOL is invoked with a conditional jump
                 ;; (but not call CALL-SYMBOL because only JMP can be conditional)

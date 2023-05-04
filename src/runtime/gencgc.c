@@ -2415,12 +2415,77 @@ void deposit_filler(char* from, char* to) {
     }
 }
 
+#ifdef LISP_FEATURE_LINKER_SPACE
+static inline boolean possibly_has_destructors(page_index_t page)
+{
+    switch (page_table[page].type) {
+    case PAGE_TYPE_MIXED: case PAGE_TYPE_SMALL_MIXED: return 1;
+    default: return 0;
+    }
+}
+void destroy_fname(lispobj* fname, int widetag)
+{
+    int linkage_index = (widetag == FDEFN_WIDETAG)
+                        ? fdefn_linker_index(((struct fdefn*)fname)) :
+                          symbol_linker_index(((struct symbol*)fname));
+    if (!linkage_index) return;
+    lisp_linkage_table[linkage_index] = 0;
+    // TODO: add to recycle list
+#if 0
+    lispobj printname = decode_symbol_name(((struct symbol*)fname)->name);
+    struct vector*v = (void*)native_pointer(printname);
+    fprintf(stderr, "%s @ %p: destroyed, index %d %s\n",
+            (widetag == FDEFN_WIDETAG ? "fdefn" : "symbol"), fname,
+            linkage_index,
+            header_widetag(v->header)==SIMPLE_BASE_STRING_WIDETAG ? (char*)v->data : "???");
+    }
+#endif
+}
+#endif
+
+static void run_destructors()
+{
+#ifdef LISP_FEATURE_LINKER_SPACE
+    page_index_t first = 1, last;
+    while (first < next_free_page) {
+        if (page_table[first].gen != from_space || !possibly_has_destructors(first)) {
+            ++first;
+            continue;
+        }
+        // Life would be so much easier if we banish page-spanning objects other than large vectors
+        last = contiguous_block_final_page(first);
+        lispobj* where = (lispobj*)page_address(first);
+        lispobj* limit = (lispobj*)page_address(last) + page_words_used(last);
+        //        fprintf(stderr, "looking at pages %ld..%ld\n", first, last);
+        first = 1+last;
+        while (where < limit) {
+            lispobj header = *where;
+            int widetag = header_widetag(header);
+            if (header == FORWARDING_HEADER) // forwarded, not resized
+                where += object_size(native_pointer(forwarding_pointer_value(where)));
+            else if (widetag == SYMBOL_WIDETAG || widetag == FDEFN_WIDETAG) {
+                if (!pinned_p(make_lispobj(where, OTHER_POINTER_LOWTAG), find_page_index(where)))
+                    destroy_fname(where, widetag);
+                /* else fprintf(stderr, "symbol/fdefn @ %p: pinned\n", where); */
+                where += object_size(where);
+            } else if (widetag == FORWARDING_HEADER) { // forwarded, resized
+                // fprintf(stderr, "forwarded and resized thing @ %p\n", where);
+                where += header >> N_WIDETAG_BITS; // original size
+            } else {
+                where += object_size(where);
+            }
+        }
+    }
+#endif
+}
+
 /* Deposit filler objects on small object pinned pages.
  * Also ensure that no scan_start_offset points to a page in
  * oldspace that will be freed.
  */
 static void obliterate_nonpinned_words()
 {
+    run_destructors();
     if (!gc_pin_count) return;
 
 #define page_base(x) ALIGN_DOWN(x, GENCGC_PAGE_BYTES)
@@ -2868,6 +2933,21 @@ static lispobj* range_dirty_p(lispobj* where, lispobj* limit, generation_index_t
                 return where;
         }
 #endif
+#ifdef LISP_FEATURE_LINKER_SPACE
+        else if (widetag == SYMBOL_WIDETAG) {
+            struct symbol* s = (void*)where;
+            if (!ptr_ok_to_writeprotect(symbol_function(s), gen)) return where;
+            if (!ptr_ok_to_writeprotect(linkage_cell_taggedptr(symbol_linker_index(s)), gen))
+                return where;
+            // Process the value and info slots normally, and the bit-packed package ID + name
+            // can't be younger, so that slot's contents are irrelevant
+        } else if (widetag == FDEFN_WIDETAG) {
+            struct fdefn* f = (void*)where;
+            if (!ptr_ok_to_writeprotect(fdefn_function(f), gen)) return where;
+            if (!ptr_ok_to_writeprotect(linkage_cell_taggedptr(fdefn_linker_index(f)), gen))
+                return where;
+        }
+#endif
         // Scan all the rest of the words even if some of them are raw bits.
         // At worst this overestimates the set of pointer words.
         sword_t index;
@@ -3200,7 +3280,7 @@ scavenge_root_gens(generation_index_t from)
                    (page_single_obj_p(i) && large_scannable_vector_p(i))) {
             i = scan_boxed_root_cards_non_spanning(i, generation);
 #ifdef LISP_FEATURE_SOFT_CARD_MARKS
-        } else if (page_table[i].type == PAGE_TYPE_SMALL_MIXED) {
+        } else if ((page_table[i].type & PAGE_TYPE_MASK) == PAGE_TYPE_SMALL_MIXED) {
             i = scan_mixed_root_cards(i, generation);
 #endif
         } else {

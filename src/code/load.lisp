@@ -1193,7 +1193,7 @@
       ;; This happened by virtue of calling fop-fdefn for each.
       (loop for stack-index from (+ ptr (* n-simple-funs sb-vm:code-slots-per-simple-fun))
             repeat n-fdefns
-            do (aver (typep (svref stack stack-index) 'fdefn)))
+            do (aver (typep (svref stack stack-index) '(or fdefn #+linker-space symbol))))
       (binding* (((code total-nwords)
                   (sb-c:allocate-code-object
                    (if (oddp header) :immobile :dynamic)
@@ -1242,7 +1242,7 @@
     ;; that "gets() is dangerous." You're informed by both the
     ;; compiler and linker.
     (check-deprecated-thing 'function name))
-  (find-or-create-fdefn name))
+  (sb-impl::ensure-fname-exists name))
 
 (define-fop 19 :not-host (fop-known-fun (name))
   (%coerce-name-to-fun name))

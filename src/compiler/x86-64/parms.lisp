@@ -96,8 +96,15 @@
                      :read-only-space-size #+metaspace #.(* 2 1024 1024)
                                            #-metaspace 0
                      :fixedobj-space-size #.(* 40 1024 1024)
-                     :text-space-size #.(* 130 1024 1024)
+                     :text-space-start #xB800000000
+                     :text-space-size #.(* 256 1024 1024)
                      :dynamic-space-start #x1000000000)
+
+#+sb-xc-host
+(progn
+(defparameter lisp-linkage-table-space-start (- text-space-start (* 8 1024 1024)))
+(defparameter alien-linkage-table-space-start
+  (- lisp-linkage-table-space-start alien-linkage-table-space-size)))
 
 ;;; The default dynamic space size is lower on OpenBSD to allow SBCL to
 ;;; run under the default 512M data size limit.
@@ -167,8 +174,8 @@
   #'equalp)
 
 (defconstant-eqx +static-fdefns+
-    `#(ensure-symbol-hash sb-impl::install-hash-table-lock update-object-layout
-       ,@common-static-fdefns)
+    `#(,@common-static-fdefns
+       #-linker-space ,@'(ensure-symbol-hash sb-impl::install-hash-table-lock update-object-layout))
   #'equalp)
 
 #+sb-simd-pack

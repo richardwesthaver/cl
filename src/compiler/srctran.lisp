@@ -5344,6 +5344,7 @@
           (t
            (give-up-ir1-transform)))))
 
+#|
 ;;; Add transforms in reverse of the order you want them tried
 ;;; (because of stupid semantics)
 (deftransform fboundp ((symbol) (symbol))
@@ -5355,7 +5356,14 @@
 ;;; So for the cost of an FDEFN that might never store a function, the code
 ;;; is smaller by about the size of an fdefn; and it's faster, so do it.
 (deftransform fboundp ((name) ((constant-arg symbol)))
+  #+linker-space
+  `(neq 0 (%primitive sb-vm::symbol-function ',(lvar-value name)))
+  ;; The implementation of the full call of FBOUNDP will never create an fdefn,
+  ;; but we might as well do that for a constant symbol because the transform
+  ;; is neutral in terms of the sum of code and data size.
+  #-linker-space
   `(fdefn-fun (load-time-value (find-or-create-fdefn ',(lvar-value name)) t)))
+|#
 
 ;;; Remove special bindings with empty bodies
 (deftransform %cleanup-point (() * * :node node)

@@ -172,6 +172,12 @@
                    #-sb-xc-host (if (producing-fasl-file) t (fboundp name)))
               (emit-move node block (make-load-time-constant-tn :known-fun name)
                          res))
+             #+linker-space
+             ((symbolp name)
+              (let ((symbol-tn (make-load-time-constant-tn :fdefinition name)))
+                (if unsafe
+                    (vop sb-vm::fast-symbol-function node block symbol-tn res)
+                    (vop sb-vm::safe-symbol-function node block symbol-tn res))))
              (t
               (let ((fdefn-tn (make-load-time-constant-tn :fdefinition name)))
                 #+untagged-fdefns
@@ -1037,6 +1043,37 @@
 
 ;;;; full call
 
+(defglobal *permanent-externals-packages*
+    (list (find-package "SB-C")
+          (find-package "SB-ASSEM")
+          (find-package "SB-DISASSEM")
+          (find-package "SB-IMPL")
+          (find-package "SB-FORMAT")
+          (find-package "SB-UNIX")
+          (find-package "SB-PCL")
+          (find-package "SB-MOP")
+          (find-package "SB-PRETTY")
+          (find-package "SB-REGALLOC")
+          (find-package "SB-SYS")
+          (find-package "SB-UNICODE")
+          (find-package "SB-BROTHERTREE")
+          (find-package "SB-KERNEL")))
+
+;; Lisp linkage-table calls don't use a code header constant. However, in most cases
+;; the function name must be present in the code header to preserve liveness of the
+;; linkage table entry.  External symbols in some packages are permanently live,
+;; and therefore do not need a reference from code headers.
+;; Return T if NAME is permanent. (Isn't this basically the same s SYSTEM-PACKAGE-P ?)
+(defun permanent-fname-p (name)
+  (let* ((root (cond ((symbolp name) name)
+                     ((eq (car name) 'setf) (cadr name))
+                     (t (return-from permanent-fname-p nil))))
+         (pkg (sb-xc:symbol-package root)))
+    (or (eq pkg *cl-package*)
+        (and (member pkg *permanent-externals-packages*)
+             (eq (nth-value 1 (find-symbol (string root) pkg))
+                 :external)))))
+
 ;;; Given a function lvar FUN, return (VALUES TN-TO-CALL NAMED-P),
 ;;; where TN-TO-CALL is a TN holding the thing that we call NAMED-P is
 ;;; true if the thing is named (false if it is a function).
@@ -1061,7 +1098,8 @@
              ;; Static fdefns never need a code header constant.
              ;; Calls to immobile space fdefns won't use the constant,
              ;; but it needs to exist for GC's pointer tracing.
-             (values (if (sb-vm::static-fdefn-offset name)
+             (values (if (or (sb-vm::static-fdefn-offset name)
+                             #+linker-space (permanent-fname-p name))
                          name
                          (make-load-time-constant-tn :fdefinition name))
                      name)))

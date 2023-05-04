@@ -331,9 +331,13 @@
     (values (funcall (the function thunk) s))))
 ;; stack-allocatable lists are necessary but not sufficient
 (with-test (:name (:dx-list :make-list) :skipped-on (not :x86-64))
+<<<<<<< HEAD
   (let ((calls (ctu:asm-search "CALL" #'make-var-length-dx-list)))
     ;; Call nothing but the funarg
     (assert (eql (length calls) 1)))
+=======
+  (assert (not (ctu:asm-search "CALL" #'make-var-length-dx-list)))
+>>>>>>> 6b7fea66d (x86-64: fdefn elision)
   (assert-no-consing (make-var-length-dx-list
                       50 (lambda (x) (declare (ignore x))))))
 

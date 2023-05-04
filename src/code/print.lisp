@@ -1897,6 +1897,8 @@ variable: an unreadable object representing the error is printed instead.")
              (write-string "bpt-trap-return" stream))
             ((functionp dinfo)
              (format stream "trampoline ~S" dinfo))
+            ((typep dinfo '(or symbol fdefn))
+             (format stream "undefined-fun ~S" (if (fdefn-p dinfo) (fdefn-name dinfo) dinfo)))
             (t
              (format stream "code~@[ id=~x~] [~D]"
                      (%code-serialno component)

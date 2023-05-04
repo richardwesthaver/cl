@@ -403,22 +403,6 @@ sigtrap_handler(int __attribute__((unused)) signal,
      * number of bytes will follow, the first is the length of the byte
      * arguments to follow. */
     trap = *(unsigned char *)OS_CONTEXT_PC(context);
-#ifdef LISP_FEATURE_IMMOBILE_SPACE
-    if (trap == trap_UndefinedFunction) {
-        // The interrupted PC pins this fdefn. Sigtrap is delivered on the ordinary stack,
-        // not the alternate stack.
-        // (FIXME: an interior pointer to an fdefn _should_ pin it, but doesn't)
-        lispobj* fdefn = (lispobj*)(OS_CONTEXT_PC(context) & ~LOWTAG_MASK);
-        if (fdefn && widetag_of(fdefn) == FDEFN_WIDETAG) {
-            // Return to undefined-tramp
-            OS_CONTEXT_PC(context) = (uword_t)((struct fdefn*)fdefn)->raw_addr;
-            // with RAX containing the FDEFN
-            *os_context_register_addr(context,reg_RAX) =
-                make_lispobj(fdefn, OTHER_POINTER_LOWTAG);
-            return;
-        }
-    }
-#endif
     handle_trap(context, trap);
 }
 
@@ -433,6 +417,8 @@ sigill_handler(int __attribute__((unused)) signal,
     }
     // Interrupt if overflow (INTO) raises SIGILL in 64-bit mode
     if (*(unsigned char *)pc == INTO_INST) {
+      /* fprintf(stderr, "sigtrap received @ %llx: %02x %02x\n", OS_CONTEXT_PC(context),
+         ((unsigned char *)pc)[1], ((unsigned char *)pc)[2]); */
         OS_CONTEXT_PC(context) += 1;
         return sigtrap_handler(signal, siginfo, context);
     }
@@ -652,7 +638,8 @@ lispobj entrypoint_taggedptr(uword_t entrypoint) {
  * absolute jumps. Therefore it is possible to call entrypoint_taggedptr() with any
  * raw_addr, whether or not you know the fdefn whence the raw_addr was obtained. */
 lispobj decode_fdefn_rawfun(struct fdefn* fdefn) {
-    return entrypoint_taggedptr((uword_t)fdefn->raw_addr);
+    int index = fdefn_linker_index(fdefn);
+    return entrypoint_taggedptr(lisp_linkage_table[index]);
 }
 
 #ifdef LISP_FEATURE_SB_THREAD

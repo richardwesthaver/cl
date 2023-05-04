@@ -104,8 +104,7 @@
             :override
             (let* ((oldval (fdefn-fun object))
                    (newval (forward oldval)))
-              (unless (eq newval oldval)
-                (setf (fdefn-fun object) newval))))
+              (unless (eq newval oldval) (fset object newval))))
            (closure
             :override
             (let* ((oldval (%closure-fun object))

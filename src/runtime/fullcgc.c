@@ -341,14 +341,30 @@ static void trace_object(lispobj* where)
     case SYMBOL_WIDETAG:
         {
         struct symbol* s = (void*)where;
+        gc_mark_obj(s->value);
+#ifdef LISP_FEATURE_LINKER_SPACE
+        gc_mark_obj(symbol_function(s));
+        gc_mark_obj(linkage_cell_taggedptr(symbol_linker_index(s)));
+#else
+        gc_mark_obj(s->fdefn);
+#endif
+        gc_mark_obj(s->info);
         gc_mark_obj(decode_symbol_name(s->name));
-        gc_mark_range(&s->value, 3);
         }
         return;
     case FDEFN_WIDETAG:
-        gc_mark_obj(decode_fdefn_rawfun((struct fdefn*)where));
-        scan_to = 3;
-        break;
+        {
+        struct fdefn* fdefn = (void*)where;
+        gc_mark_obj(fdefn_name(fdefn));
+#ifdef LISP_FEATURE_LINKER_SPACE
+        gc_mark_obj(fdefn_function(fdefn));
+        gc_mark_obj(linkage_cell_taggedptr(fdefn_linker_index(fdefn)));
+#else
+        gc_mark_obj(fdefn->fun);
+        gc_mark_obj(decode_fdefn_rawfun(fdefn));
+#endif
+        }
+       return;
     case WEAK_POINTER_WIDETAG:
         {
         struct weak_pointer *weakptr = (void*)where;
@@ -518,10 +534,11 @@ static void clobber_headered_object(lispobj* addr, sword_t nwords)
 {
     // FIXME: clobbering an object on single-object pages should free entire pages
     page_index_t page = find_page_index(addr);
+    __attribute__((unused)) int widetag = widetag_of(addr);
     if (page < 0) { // code space
 #ifdef LISP_FEATURE_IMMOBILE_SPACE
         extern lispobj codeblob_freelist;
-        if (widetag_of(addr) == CODE_HEADER_WIDETAG) {
+        if (widetag == CODE_HEADER_WIDETAG) {
             // OAOO violation - like sweep_immobile_text()
             assign_widetag(addr, FILLER_WIDETAG);
             ((char*)addr)[2] = 0; // clear the TRACED flag
@@ -540,6 +557,10 @@ static void clobber_headered_object(lispobj* addr, sword_t nwords)
         addr[0] = make_filler_header(nwords);
         addr[1] = 0;
     } else {
+        extern void destroy_fname(lispobj* fname, int widetag);
+#ifdef LISP_FEATURE_LINKER_SPACE
+        if (widetag == SYMBOL_WIDETAG || widetag == FDEFN_WIDETAG) destroy_fname(addr, widetag);
+#endif
         memset(addr, 0, nwords * N_WORD_BYTES);
     }
 }
@@ -610,6 +631,8 @@ void execute_full_sweep_phase()
         if (widetag_of(where) == CODE_HEADER_WIDETAG)
             text_page_genmask[find_text_page_index(where)]
                 |= (1 << immobile_obj_gen_bits(where));
+
+//    dump_codeblobs();
 #endif
     walk_generation(sweep, -1, (uword_t)words_zeroed);
     if (gencgc_verbose) {

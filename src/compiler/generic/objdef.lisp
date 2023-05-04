@@ -207,12 +207,18 @@ during backtrace.
   (fixups :type t :ref-known (flushable) :ref-trans %code-fixups)
   (constants :rest-p t))
 
+#+compact-fdefn ; NAME goes in the header
+(define-primitive-object (fdefn :type fdefn
+                                :lowtag other-pointer-lowtag
+                                :widetag fdefn-widetag)
+  (fun :type (or function null)))
+#-compact-fdefn
 (define-primitive-object (fdefn :type fdefn
                                 :lowtag other-pointer-lowtag
                                 :widetag fdefn-widetag)
   (name :ref-trans fdefn-name
         :set-trans %set-fdefn-name :set-known ())
-  (fun :type (or function null) :ref-trans fdefn-fun)
+  (fun :type (or function null) #-linker-space :ref-trans #-linker-space fdefn-fun)
   ;; raw-addr is used differently by the various backends:
   ;; - Sparc, ARM, and RISC-V store the same object as 'fun'
   ;;   unless the function is non-simple, in which case
@@ -224,7 +230,7 @@ during backtrace.
   ;;   has the simple-fun call convention- either a generic-function with
   ;;   a self-contained trampoline, or closure or funcallable-instance
   ;;   wrapped in a simplifying trampoline.
-  (raw-addr :c-type "char *"))
+  (#+linker-space pad #-linker-space raw-addr :c-type "char *"))
 
 ;;; a simple function (as opposed to hairier things like closures
 ;;; which are also subtypes of Common Lisp's FUNCTION type)
@@ -392,16 +398,11 @@ during backtrace.
   (value :init :unbound
          :set-trans %set-symbol-global-value
          :set-known ())
-
-  ;; This slot holds an FDEFN. It's almost unnecessary to have FDEFNs at all
-  ;; for symbols. If we ensured that any function bound to a symbol had a
-  ;; call convention rendering it callable in the manner of a SIMPLE-FUN,
-  ;; then we would only need to store that function's raw entry address here,
-  ;; thereby removing the FDEFN for any global symbol. Any closure assigned
-  ;; to a symbol would need a tiny trampoline, which is already the case
-  ;; for #+immobile-code.
-  (fdefn :ref-trans %symbol-fdefn :ref-known ()
-         :cas-trans cas-symbol-fdefn)
+  ;; Symbols either store an fdefn or a function.
+  ;; The newer way is a function
+  #-linker-space (fdefn :ref-trans %symbol-fdefn :ref-known ()
+                         :cas-trans cas-symbol-fdefn)
+  #+linker-space (func)
   ;; The private accessor for INFO reads the slot verbatim.
   ;; In contrast, the SYMBOL-INFO function always returns a PACKED-INFO
   ;; instance (see info-vector.lisp) or NIL. The slot itself may hold a cons
@@ -483,7 +484,9 @@ during backtrace.
 (defconstant-eqx +thread-header-slot-names+
     `#(#+x86-64
        ,@'(t-nil-constants
+           lisp-linkage-table-base
            alien-linkage-table-base
+           heap-pointer-mask ; constant with 48 1 bits
            msan-xor-constant
            ;; The following slot's existence must NOT be conditional on #+msan
            msan-param-tls) ; = &__msan_param_tls

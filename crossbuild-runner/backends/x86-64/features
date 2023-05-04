@@ -3,6 +3,7 @@
 :gencgc
 :use-cons-region
 :soft-card-marks
+:linker-space ; :compact-fdefn
 :stack-grows-downward-not-upward
 :c-stack-is-control-stack
 :compare-and-swap-vops

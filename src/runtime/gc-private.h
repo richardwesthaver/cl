@@ -188,14 +188,7 @@ static inline int immobile_obj_gen_bits(lispobj* obj) // native pointer
     // When debugging, assert that we're called only on a headered object
     // whose header contains a generation byte.
     gc_dcheck(!embedded_obj_p(widetag_of(obj)));
-    char gen;
-    switch (widetag_of(obj)) {
-    default:
-        gen = ((generation_index_t*)obj)[3]; break;
-    case FDEFN_WIDETAG:
-        gen = ((generation_index_t*)obj)[1]; break;
-    }
-    return gen & 0x1F;
+    return ((generation_index_t*)obj)[3] & 0x1F;
 }
 // Turn a grey node black.
 static inline void set_visited(lispobj* obj)

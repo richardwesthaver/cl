@@ -191,6 +191,9 @@ static int find_ref(lispobj* source, lispobj target)
         scan_limit = code_header_words((struct code*)source);
         break;
     case FDEFN_WIDETAG:
+#ifdef LISP_FEATURE_COMPACT_FDEFN
+        lose("Not done");
+#endif
         check_ptr(3, decode_fdefn_rawfun((struct fdefn*)source));
         scan_limit = 3;
         break;

@@ -154,7 +154,7 @@
   (assert (= (sb-kernel:generation-of (sb-int:find-fdefn '(setf car)))
              (sb-kernel:generation-of #'car))))
 
-(with-test (:name :static-fdefn-space)
+(with-test (:name :static-fdefn-space :skipped-on :linker-space)
   (sb-int:dovector (name sb-vm:+static-fdefns+)
     (assert (eq (sb-ext:heap-allocated-p (sb-int:find-fdefn name))
                 (or #+immobile-code :immobile :static)))))

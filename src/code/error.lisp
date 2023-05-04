@@ -87,6 +87,7 @@
                             ;; Referencing #'F is enough to get a compile-time warning about unknown
                             ;; functions, but the use itself is flushable, so employ SAFE-FDEFN-FUN.
                             (dummy-forms `#',name)
+                            #-linker-space ; FIXME: #+linker-space case
                             (when (sb-c:policy env (= safety 3))
                               (dummy-forms `(sb-c:safe-fdefn-fun
                                              (load-time-value

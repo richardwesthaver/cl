@@ -101,13 +101,20 @@
                              calls))))))))))
     (values calls compiled-fun)))
 
+(when (member :linker-space sb-impl:+internal-features+)
+  (pushnew :linker-space *features*))
+
 (defun find-named-callees (fun &key (name nil namep))
   (sb-int:binding* ((code (fun-code-header (%fun-fun fun)))
                     ((start count) (sb-kernel:code-header-fdefn-range code)))
-    (loop for i from start repeat count
-          for c = (code-header-ref code i)
-          when (or (not namep) (equal name (sb-kernel:fdefn-name c)))
-          collect (sb-kernel:fdefn-fun c))))
+    (flet #+linker-space ((name-of (x) (if (fdefn-p x) (fdefn-name x) x))
+                          (function-of (x) (if (fdefn-p x) (fdefn-fun x) (%symbol-function x))))
+          #-linker-space ((name-of (x) (fdefn-name x))
+                          (function-of (x) (fdefn-fun x)))
+      (loop for i from start repeat count
+            for c = (code-header-ref code i)
+            when (or (not namep) (equal name (name-of c)))
+            collect (function-of c)))))
 
 (defun find-anonymous-callees (fun &key (type 'function))
   (let ((code (fun-code-header (%fun-fun fun))))

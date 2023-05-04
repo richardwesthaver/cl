@@ -636,3 +636,7 @@
     ;; By design they are also (i.e. must be) nonvolatile aross C call.
     (aver (not (logbitp 12 locs)))
     #-gs-seg (aver (not (logbitp 13 locs)))))
+
+(defconstant symbol-function-bits 48)
+(define-symbol-macro +heap-pointer-mask+ (thread-slot-ea thread-heap-pointer-mask-slot))
+

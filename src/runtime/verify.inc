@@ -106,7 +106,13 @@ verify_pointer(lispobj thing, lispobj *where, struct verify_state *state)
         return 0;
     }
     // if (strict_containment && !gc_managed_heap_space_p(thing)) GC_WARN("non-Lisp memory");
-    page_index_t source_page_index = find_page_index(where);
+#ifdef LISP_FEATURE_IMMOBILE_SPACE
+    int page_has_generation =
+      find_page_index(where) >= 0 || find_text_page_index(where) >= 0
+      || find_fixedobj_page_index(where) >= 0;
+#else
+    int page_has_generation = find_page_index(where) >= 0;
+#endif
     page_index_t target_page_index = find_page_index((void*)thing);
     if (!(target_page_index >= 0 || immobile_space_p(thing))) return 0; // can't do much with it
     if ((state->flags & VERIFY_TAGS) && target_page_index >= 0) {
@@ -153,7 +159,7 @@ verify_pointer(lispobj thing, lispobj *where, struct verify_state *state)
             lose("code @ %p (g%d). word @ %p -> %"OBJ_FMTX" (g%d)",
                  state->object_addr, state->object_gen, where, thing, to_gen);
     } else if ((state->flags & VERIFYING_GENERATIONAL) && to_gen < state->object_gen
-               && source_page_index >= 0) {
+               && page_has_generation) { // isn't this redundant with VERIFYING_GENERATIONAL ?
         /* The WP criteria are:
          *  - CONS marks the exact card since it can't span cards
          *  - SIMPLE-VECTOR marks the card containing the cell with the old->young pointer.
@@ -259,16 +265,26 @@ static int verify_headered_object(lispobj* object, sword_t nwords,
     if (widetag == SYMBOL_WIDETAG) {
         struct symbol* s = (void*)object;
         CHECK(s->value, &s->value);
-        CHECK(s->fdefn, &s->fdefn);
         CHECK(s->info, &s->info);
+#ifdef LISP_FEATURE_LINKER_SPACE
+        CHECK(symbol_function(s), &s->func);
+        CHECK(linkage_cell_taggedptr(symbol_linker_index(s)), &s->func);
+#else
+        CHECK(s->fdefn, &s->fdefn);
+#endif
         CHECK(decode_symbol_name(s->name), &s->name);
         return 0;
     }
     if (widetag == FDEFN_WIDETAG) {
         struct fdefn* f = (void*)object;
-        CHECK(f->name, &f->name);
+        CHECK(fdefn_name(f), &f->header);
+#ifdef LISP_FEATURE_LINKER_SPACE
+        CHECK(fdefn_function(f), &f->fun);
+        CHECK(linkage_cell_taggedptr(fdefn_linker_index(f)), &f->fun);
+#else
         CHECK(f->fun, &f->fun);
-        CHECK(decode_fdefn_rawfun(f), (lispobj*)&f->raw_addr);
+        CHECK(decode_fdefn_rawfun(f), (lispobj*)f);
+#endif
         return 0;
     }
     for (i=1; i<nwords; ++i) CHECK(object[i], object+i);

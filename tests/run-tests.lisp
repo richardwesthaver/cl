@@ -229,6 +229,7 @@
       ,(maybe "SB-INTERPRETER" "*LAST-TOPLEVEL-ENV*")
       ,(maybe "SB-SYS" "*THRUPTION-PENDING*")
       ,(maybe "SB-THREAD" "*ALLOCATOR-METRICS*")
+      ,(maybe "SB-VM" "*LINKER-SPACE-MAP*")
       sb-pcl::*dfun-constructors*
       #+win32 sb-impl::*waitable-timer-handle*
       #+win32 sb-impl::*timer-thread*)))

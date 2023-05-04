@@ -583,6 +583,7 @@ structure representations")
            "SYMBOL-PACKAGE-ID-SLOT" "SYMBOL-INFO-SLOT" "SYMBOL-FDEFN-SLOT"
            "SYMBOL-SIZE" "SYMBOL-VALUE-SLOT" "SYMBOL-TLS-INDEX-SLOT"
            "SYMBOL-FROM-TLS-INDEX"
+           "SYMBOL-FUNC-SLOT"
            "*BINDING-STACK-START*"
            "*CONTROL-STACK-START*" "*CONTROL-STACK-END*"
            "CONTROL-STACK-POINTER-VALID-P"
@@ -3020,6 +3021,9 @@ possibly temporarily, because it might be used internally.")
            "UPDATE-SYMBOL-INFO"
            "WITH-GLOBALDB-NAME"
            "%BOUNDP"
+           "GET-FNAME-LINKAGE-INDEX"
+           "ENSURE-LINKAGE-INDEX"
+           "LINKAGE-CELL-ADDRESS"
 
             ;; Calling a list of hook functions, plus error handling.
 
@@ -3332,6 +3336,7 @@ possibly temporarily, because it might be used internally.")
 
             ;; misc. utilities used internally
 
+           "*LINKER-MUTEX*" "FSET" "LINKER-TABLE-REF"
            "ADDRESS-BASED-COUNTER-VAL"
            "DEFINE-FUNCTION-NAME-SYNTAX" "VALID-FUNCTION-NAME-P" ; should be SB-EXT?
 

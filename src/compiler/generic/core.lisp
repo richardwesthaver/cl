@@ -68,6 +68,8 @@
          (sb-vm:fixup-code-object
                  code-obj offset
                  (ecase flavor
+                   (:lisp-linkage-index (ash (ensure-linkage-index name) sb-vm:word-shift))
+                   (:lisp-linkage-cell (linkage-cell-address (ensure-linkage-index name)))
                    ((:assembly-routine :assembly-routine*)
                     (or (get-asm-routine name (eq flavor :assembly-routine*))
                         (error "undefined assembler routine: ~S" name)))
@@ -86,11 +88,6 @@
                    ;; value is known to be an immobile object
                    ;; (whose address we don't want to wire in).
                    (:symbol-value (get-lisp-obj-address (symbol-global-value name)))
-                   #+immobile-code
-                   (:fdefn-call
-                    (prog1 (sb-vm::fdefn-entry-address name) ; creates if didn't exist
-                      (when statically-link-p
-                        (push (cons offset (find-fdefn name)) (elt preserved-lists 0)))))
                    #+immobile-code (:static-call (sb-vm::function-raw-address name kind)))
                  kind flavor))
 
@@ -183,7 +180,7 @@
           (let ((const (aref constants index)))
             (when (typep const '(cons (eql :fdefinition)))
               (incf count)
-              (setf (second const) (find-or-create-fdefn (second const)))))))
+              (setf (second const) (sb-impl::ensure-fname-exists (second const)))))))
        (retained-fixups (pack-retained-fixups fixup-notes))
        ((code-obj total-nwords)
         (allocate-code-object (component-mem-space component)
@@ -256,8 +253,6 @@
 
       #+darwin-jit (assign-code-constants code-obj boxed-data))
 
-    (when (and named-call-fixups (immobile-space-obj-p code-obj))
-      (sb-vm::statically-link-code-obj code-obj named-call-fixups))
     (sb-fasl::possibly-log-new-code code-obj "core")))
 
 ;;; Call the top level lambda function dumped for ENTRY, returning the
@@ -341,7 +336,7 @@
   ;; Serial# shares a word with the jump-table word count,
   ;; so we can't assign serial# until after all raw bytes are copied in.
   ;; Do we need unique IDs on the various strange kind of code blobs? These would
-  ;; include code from MAKE-SIMPLIFYING-TRAMPOLINE, ENCAPSULATE-FUNOBJ, MAKE-BPT-LRA.
+  ;; include code from MAKE-TRAMPOLINE, ENCAPSULATE-FUNOBJ, MAKE-BPT-LRA.
   (let* ((serialno (ldb (byte (byte-size sb-vm::code-serialno-byte) 0)
                         (atomic-incf *code-serialno*)))
          (insts (code-instructions code-obj))

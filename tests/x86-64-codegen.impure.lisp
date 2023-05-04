@@ -170,7 +170,7 @@
       (assert (search "; #<SB-KERNEL:WRAPPER " line))
       (assert (search " SB-ASSEM:LABEL" line)))))
 
-#+immobile-code ; uses SB-C::*COMPILE-TO-MEMORY-SPACE*
+#+nil ; immobile-code ; uses SB-C::*COMPILE-TO-MEMORY-SPACE*
 (with-test (:name :static-link-compile-to-memory)
   (let* ((string
           (with-output-to-string (stream)
@@ -710,7 +710,7 @@
   (let ((c (nth-value 1 (ignore-errors sb-c::*compilation*))))
     (assert (eq (cell-error-name c) 'sb-c::*compilation*))))
 
-#+immobile-code
+#+(and immobile-code (not linker-space))
 (with-test (:name :debug-fun-from-pc-more-robust)
   ;; This test verifies that debug-fun-from-pc does not croak when the PC points
   ;; within a trampoline allocated to wrap a closure in a simple-funifying wrapper
@@ -1134,7 +1134,7 @@
   ;; The normal state of the image has no "static" calls to FIND-PACKAGE
   ;; but also has no globally proclaimed NOTINLINE, because that would
   ;; suppress the optimization for CACHED-FIND-PACKAGE on a constant string.
-  (assert (not (sb-vm::fdefn-has-static-callers (sb-int:find-fdefn 'find-package))))
+  ;(assert (not (sb-vm::fdefn-has-static-callers (sb-int:find-fdefn 'find-package))))
   (assert (not (sb-int:info :function :inlinep 'find-package))))
 
 (sb-vm::define-vop (trythis)

@@ -126,6 +126,7 @@
               (length list)))))
 
 ;;; called when a cold system starts up
+(defvar *!initial-undefs*)
 (defun !cold-init ()
   "Give the world a shove and hope it spins."
 
@@ -133,6 +134,7 @@
   #+sb-show (setq */show* t)
   (setq sb-vm::*immobile-codeblob-tree* nil
         sb-vm::*dynspace-codeblob-tree* nil)
+  (setq *linker-mutex* (sb-thread:make-mutex :name "linker mutex"))
   (setq sb-kernel::*defstruct-hooks* '(sb-kernel::!bootstrap-defstruct-hook)
         sb-kernel::*struct-accesss-fragments-delayed* nil)
   (let ((stream (!make-cold-stderr-stream)))
@@ -172,10 +174,10 @@
   ;; And now *CURRENT-THREAD*
   (sb-thread::init-main-thread)
 
-  ;; not sure why this is needed on some architectures. Dark magic.
-  (setf (fdefn-fun (find-or-create-fdefn '%coerce-callable-for-call))
-        #'%coerce-callable-to-fun)
   (show-and-call !loader-cold-init)
+  #+linker-space (dovector (fname (the simple-vector *!initial-undefs*)) (fset fname 0))
+  ;; not sure why this is needed on some architectures. Dark magic.
+  #-linker-space (fset '%coerce-callable-for-call #'%coerce-callable-to-fun)
   ;; Assert that FBOUNDP doesn't choke when its answer is NIL.
   ;; It was fine if T because in that case the legality of the arg is certain.
   ;; And be extra paranoid - ensure that it really gets called.

@@ -41,6 +41,7 @@ extern struct alloc_region  gc_alloc_region[6];
 #define code_region    (&gc_alloc_region[3])
 #define boxed_region   (&gc_alloc_region[4])
 #define cons_region    (&gc_alloc_region[5])
+//#define symbol_region  (&gc_alloc_region[6])
 #define ASSERT_REGIONS_CLOSED() \
     gc_assert(!((uintptr_t)gc_alloc_region[0].start_addr \
                |(uintptr_t)gc_alloc_region[1].start_addr \
@@ -51,5 +52,8 @@ extern struct alloc_region  gc_alloc_region[6];
 
 extern generation_index_t from_space, new_space;
 extern int gencgc_alloc_profiler;
+
+/*#define PAGE_TYPE_SYMBOL PAGE_TYPE_SMALL_MIXED
+  #define symbol_region small_mixed_region*/
 
 #endif /*  _GENCGC_ALLOC_REGION_H_ */

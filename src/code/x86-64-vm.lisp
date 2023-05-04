@@ -213,36 +213,50 @@
   (update-dynamic-space-code-tree fin)
   fin)
 
-#+immobile-space
-(defun alloc-immobile-fdefn ()
-  (alloc-immobile-fixedobj fdefn-size
-                           (logior (ash undefined-fdefn-header 16)
-                                   fdefn-widetag))) ; word 0
+(defun stepper-fun (closure)
+  (let ((funinstance (%make-funcallable-instance 0)))
+    (%set-fun-layout funinstance #.(find-layout 'function))
+    (setf (%funcallable-instance-fun funinstance) closure)
+    (with-pinned-objects (funinstance)
+      (let ((sap (sap+ (int-sap (get-lisp-obj-address funinstance))
+                       (- fun-pointer-lowtag))))
+        (setf (sap-ref-sap sap 8) (sap+ sap (* 2 sb-vm:n-word-bytes))
+              (sap-ref-word sap 16) #xff00000009058b48
+              (sap-ref-word sap 24) #x0000441f0f66fd60)))
+    funinstance))
 
 #+immobile-code
 (progn
-(defconstant trampoline-entry-offset n-word-bytes)
-(defun make-simplifying-trampoline (fun)
-  ;; 'alloc' is compiled after this file so we don't see the derived type.
-  ;; But slam found a conflict on recompile.
-  (let ((code (truly-the (values code-component (integer 0) &optional)
-                         (allocate-code-object :dynamic 3 24)))) ; KLUDGE
-    (setf (%code-debug-info code) fun)
-    (with-pinned-objects (code)
-      (let ((sap (sap+ (code-instructions code) trampoline-entry-offset))
-            (ea (+ (logandc2 (get-lisp-obj-address code) lowtag-mask)
-                   (ash code-debug-info-slot word-shift))))
-        (setf (sap-ref-32 sap 0) #x058B48 ; REX MOV [RIP-n]
-              (signed-sap-ref-32 sap 3) (- ea (+ (sap-int sap) 7)); disp
-              (sap-ref-32 sap 7) #xFD60FF))) ; JMP [RAX-3]
-    ;; Verify that the jump table size reads as  0.
-    (aver (zerop (code-jump-table-words code)))
-    ;; It is critical that there be a trailing 'uint16' of 0 in this object
-    ;; so that CODE-N-ENTRIES reports 0.  By luck, there is exactly enough
-    ;; room in the object to hold two 0 bytes. It would be easy enough to enlarge
-    ;; by 2 words if it became necessary. The assertions makes sure we stay ok.
-    (aver (zerop (code-n-entries code)))
-    code))
+(defun ensure-simple-funlike (function name)
+  (let ((name-or-closure (cond ((eql function 0) name)
+                               ((closurep (truly-the function function)) function)
+                               (t (return-from ensure-simple-funlike function)))))
+    ;; 'alloc' is compiled after this file so we don't see the derived type.
+    ;; But slam found a conflict on recompile.
+    (let* ((nbytes 24)
+           (code (truly-the (values code-component (integer 0) &optional)
+                            (allocate-code-object :dynamic 3 nbytes))))
+      (setf (%code-debug-info code) name-or-closure)
+      (with-pinned-objects (code)
+        (let ((sap (sap+ (code-instructions code) n-word-bytes))
+              (ea (+ (logandc2 (get-lisp-obj-address code) lowtag-mask)
+                     (ash code-debug-info-slot word-shift))))
+          (cond ((functionp name-or-closure)
+                 (setf (sap-ref-32 sap 0) #x058B48 ; REX MOV [RIP-n]
+                       (signed-sap-ref-32 sap 3) (- ea (+ (sap-int sap) 7)) ; disp
+                       (sap-ref-32 sap 7) #xFD60FF)) ; JMP [RAX-3]
+                (t
+                 (setf (sap-ref-word sap 0) #xFFFFFFFFE9058B48
+                       (sap-ref-16 sap 8) #x2524
+                       (sap-ref-32 sap 10) (get-asm-routine 'undefined-tramp t))))))
+      ;; Verify that jump table size reads as  0.
+      (aver (zerop (code-jump-table-words code)))
+      ;; It is critical that there be a trailing 'uint16' of 0 in this object
+      ;; so that CODE-N-ENTRIES reports 0.  By luck, there is exactly enough
+      ;; room in the object to hold two 0 bytes. It would be easy enough to enlarge
+      ;; by 2 words if it became necessary. The assertions makes sure we stay ok.
+      (aver (zerop (code-n-entries code)))
+      code)))
 
 (defun fdefn-has-static-callers (fdefn)
   (declare (type fdefn fdefn))
@@ -256,27 +270,6 @@
       (%primitive unset-fdefn-has-static-callers fdefn)
       (%primitive set-fdefn-has-static-callers fdefn))
   fdefn)
-
-(defun %set-fdefn-fun (fdefn fun)
-  (declare (type fdefn fdefn) (type function fun)
-           (values function))
-  (when (fdefn-has-static-callers fdefn)
-    (remove-static-links fdefn))
-  (let ((trampoline (when (closurep fun)
-                      (make-simplifying-trampoline fun)))) ; a newly made CODE object
-    (with-pinned-objects (fdefn trampoline fun)
-      (let* ((jmp-target
-              (if trampoline
-                  ;; Jump right to code-instructions + N. There's no simple-fun.
-                  (sap-int (sap+ (code-instructions trampoline)
-                                 trampoline-entry-offset))
-                  ;; CLOSURE-CALLEE accesses the self pointer of a funcallable
-                  ;; instance w/ builtin trampoline, or a simple-fun.
-                  ;; But the result is shifted by N-FIXNUM-TAG-BITS because
-                  ;; CELL-REF yields a descriptor-reg, not an unsigned-reg.
-                  (get-lisp-obj-address (%closure-callee fun)))))
-        (%primitive sb-vm::set-direct-callable-fdefn-fun fdefn fun jmp-target))))
-  fun)
 
 ) ; end PROGN
 
@@ -296,12 +289,6 @@
          (make-lisp-obj (logior obj other-pointer-lowtag)))
         (#.funcallable-instance-widetag
          (make-lisp-obj (logior obj fun-pointer-lowtag)))))))
-
-;;; Compute the PC that FDEFN will jump to when called.
-#+immobile-code
-(defun fdefn-raw-addr (fdefn)
-  (sap-ref-word (int-sap (get-lisp-obj-address fdefn))
-                (- (ash fdefn-raw-addr-slot word-shift) other-pointer-lowtag)))
 
 ;;; Undo the effects of XEP-ALLOCATE-FRAME
 ;;; and point PC to FUNCTION
@@ -331,8 +318,6 @@
       (return (loop (cond ((>= (incf i) len) (return t))
                           ((eq thing (svref things i)) (return nil))))))))
 
-(define-load-time-global *static-linker-lock* (sb-thread:make-mutex :name "static linker"))
-
 (define-load-time-global *never-statically-link* '(find-package))
 ;;; Remove calls via fdefns from CODE. This is called after compiling
 ;;; to memory, or when saving a core.
@@ -345,6 +330,7 @@
 ;;; builtin functions, and moreover, while there are multiple threads.
 (defun statically-link-code-obj (code fixups &optional observable-fdefns)
   (declare (ignorable code fixups observable-fdefns))
+  (return-from statically-link-code-obj code)
   #+immobile-code
   (binding* (((fdefns-start fdefns-count) (code-header-fdefn-range code))
              (replacements (make-array fdefns-count :initial-element nil))
@@ -396,7 +382,7 @@
             (setf (aref replacements fdefn-index) nil))))
       (let ((stored-locs (if any-ambiguous
                              (make-array fdefns-count :initial-element nil))))
-        (with-system-mutex (*static-linker-lock*)
+        (with-system-mutex (*linker-mutex*)
           (dolist (fixup fixups)
             (binding* ((fdefn-index (car fixup) :exit-if-null)
                        (offset (cdr fixup))

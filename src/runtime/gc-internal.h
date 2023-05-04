@@ -162,6 +162,10 @@ instance_scan(void (*proc)(lispobj*, sword_t, uword_t),
 extern int simple_fun_index(struct code*, struct simple_fun*);
 
 extern lispobj decode_fdefn_rawfun(struct fdefn *fdefn);
+extern lispobj entrypoint_taggedptr(uword_t entrypoint);
 extern void gc_close_thread_regions(struct thread*, int);
 extern void gc_close_collector_regions(int);
+
+#define linkage_cell_taggedptr(index) entrypoint_taggedptr(lisp_linkage_table[index])
+
 #endif /* _GC_INTERNAL_H_ */

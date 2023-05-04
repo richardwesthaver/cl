@@ -86,6 +86,8 @@ typedef unsigned short page_words_t;
 #define PAGE_TYPE_SMALL_MIXED  4 // #b100
 #define PAGE_TYPE_CONS         5 // #b101
 #define PAGE_TYPE_CODE         7 // #b111
+// SYMBOL matches PAGE_TYPE_SMALL_MIXED in the low 4 bits (under PAGE_TYPE_MASK)
+//#define PAGE_TYPE_SYMBOL      68 // #b1000100
 #define THREAD_PAGE_FLAG       8
 #define SINGLE_OBJECT_FLAG    16
 #define OPEN_REGION_PAGE_FLAG 32

@@ -244,6 +244,26 @@
                        (values (list (symbol-package-id thing) (symbol-name thing))
                                t
                                "{~{~A,~S~}}"))
+                      #+linker-space
+                      ((and (typep thing '(and symbol (not null)))
+                            (= i symbol-func-slot))
+                       (let* ((index (get-fname-linker-index thing))
+                              (entrypoint (sap-int (linker-table-ref index)))
+                              (taggedptr
+                               (alien-funcall (extern-alien "entrypoint_taggedptr"
+                                                            (function unsigned unsigned))
+                                              entrypoint))
+                              (obj (%make-lisp-obj taggedptr)))
+                         (if (eql index 0)
+                             (values (if (fboundp thing) (symbol-function thing)) t "~A")
+                             (values (list index entrypoint obj
+                                           (if (fboundp thing) (symbol-function thing)))
+                                     t "{~{#x~X:#x~X=~A,~A~}}"))))
+                      #+linker-space
+                      ((and (typep thing 'sb-kernel:fdefn) (= i fdefn-fun-slot))
+                       (values (list (get-fname-linker-index thing)
+                                     (fdefn-fun thing))
+                               t "{~{#x~X,~A~}}"))
                       (decode
                        (cond #+system-tlabs ; fingers crossed, assume arena pointers are valid
                              ((and (is-lisp-pointer word) (find-containing-arena word))
