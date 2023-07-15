@@ -14,7 +14,7 @@ extern uword_t bytes_to_copy;
 extern bool compacting;
 extern void compactor_init();
 extern void consider_compaction(generation_index_t gen);
-extern void run_compaction(uword_t *copy_meter, uword_t *fix_meter);
+extern void run_compaction(_Atomic(uword_t) *copy_meter, _Atomic(uword_t) *fix_meter);
 
 /* Tracing/logging interface */
 extern unsigned char *target_pages;

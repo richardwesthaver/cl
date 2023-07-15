@@ -277,7 +277,9 @@ memory_fault_handler(int signal, siginfo_t *siginfo, os_context_t *context)
     if (handle_safepoint_violation(context, fault_addr)) return;
 #endif
 
+#if defined LISP_FEATURE_GENCGC && !defined LISP_FEATURE_MARK_REGION_GC
     if (gencgc_handle_wp_violation(context, fault_addr)) return;
+#endif
 
     if (!handle_guard_page_triggered(context,fault_addr))
             lisp_memory_fault_error(context, fault_addr);

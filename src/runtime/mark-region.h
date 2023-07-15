@@ -8,7 +8,8 @@
  * bitmap byte. */
 #define LINE_SIZE (8 << N_LOWTAG_BITS)
 
-extern uword_t *allocation_bitmap, *mark_bitmap;
+extern uword_t *allocation_bitmap;
+extern _Atomic(uword_t) *mark_bitmap;
 extern unsigned char *line_bytemap;
 typedef intptr_t line_index_t;
 

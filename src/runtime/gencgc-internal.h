@@ -167,7 +167,7 @@ extern struct page *page_table;
  */
 struct generation {
     /* the bytes allocated to this generation */
-    os_vm_size_t bytes_allocated;
+    _Atomic(os_vm_size_t) bytes_allocated;
 
     /* the number of bytes at which to trigger a GC */
     os_vm_size_t gc_trigger;

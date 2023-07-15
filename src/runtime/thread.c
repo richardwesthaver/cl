@@ -1208,22 +1208,6 @@ void gc_stop_the_world()
 
 void gc_start_the_world()
 {
-    clock_gettime(CLOCK_MONOTONIC, &stw_done);
-#if 0
-    { char buf[80];
-      long gc_elapsed = (stw_done.tv_sec - stw_start.tv_sec)*1000000000L
-                        + (stw_done.tv_nsec - stw_start.tv_nsec);
-      stw_dur_sum += gc_elapsed;
-      ++n_stw;
-      if (gc_elapsed > stw_dur_max) stw_dur_max = gc_elapsed;
-      int n = snprintf(buf, sizeof buf, "World was stopped for %f millisec, avg %f, max %f\n",
-                       (double)gc_elapsed  / 1000000.0,
-                       (double)stw_dur_sum / 1000000.0 / n_stw,
-                       (double)stw_dur_max / 1000000.0);
-      write(2, buf, n);
-    }
-#endif
-
 #ifdef COLLECT_GC_STATS
     struct timespec gc_end_time;
     clock_gettime(CLOCK_MONOTONIC, &gc_end_time);

@@ -55,7 +55,19 @@ static struct suballocator remset_suballocator = SUBALLOCATOR_INITIALIZER("compa
 bool compacting;
 unsigned char *target_pages;
 
+#ifdef LISP_FEATURE_GCC_TLS
+static _Thread_local struct Qblock *tl_remset_block = NULL;
+#define remset_block tl_remset_block
+#define TL_ASSIGN(x,val) tl_##x = val
+#else
+static pthread_key_t remset_block_key;
+#define remset_block ((struct Qblock*)pthread_getspecific(remset_block_key))
+#define TL_ASSIGN(x,val) pthread_setspecific(x##_key,val)
+#endif
 void compactor_init() {
+#ifndef LISP_FEATURE_GCC_TLS
+  pthread_key_create(&remset_block_key, 0);
+#endif
   target_pages = calloc(dynamic_space_size / GENCGC_PAGE_BYTES, 1);
   if (!target_pages)
     lose("Failed to allocate target pages table");
@@ -118,14 +130,13 @@ static inline enum source source_from_tagged(lispobj t) { return t & 7; }
 static inline lispobj *slot_from_tagged(lispobj t) { return (lispobj*)(t &~ 7); }
 /* Each tracing thread records sources into thread-local blocks, like they
  * do with grey objects. */
-static _Thread_local struct Qblock *remset_block = NULL;
 
 void commit_thread_local_remset() {
   if (remset_block && remset_block->count) {
     acquire_lock(&remset_lock);
     remset_block->next = remset;
     remset = remset_block;
-    remset_block = NULL;
+    TL_ASSIGN(remset_block, NULL);
     release_lock(&remset_lock);
   }
 }
@@ -142,7 +153,7 @@ void commit_thread_local_remset() {
 void log_relevant_slot(lispobj *slot, lispobj *source, enum source source_type) {
   if (!remset_block || remset_block->count == QBLOCK_CAPACITY) {
     commit_thread_local_remset();
-    remset_block = suballoc_allocate(&remset_suballocator);
+    TL_ASSIGN(remset_block, suballoc_allocate(&remset_suballocator));
   }
   remset_block->elements[remset_block->count] = tag_source(slot, source_type);
   remset_block->elements[remset_block->count+1] = (lispobj)source;
@@ -276,7 +287,7 @@ static void fix_slots() {
   }
 }
 
-void run_compaction(uword_t *copy_meter, uword_t *fix_meter) {
+void run_compaction(_Atomic(uword_t) *copy_meter, _Atomic(uword_t) *fix_meter) {
   if (compacting) {
     /* Check again, in case fragmentation somehow improves.
      * Not likely, but it's a cheap test which avoids effort. */

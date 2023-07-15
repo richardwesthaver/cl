@@ -52,10 +52,10 @@
 
 /* Metering */
 static struct {
-  uword_t consider; uword_t scavenge; uword_t prefix;
-  uword_t trace; uword_t trace_alive; uword_t trace_running;
-  uword_t sweep; uword_t weak; uword_t sweep_lines; uword_t sweep_pages;
-  uword_t compact; uword_t copy; uword_t fix; uword_t raise;
+  _Atomic(uword_t) consider, scavenge, prefix;
+  _Atomic(uword_t) trace, trace_alive, trace_running;
+  _Atomic(uword_t) sweep, weak, sweep_lines, sweep_pages;
+  _Atomic(uword_t) compact, copy, fix, raise;
   uword_t fresh_pointers; uword_t pinned_pages;
   uword_t compacts;
 } meters = { 0 };
@@ -98,7 +98,8 @@ static void allocate_bitmap(uword_t **bitmap, uword_t size,
 }
 
 /* Initialisation */
-uword_t *allocation_bitmap, *mark_bitmap;
+uword_t *allocation_bitmap;
+_Atomic(uword_t) *mark_bitmap;
 unsigned char *line_bytemap;             /* 1 if line used, 0 if not used */
 line_index_t line_count;
 uword_t mark_bitmap_size;
@@ -107,7 +108,7 @@ static void allocate_bitmaps() {
   int bytes_per_heap_byte = 8 /* bits/byte */ << N_LOWTAG_BITS;
   mark_bitmap_size = dynamic_space_size / bytes_per_heap_byte;
   allocate_bitmap(&allocation_bitmap, mark_bitmap_size, "allocation bitmap");
-  allocate_bitmap(&mark_bitmap, mark_bitmap_size, "mark bitmap");
+  allocate_bitmap((uword_t**)&mark_bitmap, mark_bitmap_size, "mark bitmap");
   line_count = dynamic_space_size / LINE_SIZE;
   allocate_bitmap((uword_t**)&line_bytemap, line_count, "line bytemap");
 }
@@ -349,7 +350,7 @@ bool pointer_survived_gc_yet(lispobj object) {
 
 /* The number of blocks on the grey list and being processed.
  * Tracing terminates when we end up with 0 blocks in flight again. */
-static sword_t blocks_in_flight = 0;
+static _Atomic(sword_t) blocks_in_flight = 0;
 static lock_t grey_list_lock = LOCK_INITIALIZER;
 static struct Qblock *grey_list = NULL;
 static struct suballocator grey_suballocator = SUBALLOCATOR_INITIALIZER("grey stack");
@@ -357,16 +358,27 @@ static struct suballocator grey_suballocator = SUBALLOCATOR_INITIALIZER("grey st
 /* Thanks to Larry Masinter for suggesting that I use per-thread
  * free lists, rather than hurting my head on lock-free free lists.
  * (Say that five times fast.)*/
-static _Thread_local struct Qblock *recycle_list = NULL;
+#ifdef LISP_FEATURE_GCC_TLS
+static _Thread_local struct Qblock *tl_recycle_list = NULL;
 /* The "output packet" from "A Parallel, Incremental and Concurrent GC
  * for Servers". The "input packet" is block in trace_everything. */
-static _Thread_local struct Qblock *output_block;
+static _Thread_local struct Qblock *tl_output_block;
+#define TL_ASSIGN(x,val) tl_##x = val
+#define recycle_list tl_recycle_list
+#define output_block tl_output_block
+#else
+static pthread_key_t recycle_list_key;
+static pthread_key_t output_block_key;
+#define TL_ASSIGN(x,val) pthread_setspecific(x##_key,val)
+#define output_block ((struct Qblock*)pthread_getspecific(output_block_key))
+#define recycle_list ((struct Qblock*)pthread_getspecific(recycle_list_key))
+#endif
 
 static struct Qblock *grab_qblock() {
   struct Qblock *block;
   if (recycle_list) {
     block = recycle_list;
-    recycle_list = recycle_list->next;
+    TL_ASSIGN(recycle_list, block->next);
     block->count = 0;
   } else {
     block = suballoc_allocate(&grey_suballocator);
@@ -378,7 +390,7 @@ static void recycle_qblock(struct Qblock *block) {
   if (block->count == -1) lose("%p is already dead", block);
   block->count = -1;
   block->next = recycle_list;
-  recycle_list = block;
+  TL_ASSIGN(recycle_list, block);
   atomic_fetch_add(&blocks_in_flight, -1);
 }
 
@@ -413,9 +425,28 @@ static void mark_lines(lispobj *p) {
 
 /* Generation of the object being scavenged,
  * for finding old->young pointers */
-static _Thread_local generation_index_t dirty_generation_source = 0;
-static _Thread_local bool dirty = 0;
-static _Thread_local lispobj *source_object;
+#ifdef LISP_FEATURE_GCC_TLS
+static _Thread_local generation_index_t tl_dirty_generation_source = 0;
+static _Thread_local bool tl_dirty = 0;
+static _Thread_local lispobj *tl_source_object;
+#define dirty_generation_source tl_dirty_generation_source
+// this can't be spelled "dirty" or it would disallow local variables of that name
+#define DIRTY tl_dirty
+#define source_object tl_source_object
+#define set_dirty(val) tl_dirty = val
+#define set_dirty_generation_source(val) tl_dirty_generation_source = val
+#else
+static pthread_key_t dirty_generation_source_key;
+static pthread_key_t dirty_key;
+static pthread_key_t source_object_key;
+#define dirty_generation_source \
+   ((generation_index_t)(intptr_t)pthread_getspecific(dirty_generation_source_key))
+#define DIRTY ((bool)pthread_getspecific(dirty_key))
+#define source_object ((lispobj*)pthread_getspecific(source_object_key))
+#define set_dirty(val) pthread_setspecific(dirty_key, (void*)(uintptr_t)val)
+#define set_dirty_generation_source(val) \
+  pthread_setspecific(dirty_generation_source_key, (void*)(intptr_t)val)
+#endif
 
 static void mark(lispobj object, lispobj *where, enum source source_type) {
   if (is_lisp_pointer(object) && in_dynamic_space(object)) {
@@ -423,7 +454,7 @@ static void mark(lispobj object, lispobj *where, enum source source_type) {
     lispobj *np = native_pointer(object);
     if (gc_gen_of(object, 0) < dirty_generation_source)
       /* Used to find dirty pages in mr_scavenge_root_gens. */
-      dirty = 1;
+      set_dirty(1);
     if (gc_gen_of(object, 0) > generation_to_collect)
       return;
 
@@ -446,7 +477,7 @@ static void mark(lispobj object, lispobj *where, enum source source_type) {
           grey_list = output_block;
           release_lock(&grey_list_lock);
         }
-        output_block = next;
+        TL_ASSIGN(output_block, next);
       }
       output_block->elements[output_block->count++] = object;
     }
@@ -472,7 +503,7 @@ static void watch_deferred(lispobj *where, uword_t start, uword_t end);
 
 static void trace_object(lispobj object) {
  again:
-  source_object = native_pointer(object);
+  TL_ASSIGN(source_object, native_pointer(object));
   if (listp(object)) {
     struct cons *c = CONS(object);
     mark(c->car, &c->car, SOURCE_NORMAL);
@@ -516,7 +547,7 @@ static void trace_object(lispobj object) {
 static bool work_to_do(struct Qblock **where) {
   if (output_block) {
     *where = output_block;
-    output_block = NULL;
+    TL_ASSIGN(output_block, NULL);
     return 1;
   } else {
     acquire_lock(&grey_list_lock);
@@ -531,7 +562,7 @@ static bool work_to_do(struct Qblock **where) {
   }
 }
 
-static uword_t traced;          /* Number of objects traced. */
+static _Atomic(uword_t) traced;          /* Number of objects traced. */
 static bool threads_did_any_work;
 static void trace_step() {
   uword_t local_traced = 0, start_time = get_time(), running_time = 0;
@@ -574,7 +605,7 @@ static void trace_step() {
   atomic_fetch_add(&meters.trace_alive, get_time() - start_time);
   atomic_fetch_add(&meters.trace_running, running_time);
   commit_thread_local_remset();
-  recycle_list = NULL;
+  TL_ASSIGN(recycle_list, NULL);
 }
 
 static bool parallel_trace_step() {
@@ -792,7 +823,7 @@ static void sweep_small_page(page_index_t p) {
     marks[l] = 0;
 }
 
-static page_index_t last_page_processed;
+static _Atomic(page_index_t) last_page_processed;
 #define for_each_claim(claim, limit)                                    \
   while ((claim = atomic_fetch_add(&last_page_processed, PAGES_CLAIMED_PER_THREAD)) < page_table_pages && \
          (limit = claim + PAGES_CLAIMED_PER_THREAD, limit = (limit >= page_table_pages) ? page_table_pages - 1 : limit, 1))
@@ -902,7 +933,7 @@ static void __attribute__((noinline)) sweep() {
 void mr_trace_bump_range(lispobj* start, lispobj *end) {
   lispobj *where = start;
   while (where < end) {
-    source_object = where;
+    TL_ASSIGN(source_object, where);
     lispobj obj = compute_lispobj(where);
     trace_object(obj);
     where += listp(obj) ? 2 : headerobj_size(where);
@@ -911,7 +942,7 @@ void mr_trace_bump_range(lispobj* start, lispobj *end) {
 
 extern lispobj lisp_init_function, gc_object_watcher;
 static void trace_static_roots() {
-  source_object = native_pointer(NIL) - 1;
+  TL_ASSIGN(source_object, native_pointer(NIL) - 1);
   trace_other_object((lispobj*)NIL_SYMBOL_SLOTS_START);
   mr_trace_bump_range((lispobj*)STATIC_SPACE_OBJECTS_START,
                       static_space_free_pointer);
@@ -945,7 +976,7 @@ void mr_preserve_ambiguous(uword_t address) {
 /* Preserve exact pointers in an array.
  * Used for scanning thread-local storage for roots. */
 void mr_preserve_range(lispobj *from, sword_t nwords) {
-  source_object = NULL;
+  TL_ASSIGN(source_object, NULL);
   for (sword_t n = 0; n < nwords; n++) {
     mark(from[n], from + n, SOURCE_NORMAL);
   }
@@ -1001,19 +1032,19 @@ static void watch_deferred(lispobj *where, uword_t start, uword_t end) {
       log_slot(where[i], where + i, where, SOURCE_NORMAL);
 #endif
       if (gc_gen_of(where[i], 0) < gen) {
-        dirty = 1;
+        set_dirty(1);
       }
     }
   }
 }
 
 static void scavenge_root_object(generation_index_t gen, lispobj *where) {
-  dirty_generation_source = gen;
+  set_dirty_generation_source(gen);
   trace_object(compute_lispobj(where));
 }
 
 #define WORDS_PER_CARD (GENCGC_CARD_BYTES/N_WORD_BYTES)
-static uword_t root_objects_checked = 0, dirty_root_objects = 0;
+static _Atomic(uword_t) root_objects_checked = 0, dirty_root_objects = 0;
 CPU_SPLIT
 static void scavenge_root_gens_worker() {
   page_index_t claim, limit;
@@ -1032,7 +1063,7 @@ static void scavenge_root_gens_worker() {
             if (page_starts_contiguous_block_p(i))
               /* This page has the start of a large vector, and later pages
                * will be part of this vector. */
-              source_object = (lispobj*)page_address(i);
+              TL_ASSIGN(source_object, (lispobj*)page_address(i));
             /* The only time that page_address + page_words_used actually
              * demarcates the end of a (sole) object on the page, with this
              * heap layout. */
@@ -1045,10 +1076,10 @@ static void scavenge_root_gens_worker() {
               if (card_dirtyp(card)) {
                 lispobj *card_end = start + WORDS_PER_CARD;
                 lispobj *end = (limit < card_end) ? limit : card_end;
-                dirty_generation_source = gen, dirty = 0;
+                set_dirty_generation_source(gen), set_dirty(0);
                 for (lispobj *p = start; p < end; p++)
                   mark(*p, p, SOURCE_NORMAL);
-                update_card_mark(card, dirty);
+                update_card_mark(card, DIRTY);
               }
             }
             break;
@@ -1056,10 +1087,10 @@ static void scavenge_root_gens_worker() {
           case CODE_HEADER_WIDETAG: {
             int card = addr_to_card_index(page_address(i));
             if (page_starts_contiguous_block_p(i) && card_dirtyp(card)) {
-              source_object = (lispobj*)page_address(i);
-              dirty_generation_source = page_table[i].gen, dirty = 0;
+              TL_ASSIGN(source_object, (lispobj*)page_address(i));
+              set_dirty_generation_source(page_table[i].gen), set_dirty(0);
               trace_other_object((lispobj*)page_address(i));
-              update_card_mark(card, dirty);
+              update_card_mark(card, DIRTY);
             }
             break;
           }
@@ -1095,7 +1126,7 @@ static void scavenge_root_gens_worker() {
             line_index_t this_line = address_line(start) + n;
             unsigned char a = allocations[this_line], this_gen = DECODE_GEN(line_bytemap[this_line]);
             bool worked = 0;
-            dirty = 0;
+            set_dirty(0);
             /* Check if there's a new->old word belonging to a
              * SIMPLE-VECTOR overlapping this card. */
             for (int word = 0; word < 2 * (a ? __builtin_ctz(a) : 8); word++)
@@ -1110,7 +1141,7 @@ static void scavenge_root_gens_worker() {
                 /* Always dirty this card regardless of avoiding a
                  * re-scan or not, as we already found an interesting
                  * pointer. */
-                dirty = 1, worked = 1;
+                set_dirty(1), worked = 1;
                 break;
               }
             while (a) {
@@ -1119,7 +1150,7 @@ static void scavenge_root_gens_worker() {
               scavenge_root_object(this_gen, start + WORDS_PER_CARD * n + 2 * bit);
               a &= ~(1 << bit);
             }
-            update_card_mark(first_card + n, dirty);
+            update_card_mark(first_card + n, DIRTY);
             /* Only advance last_seen if we did any work here.
              * If we always advance, we can confuse prefix scanning.
              * Suppose a simple-vector spans cards 0, 1 and 2, and 1
@@ -1132,7 +1163,7 @@ static void scavenge_root_gens_worker() {
       }
     }
   }
-  dirty_generation_source = 0;
+  set_dirty_generation_source(0);
   atomic_fetch_add(&meters.prefix, prefixes_checked);
   atomic_fetch_add(&root_objects_checked, local_root_objects_checked);
   atomic_fetch_add(&dirty_root_objects, local_dirty_root_objects);
@@ -1164,6 +1195,14 @@ static void raise_survivors() {
 /* Main entrypoints into GC */
 
 void mrgc_init() {
+#ifndef LISP_FEATURE_GCC_TLS
+  int ok = !pthread_key_create(&recycle_list_key, 0) &&
+    !pthread_key_create(&output_block_key, 0) &&
+    !pthread_key_create(&dirty_generation_source_key, 0) &&
+    !pthread_key_create(&dirty_key, 0) &&
+    !pthread_key_create(&source_object_key, 0);
+  gc_assert(ok);
+#endif
   allocate_bitmaps();
   thread_pool_init();
   compactor_init();
@@ -1282,7 +1321,9 @@ void load_corefile_bitmaps(int fd, core_entry_elt_t n_ptes) {
 void find_references_to(lispobj something) {
   for (uword_t i = 0; i < (dynamic_space_size / N_WORD_BYTES); i++) {
     lispobj *p = (lispobj*)(DYNAMIC_SPACE_START + i * N_WORD_BYTES);
-    if (labs(*p - something) < 16)
+    // mark-region.c:1324:9: warning: taking the absolute value of unsigned
+    // type 'unsigned long' has no effect [-Wabsolute-value]
+    if (/*labs*/(*p - something) < 16)
       printf("%p: %lx\n", p, *p);
   }
 }
