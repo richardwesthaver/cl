@@ -34,6 +34,7 @@ extern void set_auto_gc_trigger(os_vm_size_t usage);
 extern void clear_auto_gc_trigger(void);
 
 extern bool maybe_gc(os_context_t *context);
+void gc_heap_exhausted_error_or_lose (sword_t available, sword_t requested) never_returns;
 
 extern bool gc_active_p;
 extern int sb_sprof_enabled;
@@ -74,7 +75,7 @@ struct verify_state {
     uword_t flags;
     generation_index_t object_gen;
     generation_index_t min_pointee_gen;
-    int nerrors;
+    _Atomic(int) nerrors;
     lispobj err_objs[5];
 };
 void hexdump_spaces(struct verify_state*, char *reason);

@@ -388,10 +388,8 @@ sigsegv_handler(int signal, siginfo_t *info, os_context_t *context)
     if (handle_safepoint_violation(context, addr)) return;
 #endif
 
-#ifdef LISP_FEATURE_GENCGC
+#if defined LISP_FEATURE_GENCGC && !defined LISP_FEATURE_MARK_REGION_GC
     if (gencgc_handle_wp_violation(context, addr)) return;
-#else
-    if (cheneygc_handle_wp_violation(context, addr)) return;
 #endif
     extern int diagnose_arena_fault(os_context_t*,char*);
 #ifdef LISP_FEATURE_SYSTEM_TLABS

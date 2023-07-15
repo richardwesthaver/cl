@@ -93,13 +93,6 @@ static inline int vector_is_weak_not_hashing_p(unsigned int header) {
       flag_VectorWeak << ARRAY_FLAGS_POSITION;
 }
 
-#ifdef LISP_FEATURE_LITTLE_ENDIAN
-// read byte index 1 of the header
-# define WEAKPTR_PAYLOAD_WORDS(wp) ((char*)(wp))[1]
-#else
-# define WEAKPTR_PAYLOAD_WORDS(wp) ((char*)(wp))[N_WORD_BYTES-2]
-#endif
-
 // This bit can be anything that doesn't conflict with the fullcgc mark bit or a bit
 // seen by lisp. Byte index 0 is the widetag, byte indices 1 and 2 are for the array-rank
 // and vector-flags, depending on how src/compiler/generic/early-objdef assigns them.
@@ -164,4 +157,14 @@ extern int simple_fun_index(struct code*, struct simple_fun*);
 extern lispobj decode_fdefn_rawfun(struct fdefn *fdefn);
 extern void gc_close_thread_regions(struct thread*, int);
 extern void gc_close_collector_regions(int);
+
+/* The various sorts of pointer swizzling in SBCL. */
+enum source {
+  SOURCE_NORMAL,
+  SOURCE_ZERO_TAG,              /* code, lflist */
+  SOURCE_CLOSURE,
+  SOURCE_SYMBOL_NAME,
+  SOURCE_FDEFN_RAW
+};
+
 #endif /* _GC_INTERNAL_H_ */

@@ -15,7 +15,11 @@
 
 (declaim (inline dynamic-usage))
 (defun dynamic-usage ()
-  #+gencgc
+  #+mark-region-gc
+  (let ((bytes (extern-alien "bytes_allocated" os-vm-size-t)))
+    (values bytes
+            (- (* (pages-allocated) sb-vm:gencgc-page-bytes) bytes)))
+  #+(and gencgc (not mark-region-gc))
   (extern-alien "bytes_allocated" os-vm-size-t)
   #-gencgc
   (truly-the word
@@ -56,7 +60,8 @@
   ;; and we need a function in C to do that.
   (gc)
   (setf *n-bytes-freed-or-purified* 0
-        *gc-run-time* 0))
+        *gc-run-time* 0
+        *gc-real-time* 0))
 
 (declaim (ftype (sfunction () unsigned-byte) get-bytes-consed))
 (defun get-bytes-consed ()
@@ -137,16 +142,19 @@ run in any thread.")
                   ;; awkwardly long piece of code to nest so deeply.
                   (let ((old-usage (dynamic-usage))
                         (new-usage 0)
-                        (start-time (get-internal-run-time)))
+                        (start-time (get-internal-run-time))
+                        (start-real-time (get-internal-real-time)))
                     (collect-garbage gen)
                     (setf *gc-epoch* (cons 0 0))
-                    (let ((run-time (- (get-internal-run-time) start-time)))
+                    (let ((run-time (- (get-internal-run-time) start-time))
+                          (real-time (- (get-internal-real-time) start-real-time)))
                       ;; KLUDGE: Sometimes we see the second getrusage() call
                       ;; return a smaller value than the first, which can
                       ;; lead to *GC-RUN-TIME* to going negative, which in
                       ;; turn is a type-error.
                       (when (plusp run-time)
-                        (incf *gc-run-time* run-time)))
+                        (incf *gc-run-time* run-time))
+                      (incf *gc-real-time* real-time))
                     #+(and sb-thread sb-safepoint)
                     (setf *stop-for-gc-pending* nil)
                     (setf *gc-pending* nil
@@ -414,6 +422,11 @@ statistics are appended to it."
 (declaim (inline sb-vm:find-page-index))
 (define-alien-routine ("ext_find_page_index" sb-vm:find-page-index) page-index-t (address unsigned))
 
+(defun pages-allocated ()
+  (loop for n below (extern-alien "next_free_page" signed)
+        count (not (zerop (slot (deref sb-vm:page-table n) 'sb-vm::flags)))))
+
+#-mark-region-gc
 (defun generation-of (object)
   (with-pinned-objects (object)
     (let* ((addr (get-lisp-obj-address object))
@@ -427,6 +440,13 @@ statistics are appended to it."
              (let ((sap (int-sap (logandc2 addr sb-vm:lowtag-mask))))
                (logand (if (fdefn-p object) (sap-ref-8 sap 1) (sap-ref-8 sap 3))
                        #xF)))))))
+
+#+mark-region-gc
+(define-alien-routine "gc_gen_of" char (address unsigned))
+#+mark-region-gc
+(defun generation-of (object)
+  (with-pinned-objects (object)
+    (gc-gen-of (get-lisp-obj-address object))))
 
 (export 'page-protected-p)
 (macrolet ((addr->mark (addr)

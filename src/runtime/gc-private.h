@@ -19,22 +19,41 @@
 #include "genesis/instance.h"
 #include "genesis/funcallable-instance.h"
 #include "genesis/weak-pointer.h"
+#include "genesis/config.h"
 #include "immobile-space.h"
 #include "gencgc-internal.h"
+
+#ifdef LISP_FEATURE_MARK_REGION_GC
+extern void set_allocation_bit_mark(void *address);
+#define SET_ALLOCATION_BIT_MARK(x) set_allocation_bit_mark(x)
+#else
+#define SET_ALLOCATION_BIT_MARK(x)
+#endif
 
 #ifdef LISP_FEATURE_GENCGC
 void *collector_alloc_fallback(struct alloc_region*,sword_t,int);
 static inline void* __attribute__((unused))
 gc_general_alloc(struct alloc_region* region, sword_t nbytes, int page_type)
 {
+#ifdef LISP_FEATURE_MARK_REGION_GC
+    /* We don't need small mixed pages. */
+    if (small_mixed_region == region &&
+        PAGE_TYPE_SMALL_MIXED == page_type) {
+        region = mixed_region; page_type = PAGE_TYPE_MIXED;
+    }
+#endif
     void *new_obj = region->free_pointer;
     void *new_free_pointer = (char*)new_obj + nbytes;
+    lispobj *address;
     // Large objects will never fit in a region, so we automatically dtrt
-    if (new_free_pointer <= region->end_addr) {
+    if (new_free_pointer < region->end_addr) {
         region->free_pointer = new_free_pointer;
-        return new_obj;
+        address = new_obj;
+    } else {
+        address = collector_alloc_fallback(region, nbytes, page_type);
     }
-    return collector_alloc_fallback(region, nbytes, page_type);
+    SET_ALLOCATION_BIT_MARK(address);
+    return address;
 }
 lispobj copy_potential_large_object(lispobj object, sword_t nwords,
                                    struct alloc_region*, int page_type);
@@ -57,14 +76,14 @@ lispobj copy_potential_large_object(lispobj object, sword_t nwords,
 
 /* For debugging purposes, you can make this macro as complicated as you like,
  * such as checking various other aspects of the object in 'old' */
-#if GC_LOGGING
-#define NOTE_TRANSPORTING(old, new, nwords) really_note_transporting(old,new,nwords)
-void really_note_transporting(lispobj old,void*new,sword_t nwords);
-#elif defined COLLECT_GC_STATS && COLLECT_GC_STATS
+//#if GC_LOGGING
+//#define NOTE_TRANSPORTING(old, new, nwords) really_note_transporting(old,new,nwords)
+//void really_note_transporting(lispobj old,void*new,sword_t nwords);
+//#elifdef COLLECT_GC_STATS
 #define NOTE_TRANSPORTING(old, new, nwords) gc_copied_nwords += nwords
-#else
-#define NOTE_TRANSPORTING(old, new, nwords) /* do nothing */
-#endif
+//#else
+//#define NOTE_TRANSPORTING(old, new, nwords) /* do nothing */
+//#endif
 
 // In-situ live objects are those which get logically "moved" from oldspace to newspace
 // by frobbing the generation byte in the page table, not copying.
@@ -321,8 +340,6 @@ extern unsigned char* gc_card_mark;
 
 #define cardseq_any_marked(card_index) (gc_card_mark[card_index] & CARD_MARKED)
 #define cardseq_all_marked_nonsticky(card_index) cardseq_any_marked(card_index)
-#define page_cards_all_marked_nonsticky(page_index) \
-  cardseq_all_marked_nonsticky(page_to_card_index(page_index))
 
 /* NON_FAULTING_STORE is only for fixnums and GC metadata where we need
  * the ability to write-through the store barrier.
@@ -515,5 +532,20 @@ static inline bool plausible_tag_p(lispobj addr)
 #else
 # define assign_widetag(addr, byte) *(unsigned char*)addr = byte
 #endif
+
+extern char * gc_logfile;
+extern void log_generation_stats(char *logfile, char *header);
+extern void print_generation_stats(void);
+extern double generation_average_age(generation_index_t);
+#define PAGE_INDEX_FMT PRIdPTR
+static inline os_vm_size_t npage_bytes(page_index_t npages)
+{
+    gc_assert(npages>=0);
+    return ((os_vm_size_t)npages)*GENCGC_PAGE_BYTES;
+}
+extern os_vm_size_t auto_gc_trigger;
+extern void acquire_gc_page_table_lock(void), release_gc_page_table_lock(void);
+#define ARTIFICIALLY_HIGH_GEN 8
+extern int n_scav_calls[64], n_scav_skipped[64];
 
 #endif /* _GC_PRIVATE_H_ */

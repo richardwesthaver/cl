@@ -19,6 +19,7 @@
 #include "genesis/sap.h"
 #include "genesis/thread-instance.h"
 #include "print.h"
+#include "walk-heap.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -753,7 +754,7 @@ static uword_t build_refs(lispobj* where, lispobj* end,
             n_immediates = 0, n_pointers = 0;
 
     bool count_only = !ss->record_ptrs;
-    for ( ; where < end ; where += nwords ) {
+    for (where = next_object(where, 0, end) ; where ; where = next_object(where, nwords, end)) {
         if (ss->ignored_objects && ignorep(where, ss->ignored_objects)) {
             nwords = object_size(where);
             continue;
@@ -1101,8 +1102,12 @@ int gc_prove_liveness(void(*context_scanner)(),
  */
 int prove_liveness(lispobj objects, int criterion)
 {
+#ifdef LISP_FEATURE_MARK_REGION_GC
+    return gc_prove_liveness(0, objects, 0, 0, criterion);
+#else
     extern struct hopscotch_table pinned_objects;
     extern int gc_pin_count;
     extern lispobj* gc_filtered_pins;
     return gc_prove_liveness(0, objects, gc_pin_count, gc_filtered_pins, criterion);
+#endif
 }
