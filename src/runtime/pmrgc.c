@@ -458,44 +458,6 @@ int lowtag_ok_for_page_type(__attribute__((unused)) lispobj ptr,
     return 1;
 }
 
-/* Deposit a FILLER_WIDETAG object covering one or more dead objects.
- * If using more than 1 card per page, scavenge_root_gens() is able to scan
- * some pages without aligning to object boundaries. For that to work,
- * it must not accidentally see a raw word or leftover garbage.
- * Note that while CONS and SMALL_MIXED pages never have card-spanning objects,
- * deposit_filler() deals with the "mirror image" of the pinned objects,
- * hence it might get a card-spanning filler. It has to do something to ensure
- * that no card will see garbage if scanned from its base address.
- * To achieve that, an extra filler may be needed at the start of any spanned card.
- * The sizes of extra fillers don't have to sum up to the total filler size.
- * They serve the vital purpose of getting descriptors_scavenge() to skip a
- * portion of the card they're on, but those fillers are never visited in a
- * heap walk that steps by object from a page's page_scan_start.
- * The final filler must be the correct size, so any algorithm that achieves
- * the desired end result is OK */
-void deposit_filler(char* from, char* to) {
-    sword_t nbytes = to - from;
-    if (!nbytes) return;
-    gc_assert(nbytes > 0);
-    sword_t nwords = nbytes >> WORD_SHIFT;
-    gc_assert((nwords - 1) <= 0x7FFFFF);
-    page_index_t page = find_page_index(from);
-    gc_assert(find_page_index(to-1) == page);
-    *(lispobj*)from = make_filler_header(nwords);
-    long unsigned last_card;
-    switch (page_table[page].type) {
-    case PAGE_TYPE_BOXED:
-    case PAGE_TYPE_CONS:
-    case PAGE_TYPE_SMALL_MIXED:
-        last_card = addr_to_card_index(to-1);
-        while (addr_to_card_index(from) != last_card) {
-            from = PTR_ALIGN_DOWN(from, GENCGC_CARD_BYTES) + GENCGC_CARD_BYTES;
-            nwords = (to - from) >> WORD_SHIFT;
-            *(lispobj*)from = make_filler_header(nwords);
-        }
-    }
-}
-
 int sb_introspect_pinnedp(__attribute__((unused)) lispobj obj) { return 0; }
 
 static void preserve_pointer(lispobj object, int __attribute__((unused)) contextp) {
