@@ -58,24 +58,24 @@ if [ "$OSTYPE" = "cygwin" -o "$OSTYPE" = "msys" ] ; then
     RUNTIME=sbcl.exe
     OLD_RUNTIME=sbcl.exe.old
 else
-    RUNTIME=sbcl
-    OLD_RUNTIME=sbcl.old
+    RUNTIME=cl
+    OLD_RUNTIME=cl.old
 fi
 
 # Before doing anything else, make sure we have an SBCL to install
-if [ -f src/runtime/$RUNTIME ]; then
-    if [ -f output/sbcl.core ]; then
-        true
-    else
-        echo "output/sbcl.core not found, aborting installation."
-        echo 'See ./INSTALL, the "SOURCE DISTRIBUTION" section'
-        exit 1
-    fi
+#if [ -f src/runtime/$RUNTIME ]; then
+if [ -f output/sbcl.core ]; then
+  true
 else
-    echo "src/runtime/$RUNTIME not found, aborting installation."
-    echo 'See ./INSTALL, the "SOURCE DISTRIBUTION" section'
-    exit 1
+  echo "output/sbcl.core not found, aborting installation."
+  echo 'See ./INSTALL, the "SOURCE DISTRIBUTION" section'
+  exit 1
 fi
+# else
+#     echo "src/runtime/$RUNTIME not found, aborting installation."
+#     echo 'See ./INSTALL, the "SOURCE DISTRIBUTION" section'
+#     exit 1
+# fi
 
 . output/prefix.def
 DEFAULT_INSTALL_ROOT=$SBCL_PREFIX
@@ -111,7 +111,8 @@ test -f "$BUILD_ROOT$INSTALL_ROOT"/bin/$RUNTIME && \
 test -f "$BUILD_ROOT$SBCL_HOME"/cl.core && \
     mv "$BUILD_ROOT$SBCL_HOME"/cl.core "$BUILD_ROOT$SBCL_HOME"/cl.core.old
 
-cp src/runtime/$RUNTIME "$BUILD_ROOT$INSTALL_ROOT"/bin/
+# cp src/runtime/$RUNTIME "$BUILD_ROOT$INSTALL_ROOT"/bin/
+cp src/runtime/sbcl "$BUILD_ROOT$INSTALL_ROOT"/bin/
 cp output/sbcl.core "$BUILD_ROOT$SBCL_HOME"/cl.core
 test -f src/runtime/libsbcl.so && \
     cp src/runtime/libsbcl.so "$BUILD_ROOT$INSTALL_ROOT"/lib/
@@ -122,7 +123,6 @@ for i in $(grep '^LIBSBCL=' src/runtime/sbcl.mk | cut -d= -f2-) ; do
 done
 
 # installing contrib
-
 ensure_dirs "$BUILD_ROOT$SBCL_HOME/contrib/"
 cp obj/sbcl-home/contrib/* "$BUILD_ROOT$SBCL_HOME/contrib/"
 
