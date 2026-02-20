@@ -83,10 +83,10 @@ DEFAULT_INSTALL_ROOT=$SBCL_PREFIX
 INSTALL_ROOT=${INSTALL_ROOT:-$DEFAULT_INSTALL_ROOT}
 MAN_DIR=${MAN_DIR:-"$INSTALL_ROOT"/share/man}
 INFO_DIR=${INFO_DIR:-"$INSTALL_ROOT"/share/info}
-DOC_DIR=${DOC_DIR:-"$INSTALL_ROOT"/share/doc/sbcl}
+DOC_DIR=${DOC_DIR:-"$INSTALL_ROOT"/share/doc/cl}
 echo $INSTALL_ROOT
 # Does the environment look sane?
-if [ -n "$SBCL_HOME" -a "$INSTALL_ROOT/lib/sbcl" != "$SBCL_HOME" ];then
+if [ -n "$SBCL_HOME" -a "$INSTALL_ROOT/lib/cl" != "$SBCL_HOME" ];then
    echo SBCL_HOME environment variable is set, and conflicts with INSTALL_ROOT.
    echo Aborting installation.  Unset one or reset the other, then try again
    echo INSTALL_ROOT="$INSTALL_ROOT"
@@ -94,7 +94,7 @@ if [ -n "$SBCL_HOME" -a "$INSTALL_ROOT/lib/sbcl" != "$SBCL_HOME" ];then
    exit 1
 fi
 
-SBCL_HOME="$INSTALL_ROOT"/lib/sbcl
+SBCL_HOME="$INSTALL_ROOT"/lib/cl
 export SBCL_HOME INSTALL_ROOT
 ensure_dirs "$BUILD_ROOT$INSTALL_ROOT" "$BUILD_ROOT$INSTALL_ROOT"/bin \
     "$BUILD_ROOT$INSTALL_ROOT"/lib  \
@@ -108,11 +108,11 @@ ensure_dirs "$BUILD_ROOT$INSTALL_ROOT" "$BUILD_ROOT$INSTALL_ROOT"/bin \
 test -f "$BUILD_ROOT$INSTALL_ROOT"/bin/$RUNTIME && \
  mv "$BUILD_ROOT$INSTALL_ROOT"/bin/$RUNTIME \
     "$BUILD_ROOT$INSTALL_ROOT"/bin/$OLD_RUNTIME
-test -f "$BUILD_ROOT$SBCL_HOME"/sbcl.core && \
-    mv "$BUILD_ROOT$SBCL_HOME"/sbcl.core "$BUILD_ROOT$SBCL_HOME"/sbcl.core.old
+test -f "$BUILD_ROOT$SBCL_HOME"/cl.core && \
+    mv "$BUILD_ROOT$SBCL_HOME"/cl.core "$BUILD_ROOT$SBCL_HOME"/cl.core.old
 
 cp src/runtime/$RUNTIME "$BUILD_ROOT$INSTALL_ROOT"/bin/
-cp output/sbcl.core "$BUILD_ROOT$SBCL_HOME"/sbcl.core
+cp output/sbcl.core "$BUILD_ROOT$SBCL_HOME"/cl.core
 test -f src/runtime/libsbcl.so && \
     cp src/runtime/libsbcl.so "$BUILD_ROOT$INSTALL_ROOT"/lib/
 
@@ -129,7 +129,7 @@ cp obj/sbcl-home/contrib/* "$BUILD_ROOT$SBCL_HOME/contrib/"
 echo
 echo "SBCL has been installed:"
 echo " binary $BUILD_ROOT$INSTALL_ROOT/bin/$RUNTIME"
-echo " core and contribs in $BUILD_ROOT$INSTALL_ROOT/lib/sbcl/"
+echo " core and contribs in $BUILD_ROOT$INSTALL_ROOT/lib/cl/"
 
 # Installing manual & misc bits of documentation
 #
@@ -146,7 +146,7 @@ echo "Documentation:"
 CP="cp -f"
 
 # man
-$CP doc/sbcl.1 "$BUILD_ROOT$MAN_DIR"/man1/ && echo " man $BUILD_ROOT$MAN_DIR/man1/sbcl.1"
+$CP doc/sbcl.1 "$BUILD_ROOT$MAN_DIR"/man1/ && echo " man $BUILD_ROOT$MAN_DIR/man1/cl.1"
 
 # info
 for info in doc/manual/*.info
