@@ -1,3 +1,13 @@
+Welcome to CL, based on SBCL.
+
+CL (aka Cursed Lisp) is a fork of SBCL (Steel Bank Common Lisp) which
+supports the [[gh:richardwesthaver/core][core]] Lisp hacking environment.
+
+This software isn't intended for public use and has different goals
+than SBCL.
+
+* License
+#+begin_example
 Steel Bank Common Lisp (SBCL) is free software, and comes with
 absolutely no warranty.
 
@@ -121,3 +131,4 @@ Gerd Moellmann are retained.
 ;;; software is freely granted, provided that this notice
 ;;; is preserved.
 ;;; ====================================================
+#+end_example
