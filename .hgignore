@@ -1,6 +1,7 @@
 .*[.](d|dSYM|o|so|a|fasl|FASL|lisp-temp|tmp|~|diff|patch|gdb_history)
 output
 obj
+TAGS
 (local-target-features|version)[.]lisp-expr
 customize-target-features[.]*
 customize-backend-subfeatures[.]*
