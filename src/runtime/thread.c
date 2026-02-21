@@ -16,15 +16,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#ifndef LISP_FEATURE_WIN32
 #include <sched.h>
-#endif
 #include <stddef.h>
 #include <errno.h>
 #include <sys/types.h>
-#ifndef LISP_FEATURE_WIN32
 #include <sys/wait.h>
-#endif
 #ifdef ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>
 #endif
@@ -65,15 +61,9 @@ os_vm_size_t thread_alien_stack_size = ALIEN_STACK_SIZE;
 
 #ifdef LISP_FEATURE_SB_THREAD
 
-#ifdef LISP_FEATURE_WIN32
-CRITICAL_SECTION all_threads_lock;
-static CRITICAL_SECTION recyclebin_lock;
-static CRITICAL_SECTION in_gc_lock;
-#else
 pthread_mutex_t all_threads_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t recyclebin_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t in_gc_lock = PTHREAD_MUTEX_INITIALIZER;
-#endif
 
 #endif
 
@@ -156,7 +146,7 @@ int sb_get_os_thread_id()
 
 // Because creation is synchronized by *MAKE-THREAD-LOCK*
 // we only need a single 'attributes' object.
-#if defined LISP_FEATURE_SB_THREAD && !defined LISP_FEATURE_WIN32
+#if defined LISP_FEATURE_SB_THREAD
 pthread_attr_t new_lisp_thread_attr;
 #define init_shared_attr_object() (pthread_attr_init(&new_lisp_thread_attr)==0)
 #else
@@ -166,11 +156,6 @@ struct thread *alloc_thread_struct(void*);
 
 #ifndef LISP_FEATURE_SB_THREAD
 #define ASSOCIATE_OS_THREAD(thread) { /*do nothing */ }
-#elif defined LISP_FEATURE_WIN32
-#define ASSOCIATE_OS_THREAD(thread) \
-    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), \
-                    GetCurrentProcess(), (LPHANDLE)&thread->os_thread, 0, TRUE, \
-                    DUPLICATE_SAME_ACCESS)
 #elif defined LISP_FEATURE_GS_SEG
 #include <asm/prctl.h>
 #include <sys/prctl.h>
@@ -179,13 +164,6 @@ extern int arch_prctl(int code, unsigned long *addr);
       thread->os_thread = pthread_self()
 #else
 #define ASSOCIATE_OS_THREAD(thread) thread->os_thread = pthread_self()
-#endif
-
-#ifdef LISP_FEATURE_WIN32
-// Need a function callable from assembly code, where the inline one won't do.
-void* read_current_thread() {
-  return get_sb_vm_thread();
-}
 #endif
 
 #if defined LISP_FEATURE_DARWIN && defined LISP_FEATURE_SB_THREAD
@@ -304,16 +282,11 @@ static lispobj cons_lisp_thread(struct thread* thread)
 #endif
 
 void create_main_lisp_thread(lispobj function) {
-#ifdef LISP_FEATURE_WIN32
-    InitializeCriticalSection(&all_threads_lock);
-    InitializeCriticalSection(&recyclebin_lock);
-    InitializeCriticalSection(&in_gc_lock);
-#endif
     struct thread *th = alloc_thread_struct(0);
     if (!th || arch_os_thread_init(th)==0 || !init_shared_attr_object())
         lose("can't create initial thread");
     th->sprof_enable = make_fixnum(1);
-#if defined LISP_FEATURE_SB_THREAD && !defined LISP_FEATURE_GCC_TLS && !defined LISP_FEATURE_WIN32
+#if defined LISP_FEATURE_SB_THREAD && !defined LISP_FEATURE_GCC_TLS
     pthread_key_create(&current_thread, 0);
 #endif
 #if defined LISP_FEATURE_DARWIN && defined LISP_FEATURE_SB_THREAD
@@ -331,14 +304,10 @@ void create_main_lisp_thread(lispobj function) {
     th->lisp_thread = cons_lisp_thread(th);
     SET_LISPTHREAD_TID(LISPTHREAD(th));
 
-#ifndef LISP_FEATURE_WIN32
     protect_control_stack_hard_guard_page(1, th);
-#endif
     protect_binding_stack_hard_guard_page(1, th);
     protect_alien_stack_hard_guard_page(1, th);
-#ifndef LISP_FEATURE_WIN32
     protect_control_stack_guard_page(1, th);
-#endif
     protect_binding_stack_guard_page(1, th);
     protect_alien_stack_guard_page(1, th);
 
@@ -352,7 +321,7 @@ void create_main_lisp_thread(lispobj function) {
     /* WIN32 has a special stack arrangement, calling
      * call_into_lisp_first_time will put the new stack in the middle
      * of the current stack */
-#if !(defined(LISP_FEATURE_WIN32) && !defined(OS_THREAD_STACK)) \
+#if !defined(OS_THREAD_STACK)) \
     && (defined(LISP_FEATURE_X86) || defined(LISP_FEATURE_X86_64))
     call_into_lisp_first_time(function, NULL, 0);
 #else
@@ -394,10 +363,8 @@ init_new_thread(struct thread *th,
 #define GUARD_BINDING_STACK 2
 #define GUARD_ALIEN_STACK   4
 
-#ifndef LISP_FEATURE_WIN32
     if (guardp & GUARD_CONTROL_STACK)
         protect_control_stack_guard_page(1, th);
-#endif
     if (guardp & GUARD_BINDING_STACK)
         protect_binding_stack_guard_page(1, th);
     if (guardp & GUARD_ALIEN_STACK)
@@ -483,11 +450,6 @@ unregister_thread(struct thread *th,
     os_sem_destroy(&semaphores->state_not_stopped_sem);
 #endif
 
-#if defined(LISP_FEATURE_WIN32)
-    int i;
-    for (i = 0; i<NUM_PRIVATE_EVENTS; ++i)
-        CloseHandle(thread_private_events(th,i));
-#endif
     /* Thread structs are reused and their guard pages are not
      * reestablished. */
     if (!th->state_word.control_stack_guard_page_protected)
@@ -514,11 +476,7 @@ unregister_thread(struct thread *th,
  * lisp function after doing arch_os_thread_init and whatever other
  * bookkeeping needs to be done
  */
-#ifdef LISP_FEATURE_WIN32
-__stdcall unsigned int new_thread_trampoline(LPVOID arg)
-#else
 void* new_thread_trampoline(void* arg)
-#endif
 {
     struct thread* th = arg;
     ASSOCIATE_OS_THREAD(th);
@@ -669,9 +627,7 @@ void empty_thread_recyclebin()
 
 static void attach_os_thread(init_thread_data *scribble)
 {
-#ifndef LISP_FEATURE_WIN32 // native threads have no signal maskk
     block_deferrable_signals(&scribble->oldset);
-#endif
     void* recycled_memory = get_recyclebin_item();
     struct thread *th = alloc_thread_struct(recycled_memory);
 
@@ -691,7 +647,7 @@ static void attach_os_thread(init_thread_data *scribble)
      * at callback entry than the code as it was prior to git rev 91f86339b4 */
     ASSOCIATE_OS_THREAD(th);
 
-#if !defined(LISP_FEATURE_WIN32) && defined(LISP_FEATURE_C_STACK_IS_CONTROL_STACK)
+#if defined(LISP_FEATURE_C_STACK_IS_CONTROL_STACK)
     /* On windows, arch_os_thread_init will take care of finding the
      * stack. */
     void *stack_addr;
@@ -736,10 +692,6 @@ static void attach_os_thread(init_thread_data *scribble)
 static void detach_os_thread(init_thread_data *scribble)
 {
     struct thread *th = get_sb_vm_thread();
-
-#if defined(LISP_FEATURE_WIN32)
-    CloseHandle((HANDLE)th->os_thread);
-#endif
 
     unregister_thread(th, scribble);
 
@@ -789,12 +741,10 @@ static void detach_os_thread(init_thread_data *scribble)
     }
 #endif
     put_recyclebin_item(th);
-#ifndef LISP_FEATURE_WIN32 // native threads have no signal mask
     thread_sigmask(SIG_SETMASK, &scribble->oldset, 0);
-#endif
 }
 
-#if defined(LISP_FEATURE_X86_64) && !defined(LISP_FEATURE_WIN32)
+#if defined(LISP_FEATURE_X86_64)
 extern void funcall_alien_callback(lispobj arg1, lispobj arg2, lispobj arg0,
                                    struct thread* thread)
   __attribute__((sysv_abi));
@@ -818,14 +768,9 @@ callback_wrapper_trampoline(lispobj arg0, lispobj arg1, lispobj arg2)
         return;
     }
 
-#ifdef LISP_FEATURE_WIN32
-    /* arg2 is the pointer to a return value, which sits on the stack */
-    thread_extra_data(th)->carried_base_pointer = (os_context_register_t) *(((void**)arg2)-1);
-#endif
-
     WITH_GC_AT_SAFEPOINTS_ONLY()
     {
-#if defined(LISP_FEATURE_X86_64) && !defined(LISP_FEATURE_WIN32)
+#if defined(LISP_FEATURE_X86_64)
         funcall_alien_callback(arg1, arg2, arg0, th);
 #else
         funcall3(StaticSymbolFunction(ENTER_ALIEN_CALLBACK), arg0,arg1,arg2);
@@ -836,25 +781,6 @@ callback_wrapper_trampoline(lispobj arg0, lispobj arg1, lispobj arg2)
 #endif /* LISP_FEATURE_SB_THREAD */
 
 #ifdef LISP_FEATURE_SB_THREAD
-#ifdef LISP_FEATURE_WIN32
-uword_t create_lisp_thread(struct thread* th)
-{
-    unsigned int tid;
-    struct extra_thread_data *data = thread_extra_data(th);
-    data->blocked_signal_set = deferrable_sigset;
-    // It's somewhat customary in the win32 API to start threads as suspended.
-    // Don't use STACK_SIZE_PARAM_IS_A_RESERVATION because
-    // dx-allocation accesses the stack non-linearly.
-    th->os_thread =
-      _beginthreadex(NULL, thread_control_stack_size, new_thread_trampoline, th,
-                     CREATE_SUSPENDED, &tid);
-    bool success = th->os_thread != 0;
-    if (success) {
-        ResumeThread((HANDLE)th->os_thread);
-    }
-    return success;
-}
-#else
 #ifdef LISP_FEATURE_OS_THREAD_STACK
 # define START_ROUTINE new_thread_trampoline_switch_stack
 #else
@@ -877,7 +803,6 @@ int create_lisp_thread(lispobj lispthread, struct thread* arg)
 int try_acquire_gc_lock() { return TryEnterCriticalSection(&in_gc_lock); }
 int release_gc_lock() { return mutex_release(&in_gc_lock); }
 
-#ifndef LISP_FEATURE_WIN32
 /* pthread_kill is not guaranteed to be reentrant, prevent
  * gc_stop_the_world from interrupting another pthread_kill */
 int sb_thread_kill (pthread_t thread, int sig) {
@@ -887,8 +812,6 @@ int sb_thread_kill (pthread_t thread, int sig) {
     thread_sigmask(SIG_SETMASK, &old, NULL);
     return ret;
 }
-#endif
-#endif
 
 int
 thread_yield()

@@ -130,11 +130,7 @@ page_index_t next_free_page; // upper (exclusive) bound on used page range
  * allocating new regions which overlap each other.  This lock must be
  * seized before all accesses to generations[] or to parts of
  * page_table[] that other threads may want to see */
-#ifdef LISP_FEATURE_WIN32
-static CRITICAL_SECTION free_pages_lock;
-#else
 static pthread_mutex_t free_pages_lock = PTHREAD_MUTEX_INITIALIZER;
-#endif
 #endif
 
 void acquire_gc_page_table_lock() { ignore_value(mutex_acquire(&free_pages_lock)); }
@@ -658,7 +654,6 @@ conservative_stack_scan(struct thread* th,
      * stack of `interrupt_contexts'.  The reported CSP has been
      * chosen so that the current context on the stack is
      * covered by the stack scan.  See also set_csp_from_context(). */
-#  ifndef LISP_FEATURE_WIN32
     if (th != get_sb_vm_thread()) {
         int k = fixnum_value(read_TLS(FREE_INTERRUPT_CONTEXT_INDEX,th));
         while (k > 0) {
@@ -667,7 +662,6 @@ conservative_stack_scan(struct thread* th,
                 visit_context_registers(context_method, context, (void*)1);
         }
     }
-#  endif
 # elif defined(LISP_FEATURE_SB_THREAD)
 
 #ifdef LISP_FEATURE_NONSTOP_FOREIGN_CALL
@@ -1327,9 +1321,6 @@ collect_garbage(generation_index_t last_gen)
 void
 gc_init(void)
 {
-#ifdef LISP_FEATURE_WIN32
-    InitializeCriticalSection(&free_pages_lock);
-#endif
 #if defined(LISP_FEATURE_SB_SAFEPOINT)
     extern void safepoint_init(void);
     safepoint_init();
@@ -1424,7 +1415,7 @@ lisp_alloc(__attribute__((unused)) int flags,
      * sample. Also the trapping ones don't trap for code.
      * #+win32 doesn't seem to work, but neither does CPU profiling */
 #if !(defined LISP_FEATURE_PPC || defined LISP_FEATURE_PPC64 \
-      || defined LISP_FEATURE_SPARC || defined LISP_FEATURE_WIN32)
+      || defined LISP_FEATURE_SPARC)
     extern void allocator_record_backtrace(void*, struct thread*);
     if (page_type != PAGE_TYPE_CODE && gencgc_alloc_profiler && thread->sprof_enable)
         allocator_record_backtrace(__builtin_frame_address(0), thread);

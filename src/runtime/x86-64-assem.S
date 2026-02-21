@@ -34,7 +34,7 @@
 
 // Produce position-independent code.
 // macOS does not like the general way we do this, so do something different.
-#if defined(LISP_FEATURE_DARWIN) || defined(LISP_FEATURE_WIN32)
+#if defined(LISP_FEATURE_DARWIN)
 #define LOAD_PIC_VAR(x,dest) mov GNAME(x)(%rip), dest
 #else
 #define LOAD_PIC_VAR(x,dest) mov GNAME(x)@GOTPCREL(%rip), dest ; mov (dest), dest
@@ -54,7 +54,7 @@
  * that are defined to be no-ops on win32. Hopefully this still works on
  * other platforms.
  */
-#if !defined(LISP_FEATURE_WIN32) && !defined(LISP_FEATURE_DARWIN)
+#if !defined(LISP_FEATURE_DARWIN)
 #define TYPE(name) .type name,@function
 #define SIZE(name) .size name,.-name
 #else
@@ -74,15 +74,9 @@
 
 #define THREAD_SAVED_CSP_OFFSET (- N_WORD_BYTES)
 
-#ifdef LISP_FEATURE_WIN32
-#define CARG1 %rcx
-#define CARG2 %rdx
-#define CARG3 %r8
-#else
 #define CARG1 %rdi
 #define CARG2 %rsi
 #define CARG3 %rdx
-#endif
 	
 #ifdef LISP_FEATURE_OS_THREAD_STACK
         .text
@@ -98,13 +92,6 @@ GNAME(funcall1_switching_stack):
 
         mov     THREAD_CONTROL_STACK_END_OFFSET(CARG1),%rsp
 
-#ifdef LISP_FEATURE_WIN32	
-	/* _chkstk() is called at some unknown points and is
-           expecting that
-	*/
-	mov 	THREAD_CONTROL_STACK_START_OFFSET(CARG1), %rax
-	movq    %rax, %gs:16
-#endif
         call    *CARG2
 
         mov     %rbp, %rsp
@@ -151,9 +138,6 @@ GNAME(lspmain): # so much easier to type 'b lspmain' in gdb
  * return values in rax rdx
  * callee saves rbp rbx r12-15 if it uses them
  */
-#ifdef LISP_FEATURE_WIN32
-# define SUPPORT_FOMIT_FRAME_POINTER
-#endif
 	.align	align_16byte,0x90
 GNAME(call_into_lisp_):
 #ifdef SUPPORT_FOMIT_FRAME_POINTER
@@ -409,11 +393,7 @@ GNAME(arch_scrub_control_stack):
 	 * guard page upper bound in R8, and our hard guard
 	 * page upper bound in R9. */
 	lea	-8(%rsp), %rax
-#ifdef LISP_FEATURE_WIN32
-	LOAD_PIC_VAR(win32_page_size, %r9)
-#else
 	LOAD_PIC_VAR(os_vm_page_size, %r9)
-#endif
 	lea	(%rsi,%r9), %r8
 	lea	(%rdx,%r9), %r9
 

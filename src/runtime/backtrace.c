@@ -615,14 +615,9 @@ print_lisp_backtrace(int nframes, FILE *f)
 static int
 altstack_pointer_p(__attribute__((unused)) struct thread* thread,
                    __attribute__((unused)) void *p) {
-#ifndef LISP_FEATURE_WIN32
     // FIXME: shouldn't this be testing '>=' start and '<' end ?
     //        i.e. Was it only right because the calculations themselves were wrong ?
     return (p > calc_altstack_base(thread) && p <= calc_altstack_end(thread));
-#else
-    /* Win32 doesn't do altstack */
-    return 0;
-#endif
 }
 
 static int
@@ -686,13 +681,11 @@ describe_thread_state(void)
 {
     struct thread *thread = get_sb_vm_thread();
     struct interrupt_data *data = &thread_interrupt_data(thread);
-#ifndef LISP_FEATURE_WIN32
     sigset_t mask;
     char string[180];
     thread_sigmask(SIG_BLOCK, 0, &mask);
     sigset_tostring(&mask, string, sizeof string);
     if (string[0]) printf("Signal mask: %s\n", string);
-#endif
     printf("Specials:\n");
     printf(" *GC-INHIBIT* = %s\n", read_TLS(GC_INHIBIT, thread) == LISP_T ? "T" : "NIL");
     printf(" *GC-PENDING* = %s\n", read_TLS(GC_PENDING, thread) == LISP_T ? "T" : "NIL");

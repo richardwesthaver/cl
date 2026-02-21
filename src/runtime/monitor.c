@@ -17,9 +17,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#ifndef LISP_FEATURE_WIN32
 #include <sys/resource.h>
-#endif
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -328,7 +326,7 @@ static int gc_and_save_cmd(char **ptr, iochannel_t io) {
         fprintf(io->out, "Need filename\n");
         return 0;
     }
-#if defined(LISP_FEATURE_SB_THREAD) && !defined(LISP_FEATURE_WIN32)
+#if defined(LISP_FEATURE_SB_THREAD)
     ASSIGN_CURRENT_THREAD(all_threads);
 #endif
     extern void gc_and_save(char*,bool,bool,bool,bool,int,int);
@@ -1111,10 +1109,8 @@ ldb_monitor(void)
     if (!io.out) {
         io.out = stderr;
         io.in = stdin;
-#ifndef LISP_FEATURE_WIN32
         FILE* tty = fopen("/dev/tty","r+");
         if (tty) io.out = io.in = tty; else perror("Error opening /dev/tty");
-#endif
     }
 
     if (!monitor_loop(fgets, io)) exit(1);

@@ -2182,7 +2182,6 @@ handle_trap(os_context_t *context, int trap)
     }
 }
 
-#ifndef LISP_FEATURE_WIN32
 // Return 1 if the signal was previously in the blocked set.
 int sb_toggle_sigprof(os_context_t* context, int block) {
     if (context) {
@@ -2209,4 +2208,4 @@ int sb_toggle_sigprof(os_context_t* context, int block) {
         return sigismember(&old, SIGPROF);
     }
 }
-#endif
+

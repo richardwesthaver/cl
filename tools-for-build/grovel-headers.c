@@ -23,32 +23,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#ifdef _WIN32
-  /* KLUDGE: From src/runtime/runtime.h, avoid double definition of
-     boolean.  We really should clean up our act on this one. */
-  #define boolean rpcndr_boolean
-  #define WIN32_LEAN_AND_MEAN
-  #include <windows.h>
-  #include <ntstatus.h>
-  #include <shlobj.h>
-  #include <wincrypt.h>
-  #include <winsock2.h>
-  #undef boolean
-#else
-  #include <poll.h>
-  #include <sys/select.h>
-  #include <sys/times.h>
-  #include <sys/wait.h>
-  #include <sys/ioctl.h>
+#include <poll.h>
+#include <sys/select.h>
+#include <sys/times.h>
+#include <sys/wait.h>
+#include <sys/ioctl.h>
 #if defined __HAIKU__ || defined __DragonFly__ || defined LISP_FEATURE_ANDROID
   #include <termios.h>
 #else
   #include <sys/termios.h>
 #endif
-  #include <sys/time.h>
-  #include <dlfcn.h>
-#endif
-
+#include <sys/time.h>
+#include <dlfcn.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -62,9 +48,7 @@
 #endif
 
 #ifdef LISP_FEATURE_SB_THREAD
-# ifdef LISP_FEATURE_WIN32
-#  include "pthreads_win32.h"
-# elif defined LISP_FEATURE_OS_THREAD_STACK
+# ifdef LISP_FEATURE_OS_THREAD_STACK
 #  include <limits.h> // PTHREAD_STACK_MIN is possibly in here
 #  include <pthread.h> // instead of in here
 # endif
@@ -78,11 +62,7 @@
 #include <libunwind.h>
 #endif
 
-#if defined LISP_FEATURE_WIN32 && defined LISP_FEATURE_64_BIT
-# define CAST_SIZEOF (unsigned long)
-#else
 # define CAST_SIZEOF
-#endif
 
 #define DEFTYPE(lispname,cname) { cname foo; \
     printf("(define-alien-type " lispname " (%s %lu))\n", \
@@ -159,9 +139,6 @@ main(int argc, char __attribute__((unused)) *argv[])
 ;;;; See the program \"grovel-headers.c\".\n\
 \n\
 ");
-#ifdef _WIN32
-    #include "grovel-headers-win32.inc"
-#else
     printf("(in-package \"SB-ALIEN\")\n\n");
 
     printf (";;;flags for dlopen()\n");
@@ -355,9 +332,7 @@ main(int argc, char __attribute__((unused)) *argv[])
 #else
     defconstant("fpe-fltsub", -1);
 #endif
-#endif // !WIN32
     printf("\n");
-
 #ifdef LISP_FEATURE_OS_PROVIDES_CLOCK_GETTIME
 #ifdef LISP_FEATURE_UNIX
     DEFCONSTANT("clock-realtime", CLOCK_REALTIME);

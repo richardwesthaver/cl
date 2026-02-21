@@ -78,20 +78,6 @@ struct extra_thread_data
     os_sem_t sprof_sem;
 #endif
     int sprof_lock;
-#ifdef LISP_FEATURE_WIN32
-    // these are different from the masks that interrupt_data holds
-    sigset_t pending_signal_set;
-    sigset_t blocked_signal_set;
-#define NUM_PRIVATE_EVENTS 2
-#define thread_private_events(th,i) thread_extra_data(th)->private_events[i]
-    HANDLE private_events[NUM_PRIVATE_EVENTS];
-    // Context base pointer for running on top of system libraries built using
-    // -fomit-frame-pointer.  Currently truly required and implemented only
-    // for (and win32 x86-64),
-    os_context_register_t carried_base_pointer;
-    HANDLE synchronous_io_handle_and_flag;
-    void* waiting_on_address; // used only if #+sb-futex
-#endif
     int arena_count; // number of structures in arena_saveareas
     arena_state* arena_savearea;
     // opaque pointer to zstd decompression context so it doesn't matter whether
@@ -166,9 +152,7 @@ extern int dynamic_values_bytes;
 #ifdef LISP_FEATURE_SB_THREAD
 # ifdef LISP_FEATURE_GCC_TLS
 extern __thread struct thread *current_thread;
-# elif !defined LISP_FEATURE_WIN32
 extern pthread_key_t current_thread;
-#endif
 #endif
 
 #if defined(LISP_FEATURE_SB_SAFEPOINT) || defined(LISP_FEATURE_NONSTOP_FOREIGN_CALL)
@@ -203,15 +187,6 @@ static inline struct thread *get_sb_vm_thread(void)
 {
 #if !defined(LISP_FEATURE_SB_THREAD)
      return all_threads;
-
-#elif defined(LISP_FEATURE_X86) && defined(LISP_FEATURE_WIN32)
-    // FIXME: why not use TlsGetvalue(OUR_TLS_INDEX) here?
-    register struct thread *me=0;
-    __asm__ volatile ("movl %%fs:0xE10+(4*63), %0" : "=r"(me) :);
-    return me;
-
-#elif defined LISP_FEATURE_WIN32
-    return (struct thread*)TlsGetValue(OUR_TLS_INDEX);
 
 #else
 
@@ -248,8 +223,6 @@ inline static int lisp_thread_p(os_context_t __attribute__((unused)) *context) {
 #ifdef LISP_FEATURE_SB_THREAD
 # ifdef LISP_FEATURE_GCC_TLS
     return current_thread != 0;
-# elif defined LISP_FEATURE_WIN32
-    return TlsGetValue(OUR_TLS_INDEX) != 0;
 # else
     return pthread_getspecific(current_thread) != NULL;
 # endif
@@ -322,9 +295,7 @@ int check_pending_thruptions(os_context_t *ctx);
 
 extern void create_main_lisp_thread(lispobj);
 
-#ifdef LISP_FEATURE_WIN32
-extern CRITICAL_SECTION all_threads_lock;
-#elif defined LISP_FEATURE_SB_THREAD
+#if defined LISP_FEATURE_SB_THREAD
 extern pthread_mutex_t all_threads_lock;
 #endif
 
@@ -334,9 +305,6 @@ extern int sb_GetTID();
 // "warning: too many arguments for format [-Wformat-extra-args]"
 # define THREAD_ID_LABEL "%s"
 # define THREAD_ID_VALUE ""
-#elif defined LISP_FEATURE_WIN32
-# define THREAD_ID_LABEL "%ld"
-# define THREAD_ID_VALUE (GetCurrentThreadId())
 #elif defined __linux__
 # define THREAD_ID_LABEL " tid %d"
 # define THREAD_ID_VALUE (sb_GetTID())

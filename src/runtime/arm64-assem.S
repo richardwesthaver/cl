@@ -23,15 +23,6 @@
     ldr     \dest, [\dest, _\symbol@PAGEOFF]
 .endm
 
-#elif defined(LISP_FEATURE_WIN32)
-#define TYPE(name)
-#define SIZE(name)
-#define GNAME(var) var
-.macro  LOAD_GNAME, dest, symbol
-    adrp    \dest, \symbol
-    ldr     \dest, [\dest, #:lo12:\symbol]
-.endm
-
 #else
 #define TYPE(name) .type name,%function
 #define SIZE(name) .size name,.-name
@@ -160,16 +151,7 @@ GNAME(call_into_lisp):
 	// Move the function to its passing location.
 	mov	reg_LEXENV, x0
 
-#ifdef LISP_FEATURE_SB_THREAD
-#if defined(LISP_FEATURE_WIN32)
-	// Load OUR_TLS_INDEX (sbcl_thread_tls_index) and call TlsGetValue
-	adrp	x0, sbcl_thread_tls_index
-	ldr	w0, [x0, #:lo12:sbcl_thread_tls_index]
-	bl	TlsGetValue
-	mov	reg_THREAD, x0
-//        ldp     x29,x30, [sp]
-#else
-#ifdef LISP_FEATURE_GCC_TLS
+#ifdef LISP_FEATURE_SB_THREAD && LISP_FEATURE_GCC_TLS
 #ifdef LISP_FEATURE_DARWIN
 
         adrp    x0, _current_thread@TLVPPAGE
@@ -195,8 +177,6 @@ GNAME(call_into_lisp):
         bl      pthread_getspecific
         mov     reg_THREAD, x0
 #endif
-#endif
-#endif
 	// Clear the boxed registers that don't already have something
 	// in them.
         mov     reg_R0, #0
@@ -207,7 +187,7 @@ GNAME(call_into_lisp):
         mov     reg_R5, #0
         mov     reg_R6, #0
         mov     reg_R7, #0
-#if !defined(LISP_FEATURE_DARWIN) && !defined(LISP_FEATURE_WIN32)
+#if !defined(LISP_FEATURE_DARWIN)
         // x18 is reserved on Darwin (macOS) and Windows (TEB pointer)
         mov     reg_R8, #0
 #endif
@@ -377,7 +357,7 @@ GNAME(call_into_c):
         mov     reg_R5, #0
         mov     reg_R6, #0
         mov     reg_R7, #0
-#if !defined(LISP_FEATURE_DARWIN) && !defined(LISP_FEATURE_WIN32)
+#if !defined(LISP_FEATURE_DARWIN)
         // x18 is reserved on Darwin (macOS) and Windows (TEB pointer)
         mov     reg_R8,#0
 #endif

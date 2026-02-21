@@ -2,14 +2,7 @@
  * we don't include "genesis/sbcl.h" and we use the native thread API
  * for the platform */
 
-#ifdef _WIN32
-# include <handleapi.h>
-# include <process.h>
-# include <processthreadsapi.h>
-# include <synchapi.h> // for WaitForSingleObject
-#else
 # include <pthread.h>
-#endif
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -22,11 +15,7 @@ char *salutations[8] = {
 };
 int sharedvar;
 
-#ifdef _WIN32
-__stdcall unsigned int perftest_thread(LPVOID void_arg)
-#else
 void* perftest_thread(void* void_arg)
-#endif
 {
     struct thread_arg* arg = void_arg;
     int (*lispfun)() = arg->funkyfun;
@@ -41,23 +30,13 @@ int minimal_perftest(void* ptr, int n_calls)
   struct thread_arg arg;
   arg.funkyfun = ptr;
   arg.n_calls = n_calls;
-#ifdef _WIN32
-  HANDLE thr;
-  thr = (HANDLE)_beginthreadex(NULL, 0, perftest_thread, &arg, 0, NULL);
-  WaitForSingleObject(thr,0xffffffff);
-  CloseHandle(thr);
-#else
   pthread_t thr;
   pthread_create(&thr, 0, perftest_thread, &arg);
   pthread_join(thr,0);
-#endif
   return 0;
 }
 
 void*
-#ifdef _WIN32
-__stdcall
-#endif
 doThatThing(void* void_arg)
 {
     struct thread_arg* arg = void_arg;
@@ -77,13 +56,8 @@ doThatThing(void* void_arg)
 int call_thing_from_threads(void* ptr, int n_threads, int n_calls)
 {
     struct {
-#ifdef _WIN32
-        HANDLE handle;
-        DWORD result;
-#else
         pthread_t pthread_id;
         void* result;
-#endif
         struct thread_arg arg;
     } threads[50];
     if (n_threads>50) {
@@ -95,37 +69,21 @@ int call_thing_from_threads(void* ptr, int n_threads, int n_calls)
         threads[i].arg.funkyfun = ptr;
         threads[i].arg.index = i + 1;
         threads[i].arg.n_calls = n_calls;
-#ifdef _WIN32
-        threads[i].handle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int (*)(void *))doThatThing, &threads[i].arg, 0, NULL);
-#else
         pthread_create(&threads[i].pthread_id, 0, doThatThing, &threads[i].arg);
-#endif
     }
     int all_ok = 1;
     for(i=0; i<n_threads; ++i) {
-#ifdef _WIN32
-        DWORD result;
-        // I don't know which header file defines INFINITE (for the timeout)
-        // so any large value should do.
-        result = WaitForSingleObject(threads[i].handle, 0xffffffff);
-        GetExitCodeThread(threads[i].handle, &threads[i].result);
-        CloseHandle(threads[i].handle);
-        if (threads[i].result != 0xC0FEFE) all_ok = 0;
-#else
-        pthread_join(threads[i].pthread_id, &threads[i].result);
+      pthread_join(threads[i].pthread_id, &threads[i].result);
 #if 0
-        fprintf(stderr, "%d: pthread %lx returned %p\n",
-                i, (long)threads[i].pthread_id, threads[i].result);
+      fprintf(stderr, "%d: pthread %lx returned %p\n",
+              i, (long)threads[i].pthread_id, threads[i].result);
 #endif
-        if ((uintptr_t)threads[i].result != 0xC0FEFE) all_ok = 0;
-#endif
+      if ((uintptr_t)threads[i].result != 0xC0FEFE) all_ok = 0;
     }
     return all_ok;
 }
 
 /// The code following is for the no-lockup-on-exit test, unrelated to the above
-/// FIXME: implement a watchdog timer for win32
-#ifndef _WIN32
 #include <signal.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -159,4 +117,3 @@ void prepare_exit_test(int seconds)
     it.it_interval.tv_sec = it.it_interval.tv_usec = 0;
     setitimer(ITIMER_REAL, &it, 0);
 }
-#endif

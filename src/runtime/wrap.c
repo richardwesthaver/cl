@@ -32,22 +32,13 @@
 #include <fcntl.h>
 #include <math.h>
 
-#ifndef LISP_FEATURE_WIN32
 #include <pwd.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
 #include <netdb.h>
-#endif
 #include <stdio.h>
-
-#if defined(LISP_FEATURE_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <errno.h>
-#include <math.h>
-#endif
-
 #include "runtime.h"
 #include "wrap.h"
 
@@ -71,7 +62,6 @@ extern char **environ;
  * readlink(2) stuff
  */
 
-#ifndef LISP_FEATURE_WIN32
 /* a wrapped version of readlink(2):
  *   -- If path isn't a symlink, or is a broken symlink, return 0.
  *   -- If path is a symlink, return a newly allocated string holding
@@ -95,43 +85,25 @@ wrapped_readlink(char *path)
         }
     }
 }
-#endif
-
 /*
  * realpath(3), including a wrapper for Windows.
  */
 char * sb_realpath (char *path)
 {
-#ifndef LISP_FEATURE_WIN32
-    char *ret;
-    int errnum;
+  char *ret;
+  int errnum;
 
-    if ((ret = calloc(PATH_MAX, sizeof(char))) == NULL)
-        return NULL;
-    if (realpath(path, ret) == NULL) {
-        errnum = errno;
-        free(ret);
-        errno = errnum;
-        return NULL;
-    }
-    return(ret);
-#else
-    char *ret;
-    char *cp;
-    int errnum;
-
-    if ((ret = calloc(MAX_PATH, sizeof(char))) == NULL)
-        return NULL;
-    if (GetFullPathName(path, MAX_PATH, ret, &cp) == 0) {
-        errnum = errno;
-        free(ret);
-        errno = errnum;
-        return NULL;
-    }
-    return(ret);
-#endif
+  if ((ret = calloc(PATH_MAX, sizeof(char))) == NULL)
+    return NULL;
+  if (realpath(path, ret) == NULL) {
+    errnum = errno;
+    free(ret);
+    errno = errnum;
+    return NULL;
+  }
+  return(ret);
 }
-
+
 /* readdir, closedir, and dirent name accessor. The first three are not strictly
  * necessary, but should save us some #+netbsd in the build, and this also allows
  * building Windows versions using the non-ANSI variants of FindFirstFile &co
@@ -181,24 +153,20 @@ static void
 copy_to_stat_wrapper(struct stat_wrapper *to, struct stat *from)
 {
 #define FROB(stem) to->wrapped_st_##stem = from->st_##stem
-#ifndef LISP_FEATURE_WIN32
 #define FROB2(stem) to->wrapped_st_##stem = from->st_##stem
-#else
-#define FROB2(stem) to->wrapped_st_##stem = 0;
-#endif
-    FROB(dev);
-    FROB2(ino);
-    FROB(mode);
-    FROB(nlink);
-    FROB2(uid);
-    FROB2(gid);
-    FROB(rdev);
-    FROB(size);
-    FROB2(blksize);
-    FROB2(blocks);
-    FROB(atime);
-    FROB(mtime);
-    FROB(ctime);
+  FROB(dev);
+  FROB2(ino);
+  FROB(mode);
+  FROB(nlink);
+  FROB2(uid);
+  FROB2(gid);
+  FROB(rdev);
+  FROB(size);
+  FROB2(blksize);
+  FROB2(blocks);
+  FROB(atime);
+  FROB(mtime);
+  FROB(ctime);
 #undef FROB
 }
 
@@ -207,33 +175,11 @@ stat_wrapper(const char *file_name, struct stat_wrapper *buf)
 {
     struct stat real_buf;
     int ret;
-
-#ifdef LISP_FEATURE_WIN32
-    /*
-     * Windows won't match the last component of a pathname if there
-     * is a trailing #\/ or #\\, except if it's <drive>:\ or <drive>:/
-     * in which case it behaves the other way around. So we remove the
-     * trailing directory separator unless we are being passed just a
-     * drive name (e.g. "c:\\").  Some, but not all, of this
-     * strangeness is documented at Microsoft's support site (as of
-     * 2006-01-08, at
-     * <http://support.microsoft.com/default.aspx?scid=kb;en-us;168439>)
-     */
-    char file_buf[MAX_PATH];
-    strcpy(file_buf, file_name);
-    int len = strlen(file_name);
-    if (len != 0 && (file_name[len-1] == '/' || file_name[len-1] == '\\') &&
-        !(len == 3 && file_name[1] == ':' && isalpha(file_name[0])))
-        file_buf[len-1] = '\0';
-    file_name = file_buf;
-#endif
-
     if ((ret = stat(file_name,&real_buf)) >= 0)
         copy_to_stat_wrapper(buf, &real_buf);
     return ret;
 }
 
-#ifndef LISP_FEATURE_WIN32
 int
 lstat_wrapper(const char *file_name, struct stat_wrapper *buf)
 {
@@ -243,13 +189,6 @@ lstat_wrapper(const char *file_name, struct stat_wrapper *buf)
         copy_to_stat_wrapper(buf, &real_buf);
     return ret;
 }
-#else
-/* cleaner to do it here than in Lisp */
-int lstat_wrapper(const char *file_name, struct stat_wrapper *buf)
-{
-    return stat_wrapper(file_name, buf);
-}
-#endif
 
 int
 fstat_wrapper(int filedes, struct stat_wrapper *buf)
@@ -260,7 +199,7 @@ fstat_wrapper(int filedes, struct stat_wrapper *buf)
         copy_to_stat_wrapper(buf, &real_buf);
     return ret;
 }
-
+
 /* A wrapper for mkstemp(3), for two reasons: (1) mkstemp does not
    exist on Windows; (2) by passing down a mode_t, we don't need a
    binding to chmod in SB-UNIX, and need not concern ourselves with
@@ -271,30 +210,6 @@ fstat_wrapper(int filedes, struct stat_wrapper *buf)
 
 int sb_mkstemp (char *template, mode_t mode) {
   int fd;
-#ifdef LISP_FEATURE_WIN32
-#define PATHNAME_BUFFER_SIZE MAX_PATH
-  char buf[PATHNAME_BUFFER_SIZE];
-
-  while (1) {
-    /* Fruit fallen from the tree: for people who like
-       microoptimizations, we might not need to copy the whole
-       template on every loop, but only the last several characters.
-       But I didn't feel like testing the boundary cases in Windows's
-       _mktemp. */
-    strncpy(buf, template, PATHNAME_BUFFER_SIZE);
-    buf[PATHNAME_BUFFER_SIZE-1]=0; /* force NULL-termination */
-    if (_mktemp(buf)) {
-      if ((fd=open(buf, O_CREAT|O_EXCL|O_RDWR, mode))!=-1) {
-        strcpy(template, buf);
-        return (fd);
-      } else
-        if (errno != EEXIST)
-          return (-1);
-    } else
-      return (-1);
-  }
-#undef PATHNAME_BUFFER_SIZE
-#else
   /* It makes no sense to reimplement mkstemp() with logic susceptible
      to the exploit that mkstemp() was designed to avoid.
      Unfortunately, there is a subtle bug in this more nearly correct technique.
@@ -314,15 +229,12 @@ int sb_mkstemp (char *template, mode_t mode) {
     return -1;
   }
   return fd;
-#endif
 }
 
-
 /*
  * getpwuid() stuff
  */
 
-#ifndef LISP_FEATURE_WIN32
 /* Return a newly-allocated string holding the username for "uid", or
  * NULL if there's no such user.
  *
@@ -380,8 +292,7 @@ uid_homedir(uid_t uid)
 {
     return passwd_homedir(getpwuid(uid));
 }
-#endif /* !LISP_FEATURE_WIN32 */
-
+
 /*
  * functions to get miscellaneous C-level variables
  *
@@ -390,59 +301,8 @@ uid_homedir(uid_t uid)
  * variable locations change between compile time and run time.)
  */
 
-#ifdef LISP_FEATURE_WIN32
-#include <windows.h>
-#include <time.h>
-/*
- * faked-up implementation of select(). Right now just enough to get through
- * second genesis.
- */
-int sb_select(int top_fd, DWORD *read_set, DWORD *write_set, DWORD *except_set, time_t *timeout)
-{
-    /*
-     * FIXME: Going forward, we may want to use MsgWaitForMultipleObjects
-     * in order to support a windows message loop inside serve-event.
-     */
-    HANDLE handles[MAXIMUM_WAIT_OBJECTS];
-    int fds[MAXIMUM_WAIT_OBJECTS];
-    int num_handles;
-    int i;
-    DWORD retval;
-    int polling_write;
-    DWORD win_timeout;
-
-    num_handles = 0;
-    polling_write = 0;
-    for (i = 0; i < top_fd; i++) {
-        if (except_set) except_set[i >> 5] = 0;
-        if (write_set && (write_set[i >> 5] & (1 << (i & 31)))) polling_write = 1;
-        if (read_set[i >> 5] & (1 << (i & 31))) {
-            read_set[i >> 5] &= ~(1 << (i & 31));
-            fds[num_handles] = i;
-            handles[num_handles++] = (HANDLE) _get_osfhandle(i);
-        }
-    }
-
-    win_timeout = INFINITE;
-    if (timeout) win_timeout = (timeout[0] * 1000) + timeout[1];
-
-    /* Last parameter here is timeout in milliseconds. */
-    /* retval = WaitForMultipleObjects(num_handles, handles, 0, INFINITE); */
-    retval = WaitForMultipleObjects(num_handles, handles, 0, win_timeout);
-
-    if (retval < WAIT_ABANDONED) {
-        /* retval, at this point, is the index of the single live HANDLE/fd. */
-        read_set[fds[retval] >> 5] |= (1 << (fds[retval] & 31));
-        return 1;
-    }
-    return polling_write;
-}
-#endif
-
-
 /* We will need to define these things or their equivalents for Win32
    eventually, but for now let's get it working for everyone else. */
-#ifndef LISP_FEATURE_WIN32
 /* From SB-BSD-SOCKETS, to get h_errno */
 int get_h_errno()
 {
@@ -475,7 +335,6 @@ int wifstopped(int status) {
 int wstopsig(int status) {
     return WSTOPSIG(status);
 }
-#endif  /* !LISP_FEATURE_WIN32 */
 
 /* From SB-POSIX, stat-macros */
 int s_isreg(mode_t mode)
@@ -498,7 +357,6 @@ int s_isfifo(mode_t mode)
 {
     return S_ISFIFO(mode);
 }
-#ifndef LISP_FEATURE_WIN32
 int s_islnk(mode_t mode)
 {
 #ifdef S_ISLNK
@@ -515,7 +373,6 @@ int s_issock(mode_t mode)
     return ((mode & S_IFMT) == S_IFSOCK);
 #endif
 }
-#endif /* !LISP_FEATURE_WIN32 */
 
 #ifdef LISP_FEATURE_UNIX
 void sb_nanosleep(time_t sec, int nsec)
@@ -589,30 +446,6 @@ int sb_sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
     return sigprocmask(how, set, oldset);
 }
 #endif
-#endif
-
-#ifdef LISP_FEATURE_WIN32
-
-// These are used in src/code/irrat.lisp. Search for DEF-MATH-RTN
-#define SB_TRIG_WRAPPER(name) \
-    double sb_##name (double x) {               \
-        return name(x);                         \
-    }
-SB_TRIG_WRAPPER(acos)
-SB_TRIG_WRAPPER(asin)
-SB_TRIG_WRAPPER(cosh)
-SB_TRIG_WRAPPER(sinh)
-SB_TRIG_WRAPPER(tanh)
-SB_TRIG_WRAPPER(asinh)
-SB_TRIG_WRAPPER(acosh)
-SB_TRIG_WRAPPER(atanh)
-
-double sb_hypot (double x, double y) {
-    return hypot(x, y);
-}
-double sb_hypotf (double x, double y) {
-    return hypotf(x, y);
-}
 #endif
 
 int sb_fileno(FILE* f) { return fileno(f); } // might be a C macro

@@ -29,7 +29,7 @@
 #include "immobile-space.h"
 #include "code.h"
 #include "search.h"
-#if defined(LISP_FEATURE_OS_PROVIDES_DLOPEN) && !defined(LISP_FEATURE_WIN32)
+#if defined(LISP_FEATURE_OS_PROVIDES_DLOPEN)
 # include <dlfcn.h>
 #endif
 #if defined LISP_FEATURE_UNIX && defined LISP_FEATURE_SOFT_CARD_MARKS
@@ -106,11 +106,7 @@ os_allocate(os_vm_size_t len)
 void
 os_deallocate(os_vm_address_t addr, os_vm_size_t len)
 {
-#ifdef LISP_FEATURE_WIN32
-    gc_assert(VirtualFree(addr, 0, MEM_RELEASE));
-#else
-    if (sbcl_munmap(addr, len) == -1) perror("munmap");
-#endif
+  if (sbcl_munmap(addr, len) == -1) perror("munmap");
 }
 #endif
 
@@ -169,14 +165,12 @@ os_sem_destroy(os_sem_t *sem)
  */
 
 void *os_dlsym_default(char *name);
-#ifndef LISP_FEATURE_WIN32
 void *
 os_dlsym_default(char *name)
 {
     void *frob = dlsym(RTLD_DEFAULT, name);
     return frob;
 }
-#endif
 
 int alien_linkage_table_n_prelinked;
 extern lispobj* get_alien_linkage_table_initializer();
@@ -245,8 +239,6 @@ bool gc_managed_heap_space_p(lispobj addr)
         return 1;
     return 0;
 }
-
-#ifndef LISP_FEATURE_WIN32
 
 #if defined LISP_FEATURE_MIPS
 #include <sys/utsname.h>
@@ -351,8 +343,6 @@ void* load_core_bytes_jit(int fd, os_vm_offset_t offset, os_vm_address_t addr, o
     free(buf);
     return (void*)0;
 }
-#endif
-
 #endif
 
 bool is_in_stack_space(lispobj ptr)

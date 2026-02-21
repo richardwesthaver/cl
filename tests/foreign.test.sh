@@ -60,9 +60,6 @@ echo 'int late_bar() { return 14; }' >> $TEST_FILESTEM-c.c
 build_so $TEST_FILESTEM-c
 
 cat > $TEST_FILESTEM-noop-dlclose-test.c <<EOF
-#ifdef _WIN32
-int dlclose_is_noop() { return 1; }
-#else
 // Why is this test which establishes preconditions of the actual test
 // expressed as a loadable library? It's ridiculousy obfuscated imho.
 #include <dlfcn.h>
@@ -80,7 +77,6 @@ int dlclose_is_noop () {
 #endif
     return 0;
 }
-#endif
 EOF
 build_so $TEST_FILESTEM-noop-dlclose-test
 

@@ -1338,53 +1338,6 @@ interface stability.")
    "FD-ZERO" "FD-CLR"
    "FD-SETSIZE"))
 
-#+win32
-(defpackage "SB-WIN32"
-  (:documentation "private: a wrapper layer for Win32 functions needed by
-SBCL itself")
-  (:use "CL" "SB-ALIEN" "SB-EXT" "SB-INT" "SB-SYS")
-  (:export "BOOL"
-           "CLOSE-HANDLE"
-           "CREATE-FILE"
-           "CREATE-FILE-MAPPING"
-           "CRYPT-GEN-RANDOM"
-           "DWORD"
-           "EXCEPTION"
-           "EXCEPTION-RECORD"
-           "EXCEPTION-CONTEXT"
-           "EXCEPTION-CODE"
-           "FILE-CREATE-ALWAYS"
-           "FILE-CREATE-NEW"
-           "FILE-OPEN-ALWAYS"
-           "FILE-OPEN-EXISTING"
-           "FILE-TRUNCATE-EXISTING"
-           "FLUSH-CONSOLE-INPUT-BUFFER"
-           "FLUSH-VIEW-OF-FILE"
-           "FORMAT-SYSTEM-MESSAGE"
-           "GET-FILE-ATTRIBUTES"
-           "GET-FILE-SIZE-EX"
-           "GET-FILE-TYPE"
-           "GET-LAST-ERROR"
-           "GET-OSFHANDLE"
-           "GET-VERSION-EX"
-           "HANDLE"
-           "HANDLE-CLEAR-INPUT"
-           "HANDLE-LISTEN"
-           "INT-PTR"
-           "INVALID-HANDLE"
-           "LSEEKI64"
-           "MAP-VIEW-OF-FILE"
-           "MILLISLEEP"
-           "PEEK-CONSOLE-INPUT"
-           "PEEK-NAMED-PIPE"
-           "READ-FILE"
-           "UNIXLIKE-CLOSE"
-           "UNIXLIKE-OPEN"
-           "UNMAP-VIEW-OF-FILE"
-           "WAIT-OBJECT-OR-SIGNAL"
-           "WRITE-FILE"
-           "WITH-PROCESS-TIMES"))
-
 (defpackage "SB-BIGNUM"
   (:documentation "private: bignum implementation")
   (:use "CL" "SB-INT" "SB-EXT")

@@ -50,7 +50,7 @@
  * rid of? -- WHN 2004-04-18)
  */
 #if defined(__linux__) || defined(LISP_FEATURE_FREEBSD) || defined(__NetBSD__) || defined(__OpenBSD__) || \
-        defined(__sun) || defined(LISP_FEATURE_WIN32) || defined(__DragonFly__)
+        defined(__sun) || defined(__DragonFly__)
 #define align_16byte	16
 #else
 #define	align_16byte	4
@@ -62,7 +62,7 @@
  * that are defined to be no-ops on win32. Hopefully this still works on
  * other platforms.
  */
-#if !defined(LISP_FEATURE_WIN32) && !defined(LISP_FEATURE_DARWIN)
+#if !defined(LISP_FEATURE_DARWIN)
 #define TYPE(name) .type name,@function
 #define SIZE(name) .size name,.-name
 #else
@@ -117,18 +117,7 @@
  *          | }                  |           (< TLS_SIZE = 4096)
  *          ---------------------|
  */
-#ifdef LISP_FEATURE_WIN32
-# define TEB_STATIC_TLS_SLOTS_OFFSET 0xE10
-# define TEB_SBCL_THREAD_BASE_OFFSET (TEB_STATIC_TLS_SLOTS_OFFSET+(63*4))
-# define SBCL_THREAD_BASE_EA %fs:TEB_SBCL_THREAD_BASE_OFFSET
-# define MAYBE_FS(addr) addr
-# define LoadTlSymbolValueAddress(symbol,reg) ;         \
-	movl	SBCL_THREAD_BASE_EA, reg ; 		\
-	addl	(symbol+SYMBOL_TLS_INDEX_OFFSET), reg ;
-# define LoadCurrentThreadSlot(offset,reg);     \
-	movl	SBCL_THREAD_BASE_EA, reg ;      \
-	movl	offset(reg), reg ;
-#elif !defined(LISP_FEATURE_SB_THREAD)
+#if !defined(LISP_FEATURE_SB_THREAD)
   /* so that we don't have to rewrite the safepoint logic */
 # define SBCL_THREAD_BASE_EA GNAME(all_threads)
 # define MAYBE_FS(addr) addr
@@ -356,16 +345,11 @@ GNAME(call_into_lisp_first_time):
 GNAME(lspmain):
 	pushl	%ebp		# Save old frame pointer.
 	movl	%esp,%ebp	# Establish new frame.
-#ifndef LISP_FEATURE_WIN32
 	movl    GNAME(all_threads),%eax
 	/* pthread machinery takes care of this for other threads */
 	movl    THREAD_CONTROL_STACK_END_OFFSET(%eax) ,%esp
-#else
-/* Win32 -really- doesn't like you switching stacks out from under it. */
-	movl	GNAME(all_threads),%eax
-#endif
 	jmp     Lstack
-
+
 	.text
 	.globl GNAME(call_into_lisp)
 	TYPE(GNAME(call_into_lisp))
@@ -430,24 +414,6 @@ Lstack:
 Ldone:
 	/* Registers eax, ecx, edx, edi, and esi are now live. */
 
-#ifdef LISP_FEATURE_WIN32
-	/* Establish an SEH frame. */
-#ifdef LISP_FEATURE_SB_THREAD
-	/* Save binding stack pointer */
-	subl $4, %esp
-	pushl %eax
-        movl SBCL_THREAD_BASE_EA, %eax
-	movl THREAD_BINDING_STACK_POINTER_OFFSET(%eax), %eax
-	movl %eax, 4(%esp)
-	popl %eax
-#else
-	pushl	BINDING_STACK_POINTER + SYMBOL_VALUE_OFFSET
-#endif
-	pushl	$GNAME(exception_handler_wrapper)
-	pushl	%fs:0
-	movl	%esp, %fs:0
-#endif
-
 	/* Alloc new frame. */
 	push	%ebp            # Dummy for return address
 	push	%ebp		# fp in save location S1
@@ -462,13 +428,6 @@ Ldone:
 	mov	%ebx, %esp
 LsingleValue:
 	/* A singled value function returns here */
-
-#ifdef LISP_FEATURE_WIN32
-	/* Remove our SEH frame. */
-	mov     %fs:0,%esp
-	popl	%fs:0
-	add	$8, %esp
-#endif
 
 /* Restore C regs: ebx esi edi. */
 	popl	%edi
@@ -575,43 +534,6 @@ GNAME(memory_fault_emulation_trap):
 	TRAP
 	.byte 	trap_MemoryFaultEmulation
 	SIZE(GNAME(memory_fault_emulation_trap))
-
-#ifdef LISP_FEATURE_WIN32
-	/* The guts of the exception-handling system doesn't use
-	 * frame pointers, which manages to throw off backtraces
-	 * rather badly.  So here we grab the (known-good) EBP
-	 * and EIP from the exception context and use it to fake
-	 * up a stack frame which will skip over the system SEH
-	 * code. */
-	.align	align_16byte
-	.globl	GNAME(exception_handler_wrapper)
-	TYPE(GNAME(exception_handler_wrapper))
-GNAME(exception_handler_wrapper):
-	/* Context layout is: */
-	/* 7 dwords before FSA. (0x1c) */
-	/* 8 dwords and 0x50 bytes in the FSA. (0x70/0x8c) */
-	/* 4 dwords segregs. (0x10/0x9c) */
-	/* 6 dwords non-stack GPRs. (0x18/0xb4) */
-	/* EBP (at 0xb4) */
-	/* EIP (at 0xb8) */
-#define CONTEXT_EBP_OFFSET 0xb4
-#define CONTEXT_EIP_OFFSET 0xb8
-	/* some other stuff we don't care about. */
-	pushl	%ebp
-	movl	0x10(%esp), %ebp	/* context */
-	pushl	CONTEXT_EIP_OFFSET(%ebp)
-	pushl	CONTEXT_EBP_OFFSET(%ebp)
-	movl	%esp, %ebp
-	pushl	0x1c(%esp)
-	pushl	0x1c(%esp)
-	pushl	0x1c(%esp)
-	pushl	0x1c(%esp)
-	call	GNAME(handle_exception)
-	lea	8(%ebp), %esp
-	popl	%ebp
-	ret
-	SIZE(GNAME(exception_handler_wrapper))
-#endif
 
 #ifdef LISP_FEATURE_DARWIN
         .align align_16byte

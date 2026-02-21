@@ -36,15 +36,12 @@
 #define UD2_INST 0x0b0f
 #define BREAKPOINT_WIDTH 1
 
-#ifndef LISP_FEATURE_WIN32
 os_vm_address_t
 arch_get_bad_addr(int sig, siginfo_t *code, os_context_t *context)
 {
     return (os_vm_address_t)code->si_addr;
 }
-#endif
 
-
 /*
  * hacking signal contexts
  *
@@ -84,8 +81,6 @@ os_context_flags_addr(os_context_t *context)
     return (int *)(&context->uc_mcontext->SS.EFLAGS);
 #elif defined __NetBSD__
     return &(context->uc_mcontext.__gregs[_REG_EFL]);
-#elif defined LISP_FEATURE_WIN32
-    return (int *)&context->win32_context->EFlags;
 #else
 #error unsupported OS
 #endif
@@ -253,7 +248,6 @@ arch_handle_single_step_trap(os_context_t *context, int trap)
     handle_single_step_trap(context, trap, 0);
 }
 
-#ifndef LISP_FEATURE_WIN32
 void
 sigtrap_handler(int signal, siginfo_t *info, os_context_t *context)
 {
@@ -297,7 +291,6 @@ sigill_handler(int signal, siginfo_t *siginfo, os_context_t *context) {
     fake_foreign_function_call(context);
     lose("Unhandled SIGILL at %p.", (void*)OS_CONTEXT_PC(context));
 }
-#endif /* not LISP_FEATURE_WIN32 */
 
 void
 arch_install_interrupt_handlers()
@@ -312,12 +305,9 @@ arch_install_interrupt_handlers()
      * OS I haven't tested on?) and we have to go back to the old CMU
      * CL way, I hope there will at least be a comment to explain
      * why.. -- WHN 2001-06-07 */
-#ifndef LISP_FEATURE_WIN32
     ll_install_handler(SIGILL , sigill_handler);
     ll_install_handler(SIGTRAP, sigtrap_handler);
-#endif
 }
-
 
 void
 gencgc_apply_code_fixups(struct code *old_code, struct code *new_code)

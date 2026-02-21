@@ -104,10 +104,6 @@ const char* gc_phase_names[GC_NPHASES] = {
 
 extern void map_gc_page();
 extern void unmap_gc_page();
-#if !defined(LISP_FEATURE_WIN32)
-/* win32-os.c covers these, but there is no unixlike-os.c, so the normal
- * definition goes here.  Fixme: (Why) don't these work for Windows?
- */
 void
 map_gc_page()
 {
@@ -123,18 +119,10 @@ unmap_gc_page()
     odxprint(misc, "unmap_gc_page");
     os_protect((void *) GC_SAFEPOINT_PAGE_ADDR, BACKEND_PAGE_BYTES, OS_VM_PROT_NONE);
 }
-#endif /* !LISP_FEATURE_WIN32 */
 
 static struct gc_state {
-#ifdef LISP_FEATURE_WIN32
-    /* Per-process lock for gc_state */
-    CRITICAL_SECTION lock;;
-    /* Conditions: one per phase */
-    CONDITION_VARIABLE phase_cond[GC_NPHASES];
-#else
     pthread_mutex_t lock;
     pthread_cond_t phase_cond[GC_NPHASES];
-#endif
 
     /* For each [current or future] phase, a number of threads not yet ready to
      * leave it */
@@ -158,14 +146,7 @@ static struct gc_state {
 
 void safepoint_init()
 {
-# ifdef LISP_FEATURE_WIN32
-    int i;
-    extern void alloc_gc_page(void);
-    alloc_gc_page();
-    for (i=GC_NONE; i<GC_NPHASES; ++i)
-        InitializeConditionVariable(&gc_state.phase_cond[i]);
-    InitializeCriticalSection(&gc_state.lock);
-#elif !defined LISP_FEATURE_X86_64 && !defined LISP_FEATURE_RELOCATABLE_STATIC_SPACE
+#if !defined LISP_FEATURE_X86_64 && !defined LISP_FEATURE_RELOCATABLE_STATIC_SPACE
     // 64-bit already allocated a trap page when the GC card mark table was made
     os_alloc_gc_space(0, NOT_MOVABLE, GC_SAFEPOINT_PAGE_ADDR, BACKEND_PAGE_BYTES);
 #endif
@@ -237,10 +218,6 @@ set_csp_from_context(struct thread *self, os_context_t *ctx)
      * and instead arrange for the conservative stack scan to also cover
      * the context implicitly.  The obvious way to do that is to start
      * at the context itself: */
-#ifdef LISP_FEATURE_WIN32
-    gc_assert((void **) ctx < sp);
-    sp = (void**) ctx;
-#endif
     gc_assert((void **)self->control_stack_start
               <= sp && sp
               < (void **)self->control_stack_end);
@@ -495,10 +472,8 @@ thread_may_thrupt(os_context_t *ctx)
     if (ctx && deferrables_blocked_p(os_context_sigmask_addr(ctx)))
         return 0;
 
-#ifndef LISP_FEATURE_WIN32
     if (read_TLS(INTERRUPT_PENDING, self) != NIL)
         return 0;
-#endif
 
     return 1;
 }
@@ -508,16 +483,6 @@ int
 check_pending_thruptions(os_context_t *ctx)
 {
     struct thread *p = get_sb_vm_thread();
-
-#ifdef LISP_FEATURE_WIN32
-
-    /* On Windows, wake_thread/kill_safely does not set THRUPTION_PENDING
-     * in the self-kill case; instead we do it here while also clearing the
-     * "signal". */
-    if (thread_extra_data(p)->pending_signal_set)
-        if (__sync_fetch_and_and(&thread_extra_data(p)->pending_signal_set,0))
-            write_TLS(THRUPTION_PENDING, LISP_T, p);
-#endif
 
     if (!thread_may_thrupt(ctx))
         return 0;
@@ -749,31 +714,6 @@ void thread_in_safety_transition(os_context_t *ctxptr)
     }
 }
 
-#ifdef LISP_FEATURE_WIN32
-void thread_interrupted(os_context_t *ctxptr)
-{
-    struct thread *self = get_sb_vm_thread();
-    bool gc_active, was_in_alien;
-
-    odxprint(safepoints,"%s","pending interrupt trap");
-    WITH_GC_STATE_LOCK {
-        gc_active = gc_cycle_active();
-        if (gc_active) {
-            was_in_alien = set_thread_csp_access(self,1);
-        }
-    }
-    if (gc_active) {
-        if (was_in_alien) {
-            thread_in_safety_transition(ctxptr);
-        } else {
-            thread_in_lisp_raised(ctxptr);
-        }
-    }
-    check_pending_gc(ctxptr);
-    while(check_pending_thruptions(ctxptr));
-}
-#endif
-
 void
 gc_stop_the_world()
 {
@@ -843,44 +783,6 @@ void gc_start_the_world()
 /* wake_thread(thread) -- ensure a thruption delivery to
  * `thread'. */
 
-# ifdef LISP_FEATURE_WIN32
-
-void
-wake_thread_io(struct thread * thread)
-{
-    SetEvent(thread_private_events(thread,1));
-    win32_maybe_interrupt_io(thread);
-}
-
-static void wake_thread_impl(struct thread_instance *lispthread)
-{
-    struct thread* thread = (void*)lispthread->uw_primitive_thread;
-    wake_thread_io(thread);
-
-    if (read_TLS(THRUPTION_PENDING,thread)==LISP_T)
-        return;
-
-    write_TLS(THRUPTION_PENDING,LISP_T,thread);
-
-    if ((read_TLS(GC_PENDING,thread)==LISP_T)
-        ||(THREAD_STOP_PENDING(thread)==LISP_T)
-        )
-        return;
-
-    wake_thread_io(thread);
-    mutex_release(&all_threads_lock);
-
-    WITH_GC_STATE_LOCK {
-        if (gc_state.phase == GC_NONE) {
-            gc_advance(GC_INVOKED,GC_NONE);
-            gc_advance(GC_NONE,GC_INVOKED);
-        }
-    }
-
-    mutex_acquire(&all_threads_lock);
-    return;
-}
-# else
 static void wake_thread_impl(struct thread_instance *lispthread)
 {
     struct thread *thread = (void*)lispthread->uw_primitive_thread;
@@ -939,7 +841,6 @@ static void wake_thread_impl(struct thread_instance *lispthread)
     }
     thread_sigmask(SIG_SETMASK, &oldset, 0);
 }
-#endif /* !LISP_FEATURE_WIN32 */
 
 /* If the thread id given does not belong to a running thread (it has
  * exited or never even existed) pthread_kill _may_ fail with ESRCH,
@@ -959,43 +860,7 @@ static void wake_thread_impl(struct thread_instance *lispthread)
  * Windows is OK. */
 void wake_thread(struct thread_instance* lispthread)
 {
-#ifdef LISP_FEATURE_WIN32
-#define sb_pthr_kill(t,sig) \
- __sync_fetch_and_or(&thread_extra_data(t)->pending_signal_set, 1<<sig)
-    /* META: why is this comment about safepoint builds mentioning
-     * gc_stop_the_world() ? Never the twain shall meet. */
-
-    /* Kludge (on safepoint builds): At the moment, this isn't just
-     * an optimization; rather it masks the fact that
-     * gc_stop_the_world() grabs the all_threads mutex without
-     * releasing it, and since we're not using recursive pthread
-     * mutexes, the pthread_mutex_lock() around the all_threads loop
-     * would go wrong.  Why are we running interruptions while
-     * stopping the world though?  Test case is (:ASYNC-UNWIND
-     * :SPECIALS), especially with s/10/100/ in both loops. */
-
-    /* Frequent special case: resignalling to self.  The idea is
-     * that leave_region safepoint will acknowledge the signal, so
-     * there is no need to take locks, roll thread to safepoint
-     * etc. */
-    struct thread* thread = (void*)lispthread->uw_primitive_thread;
-    if (thread == get_sb_vm_thread()) {
-        sb_pthr_kill(thread, 1); // can't fail
-        check_pending_thruptions(NULL);
-        return;
-    }
-    // block_deferrables + mutex_lock looks very unnecessary here,
-    // but without them, make-target-contrib hangs in bsd-sockets.
-    sigset_t oldset;
-    block_deferrable_signals(&oldset);
-    mutex_acquire(&all_threads_lock);
-    sb_pthr_kill(thread, 1); // can't fail
     wake_thread_impl(lispthread);
-    mutex_release(&all_threads_lock);
-    thread_sigmask(SIG_SETMASK,&oldset,0);
-#else
-    wake_thread_impl(lispthread);
-#endif
 }
 
 void* os_get_csp(struct thread* th)
@@ -1076,9 +941,6 @@ handle_safepoint_violation(os_context_t *ctx, os_vm_address_t fault_address)
 void
 vodxprint_fun(const char *fmt, va_list args)
 {
-#ifdef LISP_FEATURE_WIN32
-    DWORD lastError = GetLastError();
-#endif
     int original_errno = errno;
 
     char buf[1024];
@@ -1099,16 +961,6 @@ vodxprint_fun(const char *fmt, va_list args)
      * revisit this decision.) */
     fputs(buf, stderr);
 
-#ifdef LISP_FEATURE_WIN32
-    /* stdio's stderr is line-bufferred, i.e. \n ought to flush it.
-     * Unfortunately, MinGW does not behave the way I would expect it
-     * to.  Let's be safe: */
-    fflush(stderr);
-#endif
-
-#ifdef LISP_FEATURE_WIN32
-    SetLastError(lastError);
-#endif
     errno = original_errno;
 }
 

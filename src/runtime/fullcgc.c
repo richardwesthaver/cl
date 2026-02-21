@@ -25,10 +25,8 @@
 #include "var-io.h"
 
 #include <stdio.h>
-#ifndef LISP_FEATURE_WIN32
 #define HAVE_GETRUSAGE 1
 #include <sys/resource.h> // for getrusage()
-#endif
 
 struct unbounded_queue {
   struct Qblock* head_block;

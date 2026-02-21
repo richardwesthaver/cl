@@ -45,11 +45,7 @@
 #include <stdbool.h>
 #include "thread.h"
 
-#ifdef LISP_FEATURE_WIN32
-#define STACK_GUARD_SIZE (win32_page_size + win32_stack_guarantee)
-#else
 #define STACK_GUARD_SIZE os_vm_page_size
-#endif
 
 #ifdef LISP_FEATURE_STACK_GROWS_DOWNWARD_NOT_UPWARD
 

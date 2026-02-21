@@ -137,11 +137,6 @@ void tune_asm_routines_for_microarch(void)
     if (cpuid_fn1_ecx & (1<<23)) our_cpu_feature_bits |= 2;
     consts->cpu_feature_bits = our_cpu_feature_bits;
 
-#ifdef LISP_FEATURE_WIN32
-    extern void set_up_win64_seh_thunk(lispobj*);
-    set_up_win64_seh_thunk((lispobj*)get_asm_routine_by_name("SEH-TRAMPOLINE", 0));
-#endif
-
     unsigned char* asm_routine = (void*)get_asm_routine_by_name(VECTOR_FILL_T, 0);
     if (!asm_routine) return;
     // Since a particular runtime expects a particular core,
@@ -182,7 +177,6 @@ void untune_asm_routines_for_microarch(void)
     SYMBOL(CALLBACK_WRAPPER_TRAMPOLINE)->value = 0;
 }
 
-#ifndef _WIN64
 os_vm_address_t
 arch_get_bad_addr(int __attribute__((unused)) sig,
                   siginfo_t *code,
@@ -190,9 +184,7 @@ arch_get_bad_addr(int __attribute__((unused)) sig,
 {
     return (os_vm_address_t)code->si_addr;
 }
-#endif
 
-
 /*
  * hacking signal contexts
  *
@@ -243,8 +235,6 @@ void visit_context_registers(void (*proc)(os_context_register_t, void*),
 #   define CONTEXT_FLAGS(c) c->sc_rflags
 #elif defined __NetBSD__
 #   define CONTEXT_FLAGS(c) CONTEXT_SLOT(c,RFLAGS)
-#elif defined _WIN64
-#   define CONTEXT_FLAGS(c) c->win32_context->EFlags
 #else
 #error unsupported OS
 #endif
@@ -547,16 +537,14 @@ arch_install_interrupt_handlers()
      * OS I haven't tested on?) and we have to go back to the old CMU
      * CL way, I hope there will at least be a comment to explain
      * why.. -- WHN 2001-06-07 */
-#ifndef LISP_FEATURE_WIN32
     ll_install_handler(SIGILL , sigill_handler);
     ll_install_handler(SIGTRAP, sigtrap_handler);
-#endif
 
-#if defined(X86_64_SIGFPE_FIXUP) && !defined(LISP_FEATURE_WIN32)
+#if defined(X86_64_SIGFPE_FIXUP)
     ll_install_handler(SIGFPE, sigfpe_handler);
 #endif
 }
-
+
 void
 arch_write_linkage_table_entry(int index, void *target_addr, int datap)
 {
@@ -652,12 +640,7 @@ lispobj entrypoint_taggedptr(uword_t entrypoint) {
 
 extern unsigned int max_alloc_point_counters;
 
-#ifdef LISP_FEATURE_WIN32
-extern CRITICAL_SECTION alloc_profiler_lock;
-#else
 extern pthread_mutex_t alloc_profiler_lock;
-#endif
-
 
 static unsigned int claim_index(int qty) // qty is 1 or 2
 {
