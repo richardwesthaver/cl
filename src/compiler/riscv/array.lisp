@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Allocator for the array header.
 (define-vop (make-array-header)
   (:policy :fast-safe)
@@ -40,7 +39,6 @@
       ;; And store the header value.
       (storew ndescr header 0 other-pointer-lowtag))
     (move result header)))
-
 ;;;; Additional accessors and setters for the array header.
 (define-full-reffer %array-dimension *
   array-dimensions-offset other-pointer-lowtag
@@ -60,7 +58,6 @@
     (inst lbu res x (- (/ array-rank-position n-byte-bits) other-pointer-lowtag))
     (inst addi res res 1)
     (inst andi res res array-rank-mask)))
-
 ;;;; Bounds checking routine.
 (define-vop (check-bound)
   (:translate %check-bound)
@@ -323,7 +320,6 @@
   (def-small-data-vector-frobs simple-array-unsigned-byte-2 2)
   (def-small-data-vector-frobs simple-array-unsigned-byte-4 4))
 
-
 ;;; These vops are useful for accessing the bits of a vector irrespective of
 ;;; what type of vector it is.
 (define-full-reffer vector-raw-bits * vector-data-offset other-pointer-lowtag
@@ -336,7 +332,6 @@
   (any-reg descriptor-reg) * %weakvec-ref)
 (define-full-setter %weakvec-set * vector-data-offset other-pointer-lowtag
   (any-reg descriptor-reg) * %weakvec-set)
-
 (define-full-casser data-vector-cas/simple-vector simple-vector vector-data-offset other-pointer-lowtag
   (any-reg descriptor-reg) * %compare-and-swap-svref)
 (define-atomic-frobber array-atomic-incf/word amoadd * vector-data-offset

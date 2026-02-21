@@ -61,7 +61,6 @@
   (with-alien ((%unblock (function void) :extern "unblock_gc_stop_signal"))
     (alien-funcall %unblock)
     nil))
-
 ;;;; interface to installing signal handlers
 
 (defun enable-interrupt (signal handler)
@@ -100,7 +99,6 @@
                          (t (sb-kernel:get-lisp-obj-address #'run-handler)))))))
   nil)
 
-
 ;;;; default LISP signal handlers
 ;;;;
 ;;;; Most of these just call ERROR to report the presence of the signal.
@@ -224,7 +222,6 @@
           (alien-funcall sigaddset (vector-sap mask) sigchld))
         (pthread-sigmask SIG_SETMASK mask nil))))
   (values)))
-
 ;;;; etc.
 
 ;;; extract si_code from siginfo_t

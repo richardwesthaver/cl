@@ -45,7 +45,6 @@
                      (invoke-asm-routine 'check-barrier temp))
                    (setf value-tn-ref (tn-ref-across value-tn-ref))
                    while value-tn-ref))))))
-
 ;;; Cell-Ref and Cell-Set are used to define VOPs like CAR, where the
 ;;; offset to be read or written is a property of the VOP used.
 

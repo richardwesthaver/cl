@@ -191,7 +191,6 @@
 (defun clear-flag (bit integer)
   (logandc2 integer (ash 1 bit)))
 
-
 ;;; Output storage globals
 (defstruct ucd misc decomp)
 
@@ -333,7 +332,6 @@ Length should be adjusted when the standard changes.")
 
 (defvar *block-first* nil)
 
-
 ;;; Unicode data file parsing
 (defun hash-misc (gc-index bidi-index ccc digit decomposition-info flags
                   script line-break age)
@@ -743,7 +741,6 @@ Length should be adjusted when the standard changes.")
   (fixup-decompositions)
   nil)
 
-
 ;;; PropList.txt
 (defparameter **proplist-properties** nil
   "A list of properties extracted from PropList.txt")
@@ -836,7 +833,6 @@ Length should be adjusted when the standard changes.")
   (setf **proplist-properties** (nreverse **proplist-properties**))
   (values))
 
-
 ;;; Collation keys
 (defvar *maximum-variable-key* 1)
 
@@ -869,7 +865,6 @@ Length should be adjusted when the standard changes.")
                    (bitpack-collation-key primary secondary tertiary)))))
     (values code-points ret))))
 
-
 ;;; Other properties
 (defparameter *confusables*
   (with-input-arbitrary-utf8-file (stream "confusables")
@@ -918,7 +913,6 @@ Length should be adjusted when the standard changes.")
     (cons (nreverse (coerce ranges 'vector)) (nreverse names)))
   "Vector of block starts and ends in a form acceptable to `ordered-ranges-position`.
 Used to look up block data.")
-
 ;;; Output code
 (defun write-codepoint (code-point stream)
   (declare (type (unsigned-byte 32) code-point))

@@ -59,7 +59,6 @@ boolean gc_active_p = 0;
 
 static void scavenge_newspace(void);
 
-
 /* collecting garbage */
 
 #ifdef PRINTNOISE
@@ -263,7 +262,6 @@ collect_garbage(generation_index_t ignore)
 #endif
 }
 
-
 /* scavenging */
 
 static void
@@ -283,7 +281,6 @@ scavenge_newspace(void)
              (test_weak_triggers(0, 0) && new_space_free_pointer > here));
     /* printf("done with newspace\n"); */
 }
-
 /* debugging code */
 
 void
@@ -342,7 +339,6 @@ print_garbage(lispobj *from_space, lispobj *from_space_free_pointer)
     }
     printf("%d total words not copied.\n", total_words_not_copied);
 }
-
 lispobj *
 search_dynamic_space(void *pointer)
 {
@@ -352,7 +348,6 @@ search_dynamic_space(void *pointer)
         return NULL;
     return gc_search_space(start, pointer);
 }
-
 /* initialization.  if gc_init can be moved to after core load, we could
  * combine these two functions */
 
@@ -361,7 +356,6 @@ gc_init(void)
 {
     gc_common_init();
 }
-
 /* noise to manipulate the gc trigger stuff */
 
 /* Functions that substantially change the dynamic space free pointer

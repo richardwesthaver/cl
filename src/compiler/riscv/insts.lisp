@@ -27,7 +27,6 @@
             sb-vm::short-immediate
             sb-vm::short-immediate-fixnum
             sb-vm::u+i-immediate)))
-
 ;;;; Constants, types, conversion functions, some disassembler stuff.
 
 (defun reg-tn-encoding (tn)
@@ -39,7 +38,6 @@
        ((registers float-registers) (tn-offset tn))
        (t (error "~S isn't a register." tn))))))
 
-
 ;;;; disassembler field definitions
 
 (define-arg-type reg :printer #'print-reg)
@@ -57,7 +55,6 @@
 (define-arg-type store-annotation :printer #'print-store-annotation)
 (define-arg-type jalr-annotation :printer #'print-jalr-annotation)
 
-
 (define-instruction byte (segment byte)
   (:emitter (emit-byte segment byte)))
 
@@ -1007,7 +1004,6 @@
        (inst sb sb-vm::null-tn sb-vm::code-tn
              (the (unsigned-byte 11) offset))))))
 
-
 ;;;; The RISC-V C extension.
 
 (define-arg-type rvc-reg :printer #'print-rvc-reg)

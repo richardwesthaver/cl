@@ -402,7 +402,6 @@
                                        (sb-debug:print-backtrace :count 10))))))))
     (wait-for-threads threads)))
 
-
 
 (defun subtypep-hash-cache-test ()
   (dotimes (i 10000)
@@ -421,7 +420,6 @@
         (loop repeat 30
               collect (make-thread #'subtypep-hash-cache-test)))
   (terpri))
-
 ;;;; FUNCTIONAL TESTS
 
 (with-test (:name (:parallel defclass))

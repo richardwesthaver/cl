@@ -246,7 +246,6 @@
                #'delegate-complex-subtypep-arg2)
          (setf (type-class-complex-intersection2 type-class)
                #'delegate-complex-intersection2))))))
-
 ;;;; FUNCTION and VALUES types
 ;;;;
 ;;;; Pretty much all of the general type operations are illegal on
@@ -767,7 +766,6 @@
     (if (plusp llks)
         (make-values-type required optional rest)
         (make-short-values-type required))))
-
 ;;;; VALUES types interfaces
 ;;;;
 ;;;; We provide a few special operations that can be meaningfully used
@@ -1244,7 +1242,6 @@
                            (return (values nil nil)))
                          (unless res
                            (return (values nil t))))))))))))
-
 ;;;; type method interfaces
 
 ;;; like SUBTYPEP, only works on CTYPE structures
@@ -1947,7 +1944,6 @@ expansion happened."
         (funcall function type)
         (values nil nil))))
 
-
 ;;;; general TYPE-UNION and TYPE-INTERSECTION operations
 ;;;;
 ;;;; These are fully general operations on CTYPEs: they'll always
@@ -2037,7 +2033,6 @@ expansion happened."
       (t (make-union-type
           (every #'type-enumerable simplified-types)
           simplified-types)))))
-
 ;;;; built-in types
 
 (defun cons-type-might-be-empty-type (type)
@@ -2309,7 +2304,6 @@ expansion happened."
 
 (define-type-method (named :unparse) (flags x)
   (named-type-name x))
-
 ;;;; hairy and unknown types
 
 (define-type-method (hairy :negate) (x) (make-negation-type x))
@@ -2459,7 +2453,6 @@ expansion happened."
         (if type
             (specifier-type type)
             (%make-hairy-type whole))))))
-
 ;;;; negation types
 
 ;; Former comment was:
@@ -2748,7 +2741,6 @@ expansion happened."
 (def-type-translator not :list ((:context context) typespec)
   ;; "* is not permitted as an argument to the NOT type specifier."
   (type-negation (specifier-type typespec context 'not)))
-
 ;;;; numeric types
 
 (declaim (inline numtype-aspects-eq))
@@ -3167,7 +3159,6 @@ expansion happened."
                   (try-union type2 type1))
                  (t
                   (specifier-type 'number)))))))
-
 ;;;; array types
 
 (define-type-class array :enumerable nil :might-contain-other-types nil)
@@ -3987,7 +3978,6 @@ expansion happened."
      dims)
     (t
      (error "Array dimensions is not a list, integer or *:~%  ~S" dims))))
-
 ;;;; MEMBER types
 
 
@@ -4217,7 +4207,6 @@ expansion happened."
       (make-member-type (let ((xset (alloc-xset)))
                           (add-to-xset elt xset)
                           (values xset nil)))))
-
 ;;;; intersection types
 ;;;;
 ;;;; Until version 0.6.10.6, SBCL followed the original CMU CL approach
@@ -4484,7 +4473,6 @@ expansion happened."
   ;; "* is not permitted as an argument to the AND type specifier."
   (%type-intersection (mapcar (lambda (x) (specifier-type x context 'and))
                               type-specifiers)))
-
 ;;;; union types
 
 (define-type-class union
@@ -4920,7 +4908,6 @@ expansion happened."
         (sb-kernel::simplify-array-unions type)
         type)))
 
-
 ;;;; ALIEN-TYPE types
 
 (define-type-class alien :enumerable nil :might-contain-other-types nil)
@@ -4959,7 +4946,6 @@ expansion happened."
             (%make-alien-type-type alien-type)))
       *universal-type*))
 
-
 ;;;; CONS types
 
 (def-type-translator cons ((:context context)
@@ -5140,7 +5126,6 @@ expansion happened."
                                      (cons-type-cdr-type type2))))
 
 (!define-superclasses cons ((cons)) !cold-init-forms)
-
 ;;;; CHARACTER-SET types
 
 ;; FIXME:
@@ -5295,12 +5280,10 @@ expansion happened."
         (nreverse res))
     nil))
 
-
 ;;; Return the type that describes all objects that are in X but not
 ;;; in Y.
 (defun type-difference (x y)
   (type-intersection x (type-negation y)))
-
 (def-type-translator array ((:context context)
                              &optional (element-type '*)
                                        (dimensions '*))
@@ -5324,7 +5307,6 @@ expansion happened."
                     :element-type eltype
                     :specialized-element-type (%upgraded-array-element-type
                                                eltype))))
-
 ;;;; SIMD-PACK types
 
 #+sb-simd-pack
@@ -5441,7 +5423,6 @@ expansion happened."
       (if (eql intersection 0) *empty-type* (%make-simd-pack-256-type intersection))))
 
   (!define-superclasses simd-pack-256 ((simd-pack-256)) !cold-init-forms))
-
 ;;;; utilities shared between cross-compiler and target system
 
 ;;; Does the type derived from compilation of an actual function
@@ -5506,7 +5487,6 @@ expansion happened."
                          :low low
                          :high high
                          :normalize-zeros nil))))
-
 ;;; The following function is a generic driver for approximating
 ;;; set-valued functions over types.  Putting this here because it'll
 ;;; probably be useful for a lot of type analyses.
@@ -5708,7 +5688,6 @@ expansion happened."
    #'union #'intersection #'set-difference
    '* nil
    over under))
-
 
 ;;; This decides if two type expressions are equal ignoring the order of terms
 ;;; in AND and OR. It doesn't decide equivalence, but it's good enough
@@ -5730,7 +5709,6 @@ expansion happened."
                   (every (lambda (elt) (member elt b :test #'compare)) a)
                   (every (lambda (elt) (member elt a :test #'compare)) b))))
     (compare a b)))
-
 
 (defun numeric-union-type-enumerable (type)
   (let* ((aspects (numeric-union-type-aspects type))
@@ -7078,7 +7056,6 @@ expansion happened."
             (values nil nil)))
       (values nil nil)))
 
-
 ;;;; miscellaneous interfaces
 
 ;;; Clear memoization of all type system operations that can be

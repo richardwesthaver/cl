@@ -1,6 +1,5 @@
 ;;;; Benchmarking SBCL hash tables
 
-
 
 ;;;; General utilities
 
@@ -62,7 +61,6 @@
     (coerce (loop for x being the hash-key in h
                   collect x)
             'vector)))
-
 
 (defvar *ht-args* ())
 
@@ -127,7 +125,6 @@
         ((and (eq type 'string)
               (eq (alloc-name alloc) :existing-symbol-name))
          (length (all-symbol-names)))))
-
 
 ;;;; Timing
 
@@ -212,7 +209,6 @@
           ,@(loop for into-timing in into-timings
                   collect `(incf-timing ,into-timing ,timing))))
       (lambda () ,@body))))
-
 
 ;;; We actually measure times with approximately *TIME-N-KEYS* but
 ;;; rescale the results to be exactly per
@@ -250,7 +246,6 @@
              (getf timing :system-run-time-us))
           (getf timing :n-measurements))
        1000)))
-
 
 (defun random-string (n)
   (coerce (loop for i below n
@@ -559,7 +554,6 @@
                    header))
   (terpri stream)
   (force-output stream))
-
 
 ;;;; Cost and regret
 
@@ -608,7 +602,6 @@
     ;; There are R bins with Q+1 elements. The rest have Q.
     (+ (* r (cost-of-bin (1+ q)))
        (* (- s r) (cost-of-bin q)))))
-
 
 ;;;; Cache-aware notion of cost (UNFINISHED)
 
@@ -647,7 +640,6 @@
       0
       (/ (cost-of-bins+ ht 256 4.0d0)
          (hash-table-count ht))))
-
 
 (defun alloc-name (alloc)
   (if (listp alloc) (first alloc) alloc))

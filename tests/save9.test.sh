@@ -8,7 +8,7 @@ tmpcore=$TEST_FILESTEM.core
 run_sbcl <<EOF
   (defvar *s* (open #+unix "$this_file"
                     #-unix (format nil "~A/run-tests.lisp"
-                            (posix-getenv "SBCL_PWD"))))
+                            (posix-getenv "CL_PWD"))))
   (save-lisp-and-die "$tmpcore")
 EOF
 set -e

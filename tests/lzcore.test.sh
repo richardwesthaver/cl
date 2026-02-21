@@ -24,7 +24,7 @@ run_sbcl <<EOF
                       :compression (and (member :sb-core-compression *features*) t))
 EOF
 run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit \
-    --eval "(setf sb-ext:*evaluator-mode* :${TEST_SBCL_EVALUATOR_MODE:-compile})"
+    --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})"
 check_status_maybe_lose "SAVE-LISP-AND-DIE :COMPRESS" $? 0 "(compressed saved core ran)"
 
 rm "$tmpcore"

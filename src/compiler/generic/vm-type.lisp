@@ -75,7 +75,6 @@
 (sb-xc:deftype sb-bignum:bit-index ()
   `(integer 0 ,(- (* (1+ maximum-bignum-length) sb-vm:n-word-bits) 1)))
 
-
 ;;;; hooks into the type system
 
 ;;; Typically the use for UNBOXED-ARRAY is with foreign APIs where we want to

@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; the branch VOP
 
 ;;; The unconditional branch, emitted when we can't drop through to the desired
@@ -20,7 +19,6 @@
   (:generator 5
     (inst jmp dest)))
 
-
 ;;;; Generic conditional VOPs
 
 ;;; The generic conditional branch, emitted immediately after test
@@ -293,7 +291,6 @@
            (inst movzx '(:byte :dword) res res)
            ;; Retain bit 63... if either is negative
            (inst lea (if (or (minusp x) (minusp y)) :qword :dword) res ea)))))))
-
 ;;;; conditional VOPs
 
 ;;; Note: a constant-tn is allowed in CMP; it uses an EA displacement,

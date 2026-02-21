@@ -1,4 +1,4 @@
-;;;; Utilities for separating an SBCL core file into two pieces:
+;;;; Utilities for separating an CL core file into two pieces:
 ;;;; 1. An assembly language file containing the immobile code space
 ;;;; 2. A '.o' file wrapping a core file containing everything else
 ;;;; We operate as a "tool" that processes external files rather than

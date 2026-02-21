@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; flags for compiled debug variables
 
 ;;;    Compiled debug variables are in a packed binary representation in the
@@ -39,7 +38,6 @@
 (defconstant compiled-debug-var-minimal-p              #b00100000)
 (defconstant compiled-debug-var-deleted-p              #b01000000)
 (defconstant compiled-debug-var-indirect-p             #b10000000)
-
 ;;;; compiled debug blocks
 ;;;;
 ;;;;    Compiled debug blocks are in a packed binary representation in the
@@ -79,7 +77,6 @@
 ;;; the same.
 (defconstant compiled-code-location-equal-live       (ash #b10000 3))
 
-
 ;;;; DEBUG-FUN objects
 
 (defstruct (debug-fun (:constructor nil)
@@ -195,7 +192,6 @@
   ;; The start of elsewhere code for this function (if any.)
   (elsewhere-pc (missing-arg) :type index :read-only t))
 
-
 ;;;; packed debug function
 
 ;;; The packed debug info format compactly represents debug-info for
@@ -294,7 +290,6 @@
 ;;; not overlap the other call syntax codes.
 (defconstant packed-debug-fun-arg-index-offset 8)
 
-
 ;;;; DEBUG SOURCE
 
 ;;; There is one per compiled file and one per function compiled at
@@ -313,7 +308,6 @@
   (start-positions nil :type (or (simple-array * (*)) null) :read-only t)
   ;; Additional information from (WITH-COMPILATION-UNIT (:SOURCE-PLIST ...))
   (plist *source-plist* :read-only t))
-
 ;;;; DEBUG-INFO structures
 
 (def!struct (debug-info

@@ -67,7 +67,6 @@
            (declare (type (complex double-float) value))
          (setf (sap-ref-double sap 0) (realpart value)
                (sap-ref-double sap 8) (imagpart value)))))))
-
 ;;;; INTERNAL-ERROR-ARGS.
 
 ;;; Given a (POSIX) signal context, extract the internal error

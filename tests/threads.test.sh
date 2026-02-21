@@ -27,8 +27,8 @@ flag="condition-wait-sigcont.tmp"
 touch $flag
 
 # $! is not set correctly when calling run_sbcl, do it directly
-"$SBCL_RUNTIME" --core "$SBCL_CORE" $SBCL_ARGS \
-    --load "$SBCL_PWD/condition-wait-sigcont.lisp" &
+"$CL_RUNTIME" --core "$CL_CORE" $CL_ARGS \
+    --load "$CL_PWD/condition-wait-sigcont.lisp" &
 sb_pid=$!
 
 while [ -f $flag ]; do sleep 1; done

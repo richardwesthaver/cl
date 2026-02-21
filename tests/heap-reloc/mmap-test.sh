@@ -1,10 +1,10 @@
 #!/bin/sh
 
-source ./build-test-sbcl
+source ./build-test-cl
 
-export SBCL_FAKE_MMAP_INSTRUCTION_FILE=`pwd`/fakemap
+export CL_FAKE_MMAP_INSTRUCTION_FILE=`pwd`/fakemap
 
-./test-sbcl --core ../../output/sbcl.core \
+./test-cl --core ../../output/cl.core \
   --eval '(setf (extern-alien "verify_gens" char) 0)' \
   --eval '(setf (extern-alien "gencgc_verbose" int) 1)' \
   --eval '(gc :full t)' \
@@ -23,5 +23,5 @@ export SBCL_FAKE_MMAP_INSTRUCTION_FILE=`pwd`/fakemap
 # The base gets aligned up to 0x2000010000 and one page is subtracted
 # from dynamic space size so not to overrun the memory.
 # And this script does not actually exit with the correct status anyway.
-(cd .. ; TEST_SBCL_RUNTIME=`pwd`/heap-reloc/test-sbcl ./run-tests.sh save*.test.sh)
-rm test-sbcl
+(cd .. ; TEST_CL_RUNTIME=`pwd`/heap-reloc/test-cl ./run-tests.sh save*.test.sh)
+rm test-cl

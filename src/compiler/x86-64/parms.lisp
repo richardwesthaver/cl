@@ -47,7 +47,6 @@
 ;;; ### Note: 'lispword' always means 8 bytes, and 'word' usually means
 ;;; the same as 'lispword', except in the assembler and disassembler,
 ;;; where 'word' means 2 bytes to match AMD/Intel terminology.
-
 ;;;; machine architecture parameters
 
 ;;; the number of bits per word, where a word holds one lisp descriptor
@@ -75,7 +74,6 @@
 (defconstant-eqx float-traps-byte        (byte 6  7) #'equalp)
 (defconstant-eqx float-exceptions-byte   (byte 6  0) #'equalp)
 (defconstant float-fast-bit 0) ; no fast mode on x86-64
-
 ;;;; description of the target address space
 
 ;;;   Linkage Tables|        | <--        Static Space        ---> |
@@ -158,7 +156,6 @@
          (- (or #+immobile-space text-space-start static-space-start) alien-linkage-space-size))
        (defparameter lisp-linkage-space-addr
          (- alien-linkage-space-start (* 8 (ash 1 n-linkage-index-bits)))))
-
 (defenum (:start 8)
   halt-trap
   pending-interrupt-trap
@@ -175,7 +172,6 @@
   ;; ERROR-TRAP has to be numerically highest.
   ;; The various internal errors are numbered from here upward.
   error-trap)
-
 ;;;; static symbols
 
 (defvar *binding-stack-pointer*)

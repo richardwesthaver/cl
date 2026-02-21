@@ -14,7 +14,6 @@
 ;;;; files for more information.
 
 (in-package "SB-KERNEL")
-
 ;;;; float parameters
 
 (defconstant least-positive-single-float (single-from-bits 0 0 1))
@@ -151,7 +150,6 @@
 (defconstant most-negative-fixnum-double-float
   (double-from-bits 1 (+ sb-vm:n-fixnum-bits sb-vm:double-float-bias) 0))
 
-
 ;;;; float predicates and environment query
 
 #-sb-xc-host
@@ -361,7 +359,6 @@
   (declare (ignore x) (type float x))
   2)
 
-
 ;;;; INTEGER-DECODE-FLOAT and DECODE-FLOAT
 
 (declaim (maybe-inline integer-decode-single-float
@@ -527,7 +524,6 @@
     ((double-float)
      (decode-double-float f))))
 
-
 ;;;; SCALE-FLOAT
 
 (declaim (maybe-inline scale-single-float scale-double-float))
@@ -668,7 +664,6 @@
      (scale-single-float f ex))
     ((double-float)
      (scale-double-float f ex))))
-
 ;;;; converting to/from floats
 
 (defun float (number &optional (other () otherp))

@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; allocation helpers
 
 (defun generate-stack-overflow-check (vop size)
@@ -240,7 +239,6 @@
                                list-pointer-lowtag)))
                 (aver (null (tn-ref-across things)))))
       (move result res))))
-
 ;;;; special-purpose inline allocators
 
 ;;; ALLOCATE-VECTOR
@@ -333,7 +331,6 @@
     (inst rep)
     (inst stos bytes)))
 
-
 (define-vop (make-fdefn)
   (:policy :fast-safe)
   (:translate make-fdefn)
@@ -374,7 +371,6 @@
   (:generator 10
     (alloc-other result value-cell-widetag value-cell-size node)
     (storew value result value-cell-value-slot other-pointer-lowtag)))
-
 ;;;; automatic allocators for primitive objects
 
 (define-vop (make-unbound-marker)

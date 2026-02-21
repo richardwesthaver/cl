@@ -20,7 +20,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; miscellaneous backend properties
 
 ;;; the number of references that a TN must have to offset the
@@ -87,7 +86,6 @@
 (defglobal *backend-type-predicates* nil)
 (declaim (type hash-table *backend-predicate-types*))
 (declaim (type list *backend-type-predicates*))
-
 ;;;; VM support routines which backends need to implement
 
 ;;; from vm.lisp
@@ -120,7 +118,6 @@
 ;;; emit-nop
 ;;; location-number
 
-
 ;;;; This is a prototype interface to support Christophe Rhodes' new
 ;;;; (sbcl-0.pre7.57) VOP :GUARD clauses for implementations which
 ;;;; depend on CPU variants, e.g. the differences between I486,

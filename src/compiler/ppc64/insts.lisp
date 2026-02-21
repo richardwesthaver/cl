@@ -26,7 +26,6 @@
             sb-vm::code-offset
             sb-vm::lip-tn
             sb-vm::null-offset)))
-
 ;;;; Constants, types, conversion functions, some disassembler stuff.
 
 ;;; This constant is referenced only in files in the ppc64 subdirectory,
@@ -308,7 +307,6 @@
               (operand addr dstate)))))
 
 
-
 ;;;; dissassem:define-instruction-formats
 
 (defmacro ppc-byte (startbit &optional (endbit startbit))
@@ -446,7 +444,6 @@
   frs ra d)
 
 
-
 ;;; There are around ... oh, 28 or so ... variants on the "X" format.
 ;;;  Some of them are only used by one instruction; some are used by dozens.
 ;;;  Some aren't used by instructions that we generate ...
@@ -508,7 +505,6 @@
 (def-ppc-iformat (x-27 '(:name))
   (xo xo21-30))
 
-
 ;;;;
 
 (def-ppc-iformat (xl '(:name :tab bt "," ba "," bb))
@@ -523,7 +519,6 @@
 (def-ppc-iformat (xl-xo '(:name))
   (xo xo21-30))
 
-
 ;;;;
 
 (def-ppc-iformat (xfx)
@@ -535,7 +530,6 @@
 (def-ppc-iformat (xfl '(:name :tab flm "," frb))
   flm frb (xo xo21-30) rc)
 
-
 ;;;
 
 (def-ppc-iformat (xo '(:name :tab rt "," ra "," rb))
@@ -547,7 +541,6 @@
 (def-ppc-iformat (xo-a '(:name :tab rt "," ra))
   rt ra oe (xo xo22-30) rc)
 
-
 ;;;
 
 (def-ppc-iformat (a '(:name :tab frt "," fra "," frb "," frc))
@@ -561,7 +554,6 @@
 
 (def-ppc-iformat (a-tbc '(:name :tab frt "," frb "," frc))
   frt frb frc (xo xo26-30) rc)
-
 
 (def-ppc-iformat (m '(:name :tab ra "," rs "," rb "," mb "," me))
   rs ra rb mb me rc)
@@ -574,7 +566,6 @@
   (data :field (byte 16 0) :reader xinstr-data))
 
 
-
 ;;;; Primitive emitters.
 
 
@@ -612,7 +603,6 @@
 (define-bitfield-emitter emit-a-form-inst 32
   (byte 6 26) (byte 5 21) (byte 5 16) (byte 5 11) (byte 5 6) (byte 5 1) (byte 1 0))
 
-
 
 (defun patchable-emit-d-form (segment opcode rt ra si)
   (cond ((and (label-p si) (= ra code-offset))
@@ -1940,7 +1930,6 @@
 
 
 
-
 ;;; Here in the future, macros are our friends.
 
   (define-instruction-macro subis (rt ra simm)
@@ -2182,7 +2171,6 @@
 (define-instruction-macro blrl ()
   `(inst bclrl :bo-u 0))
 
-
 ;;; Some more macros
 
 #-64-bit
@@ -2240,7 +2228,6 @@
   `(%lr ,reg ,value))
 
 
-
 ;;;; Instructions for dumping data and header objects.
 
 (define-instruction word (segment word)
@@ -2295,7 +2282,6 @@
   (:emitter
    (emit-header-data segment return-pc-widetag)))
 
-
 ;;;; Instructions for converting between code objects, functions, and lras.
 (defun emit-compute-inst (segment vop dst src label temp calc)
   (emit-chooser

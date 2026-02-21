@@ -484,7 +484,7 @@
 lisp_fun_linkage_space: .zero ~:*~D
  .equiv fntbl, lisp_fun_linkage_space~%" linkage-bss-size)
 
-  (format output " .text~% .file \"sbcl.core\"
+  (format output " .text~% .file \"cl.core\"
 ~:[~; .macro .size sym size # ignore
  .endm
  .macro .type sym type # ignore
@@ -682,7 +682,7 @@ lisp_fun_linkage_space: .zero ~:*~D
                       (sb-c::debug-source-namestring
                        (truly-the sb-c::debug-source (translate source spacemap)))))
                 (setq namestring (if (core-null-p namestring)
-                                     "sbcl.core"
+                                     "cl.core"
                                      (translate namestring spacemap)))
                 (unless (string= namestring prev-namestring)
                   (format output " .file \"~a\"~%" namestring)
@@ -1158,7 +1158,7 @@ lisp_fun_linkage_space: .zero ~:*~D
   (let ((features (detect-target-features spacemap)))
     (not (find :immobile-code features))))
 
-;;; Given a native SBCL '.core' file, or one attached to the end of an executable,
+;;; Given a native CL '.core' file, or one attached to the end of an executable,
 ;;; separate it into pieces.
 ;;; ASM-PATHNAME is the name of the assembler file that will hold all the Lisp code.
 ;;; The other two output pathnames are implicit: "x.s" -> "x.core" and "x-core.o"

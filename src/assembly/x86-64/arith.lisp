@@ -22,7 +22,6 @@
   (inst mov :dword temp x)
   (inst and :dword temp y)
   (inst test :byte temp fixnum-tag-mask)))
-
 ;;;; addition, subtraction, and multiplication
 
 #+sb-assembling
@@ -117,7 +116,6 @@
 
     SINGLE-WORD-BIGNUM
     (return-single-word-bignum res res rax)))
-
 ;;;; negation
 
 (define-assembly-routine (generic-negate
@@ -141,7 +139,6 @@
   (inst clc) (inst ret)
   GENERIC
   (tail-call-static-fun '%negate 1))
-
 ;;;; comparison
 
 (eval-when (:compile-toplevel)

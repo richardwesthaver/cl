@@ -22,7 +22,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 ;; This choice of naming structure is perhaps unfortunate, because were the
 ;; names 2-lists, the globaldb hack to support this would instead be
 ;; a natural use of the (SETF <x>) style naming that globaldb favors.

@@ -9,7 +9,6 @@
 ;;;; absolutely no warranty. See the COPYING and CREDITS files for
 ;;;; more information.
 
-
 ;;;; Helpers
 
 (defun test (kind name state make-body
@@ -50,7 +49,6 @@
     ;; Check the documentation.
     #+sb-doc
     (search-string (documentation name kind))))
-
 ;;;; Deprecated variables
 
 (sb-int:define-deprecated-variable :early "1.2.10"
@@ -92,7 +90,6 @@
   (test 'variable 'deprecated-variable.final :final
                           (lambda (name) `((symbol-global-value ',name)))))
 
-
 ;;;; Deprecated functions
 
 (sb-int:define-deprecated-function :early "1.2.10"

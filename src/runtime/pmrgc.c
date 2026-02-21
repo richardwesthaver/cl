@@ -32,12 +32,10 @@
 /* forward declarations */
 extern FILE *gc_activitylog();
 
-
 /* Largest allocation seen since last GC. */
 os_vm_size_t large_allocation = 0;
 int n_lisp_gcs;
 
-
 /*
  * debugging
  */
@@ -124,7 +122,6 @@ struct generation generations[NUM_GENERATIONS];
 generation_index_t gencgc_oldest_gen_to_gc = HIGHEST_NORMAL_GENERATION;
 
 page_index_t next_free_page; // upper (exclusive) bound on used page range
-
 #ifdef LISP_FEATURE_SB_THREAD
 /* This lock is to prevent multiple threads from simultaneously
  * allocating new regions which overlap each other.  This lock must be
@@ -334,7 +331,6 @@ copy_unboxed_object(lispobj object, sword_t nwords)
 {
     return gc_copy_object(object, nwords, unboxed_region, PAGE_TYPE_UNBOXED);
 }
-
 /* This WILL NOT reliably work for objects in a currently open allocation region,
  * because page_words_used() is not sync'ed to the free pointer until closing.
  * However it should work reliably for codeblobs, because if you can hold
@@ -458,7 +454,6 @@ static void sticky_preserve_pointer(os_context_register_t register_word, void* a
 #endif
 
 #define pin_exact_root(r) mr_preserve_object(r)
-
 
 #define WORDS_PER_CARD (GENCGC_CARD_BYTES/N_WORD_BYTES)
 
@@ -472,7 +467,6 @@ void gc_close_collector_regions(int flag)
     ensure_region_closed(cons_region, PAGE_TYPE_CONS);
 }
 
-
 /* Un-write-protect all the pages in from_space. */
 static void
 unprotect_oldspace(void)
@@ -495,7 +489,6 @@ unprotect_oldspace(void)
     }
 }
 
-
 /* Call 'proc' with pairs of addresses demarcating ranges in the
  * specified generation.
  * Stop if any invocation returns non-zero, and return that value */
@@ -1312,7 +1305,6 @@ collect_garbage(generation_index_t last_gen)
     from_space = -1;
     new_space = 0;
 }
-
 /* Initialization of gencgc metadata is split into two steps:
  * 1. gc_init() - allocation of a fixed-address space via mmap(),
  *    failing which there's no reason to go on. (safepoint only)
@@ -1330,7 +1322,6 @@ gc_init(void)
 
 int gc_card_table_nbits;
 sword_t gc_card_table_mask;
-
 
 /*
  * The vops that allocate assume that the returned space is zero-filled.

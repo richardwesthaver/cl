@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; unary operations.
 
 (define-vop (fast-safe-arith-op)
@@ -49,7 +48,6 @@
   (:translate lognot)
   (:generator 2
     (inst not res x)))
-
 ;;;; Binary fixnum operations.
 
 ;;; Assume that any constant operand is the second arg...
@@ -500,7 +498,6 @@
   (:generator 1
     (inst sra temp number amount)
     (inst andn result temp fixnum-tag-mask)))
-
 (define-vop (signed-byte-32-len)
   (:translate integer-length)
   (:note "inline (signed-byte 32) integer-length")
@@ -636,7 +633,6 @@
   (:generator 3
     (inst mulx r x y)))
 
-
 ;;;; Modular functions:
 (define-modular-fun lognot-mod32 (x) lognot :untagged nil 32)
 (define-vop (lognot-mod32/unsigned=>unsigned)
@@ -686,7 +682,6 @@
   (when (sb-c:constant-lvar-p count)
     (sb-c::give-up-ir1-transform))
   '(%primitive fast-ash-left-mod32/unsigned=>unsigned integer count))
-
 ;;;; Binary conditional VOPs:
 
 (define-vop (fast-conditional)
@@ -799,7 +794,6 @@
   (:arg-types * (:constant (signed-byte 11)))
   (:variant-cost 6))
 
-
 ;;;; 32-bit logical operations
 
 (macrolet ((define (translate operation)
@@ -815,7 +809,6 @@
                 (:generator 1 (inst ,operation r num amount)))))
   (define shift-towards-start sll)
   (define shift-towards-end   srl))
-
 ;;;; Bignum stuff.
 (define-vop (bignum-length get-header-data)
   (:translate sb-bignum:%bignum-length)
@@ -1117,7 +1110,6 @@
   (:translate sb-bignum:%ashl)
   (:generator 1
     (inst sll result digit count)))
-
 (in-package "SB-C")
 
 (deftransform * ((x y)

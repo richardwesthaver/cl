@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;; Instruction-like macros.
 
 (defmacro move (dst src)
@@ -96,7 +95,6 @@
      (inst lra-header-word)))
 
 
-
 ;;;; stack TN's
 
 ;;; Move a stack TN to a register and vice-versa.
@@ -128,8 +126,6 @@
           ((control-stack)
            (loadw ,n-reg cfp-tn (tn-offset ,n-stack))))))))
 
-
-
 ;;;; Storage allocation:
 
 (defun generate-stack-overflow-check (vop size temp)
@@ -256,7 +252,6 @@
   (storew null-tn csp-tn 0 0) ; store a known-good value (don't want wild pointers below CSP)
   (inst add temp csp-tn lowtag-mask)
   (inst and csp-tn temp (lognot lowtag-mask)))
-
 ;;;; Error Code
 (defun emit-error-break (vop kind code values)
   (assemble ()
@@ -275,7 +270,6 @@
       (emit-label start-lab)
       (apply #'error-call vop error-code values)
       start-lab)))
-
 ;;; a handy macro for making sequences look atomic
 (defmacro pseudo-atomic ((temp &optional) &rest forms)
   `(progn

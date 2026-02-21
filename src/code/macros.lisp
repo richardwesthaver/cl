@@ -11,7 +11,6 @@
 
 (in-package "SB-IMPL")
 
-
 ;;;; DEFMACRO
 
 ;;; Inform the cross-compiler how to expand SB-XC:DEFMACRO (= DEFMACRO)
@@ -33,7 +32,6 @@
   ;; FIXME: POLICY doesn't support DEFMACRO, but we need it ASAP.
   (defmacro-using-host-expander 'sb-c:policy))
 
-
 ;;;; Destructuring-bind
 
 (sb-xc:defmacro destructuring-bind (lambda-list expression &body body
@@ -44,7 +42,6 @@ tree structure resulting from the evaluation of EXPRESSION."
   `(binding* ,(sb-c::expand-ds-bind lambda-list expression t nil)
      ,@body))
 
-
 ;;;; DEFUN
 
 ;;; Should we save the inline expansion of the function named NAME?
@@ -264,7 +261,6 @@ tree structure resulting from the evaluation of EXPRESSION."
   ;; extended defun as used by defstruct
   (sb-xc:defmacro sb-c:xdefun (&environment env name snippet source-form lambda-list &body body)
     (defun-expander env name lambda-list body snippet source-form t)))
-
 ;;;; DEFCONSTANT, DEFVAR and DEFPARAMETER
 
 (sb-xc:defmacro defconstant (name value &optional (doc nil docp))
@@ -401,7 +397,6 @@ tree structure resulting from the evaluation of EXPRESSION."
 (defun %compiler-defvar (var)
   (proclaim `(special ,var)))
 
-
 ;;;; DEFGLOBAL and DEFINE-LOAD-TIME-GLOBAL
 
 (sb-xc:defmacro defglobal (name value &optional (doc nil docp))
@@ -454,7 +449,6 @@ See also DEFGLOBAL which assigns the VALUE at compile-time too."
        :always-bound
        always-boundp)))
 
-
 ;;;; various conditional constructs
 (flet ((prognify (forms env)
          (cond ((not forms) nil)
@@ -562,7 +556,6 @@ evaluated as a PROGN."
                     ,n-result
                     ,(expand-forms t (rest forms)))))))))
 
-
 ;;;; Multiple value macros:
 
 ;;; All the multiple-value receiving forms are defined in terms of
@@ -628,7 +621,6 @@ evaluated as a PROGN."
              (lambda (n &rest list) (nth (truly-the index n) list))
            (the index ,n) ,form))))
 
-
 ;;;; ASSERT and CHECK-TYPE
 
 ;;; ASSERT is written this way, to call ASSERT-ERROR, because of how
@@ -761,7 +753,6 @@ invoked. In that case it will store into PLACE and start over."
                     (check-type-error ',place ,value ',type
                                       ,@(and type-string
                                              `(,type-string)))))))))
-
 ;;;; DEFINE-SYMBOL-MACRO
 
 (sb-xc:defmacro define-symbol-macro (name expansion)
@@ -791,7 +782,6 @@ invoked. In that case it will store into PLACE and start over."
                              (:global "a global variable")
                              (t kind))))))
   name)
-
 ;;;; DEFINE-COMPILER-MACRO
 
 (sb-xc:defmacro define-compiler-macro (name lambda-list &body body)
@@ -821,7 +811,6 @@ invoked. In that case it will store into PLACE and start over."
     ;; respect to parent function?
     (setf (compiler-macro-function name) definition)
     name))
-
 ;;;; CASE, TYPECASE, and friends
 
 ;;; Make this a full warning during SBCL build.
@@ -1422,7 +1411,6 @@ invoked. In that case it will store into PLACE and start over."
                  ;; TRULY-THE allows transforms to take advantage of the type
                  ;; information without need for constraint propagation.
                  collect `(,type (,fun (truly-the ,type ,var))))))))
-
 ;;;; WITH-FOO i/o-related macros
 
 (sb-xc:defmacro with-open-stream ((var stream) &body body)
@@ -1453,7 +1441,6 @@ invoked. In that case it will store into PLACE and start over."
                  ,@body))
        (sb-debug::funcall-with-debug-io-syntax #',thunk))))
 
-
 ;;;; Iteration macros:
 
 (flet
@@ -1648,7 +1635,6 @@ invoked. In that case it will store into PLACE and start over."
                ,var
                ,result)))))))
 
-
 ;;;; Miscellaneous macros:
 
 (sb-xc:defmacro lambda (&whole whole args &body body)
@@ -1748,7 +1734,6 @@ invoked. In that case it will store into PLACE and start over."
            ,@body)
          (get-output-stream-string ,dummy)))))
 
-
 ;;;; COMPARE-AND-SWAP
 ;;;;
 ;;;; SB-EXT:COMPARE-AND-SWAP is the public API for now.

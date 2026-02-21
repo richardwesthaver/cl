@@ -564,7 +564,6 @@
       (when p
         (delete-file p)))))
 
-
 ;;;; KOI8-R external format
 #-unicode-lite
 (progn
@@ -600,7 +599,6 @@
                   koi8-r-codes)))
 )
 
-
 ;;; tests of FILE-STRING-LENGTH
 (let ((standard-characters "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!$\"'(),_-./:;?+<=>#%&*@[\\]{|}`^~"))
   (do-external-formats (xf)
@@ -632,7 +630,6 @@
            (string-length (file-string-length s string)))
       (write-string string s)
       (assert (= (file-position s) (+ position string-length))))))
-
 
 ;;; See sbcl-devel "Subject: Bug in FILE-POSITION on UTF-8-encoded files"
 ;;; by Lutz Euler on 2006-03-05 for more details.
@@ -810,7 +807,6 @@
       (dotimes (i 256)
         (assert (= (char-code (char string i)) i)))
       (assert (char= #\? (char string 256))))))
-
 ;;; latin-2 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-2))
   (dotimes (i 256)
@@ -833,7 +829,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 57 (count #\? string :start #xa1))))))
-
 ;;; latin-3 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-3))
   (dotimes (i 256)
@@ -857,7 +852,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 35 (count #\? string :start #xa1))))))
-
 ;;; latin-4 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-4))
   (dotimes (i 256)
@@ -880,7 +874,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 50 (count #\? string :start #xa1))))))
-
 ;;; iso-8859-5 tests
 (with-ef-test (:name (:unibyte-input-replacement :iso-8859-5))
   (dotimes (i 256)
@@ -903,7 +896,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 93 (count #\? string :start #xa1))))))
-
 ;;; iso-8859-6 tests
 (with-ef-test (:name (:unibyte-input-replacement :iso-8859-6))
   (dotimes (i 256)
@@ -929,7 +921,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 93 (count #\? string :start #xa1))))))
-
 ;;; iso-8859-7 tests
 (with-ef-test (:name (:unibyte-input-replacement :iso-8859-7))
   (dotimes (i 256)
@@ -953,7 +944,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 80 (count #\? string :start #xa1))))))
-
 ;;; iso-8859-8 tests
 (with-ef-test (:name (:unibyte-input-replacement :iso-8859-8))
   (dotimes (i 256)
@@ -977,7 +967,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 67 (count #\? string :start #xa1))))))
-
 ;;; latin-5 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-5))
   (dotimes (i 256)
@@ -1000,7 +989,6 @@
       (dotimes (i #xd0)
         (assert (= (char-code (char string i)) i)))
       (assert (= 6 (count #\? string :start #xd0))))))
-
 ;;; latin-6 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-6))
   (dotimes (i 256)
@@ -1022,7 +1010,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 46 (count #\? string :start #xa1))))))
-
 ;;; iso-8859-11 tests
 (with-ef-test (:name (:unibyte-input-replacement :iso-8859-11))
   (dotimes (i 256)
@@ -1045,7 +1032,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 95 (count #\? string :start #xa1))))))
-
 ;;; latin-7 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-7))
   (dotimes (i 256)
@@ -1069,7 +1055,6 @@
       (dolist (i '(#xd8 #xc6 #xf8 #xe6))
         (assert (char/= (char string i) #\?)))
       (assert (= 52 (count #\? string :start #xa1))))))
-
 ;;; latin-8 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-8))
   (dotimes (i 256)
@@ -1091,7 +1076,6 @@
       (dotimes (i #xa1)
         (assert (= (char-code (char string i)) i)))
       (assert (= 31 (count #\? string :start #xa1))))))
-
 ;;; latin-9 tests
 (with-ef-test (:name (:unibyte-input-replacement :latin-9))
   (dotimes (i 256)
@@ -1114,7 +1098,6 @@
       (dotimes (i #xa4)
         (assert (= (char-code (char string i)) i)))
       (assert (= 8 (count #\? string :start #xa4))))))
-
 ;;; koi8-r tests
 (with-ef-test (:name (:unibyte-input-replacement :koi8-r)
                   :skipped-on :unicode-lite)
@@ -1137,7 +1120,6 @@
       (dotimes (i #x80)
         (assert (= (char-code (char string i)) i)))
       (assert (= 122 (count #\? string :start #x80))))))
-
 ;;; koi8-u tests
 (with-ef-test (:name (:unibyte-input-replacement :koi8-u))
   (dotimes (i 256)
@@ -1159,7 +1141,6 @@
       (dotimes (i #x80)
         (assert (= (char-code (char string i)) i)))
       (assert (= 122 (count #\? string :start #x80))))))
-
 ;;; x-mac-cyrillic tests
 (with-ef-test (:name (:unibyte-input-replacement :x-mac-cyrillic))
   (dotimes (i 256)
@@ -1182,7 +1163,6 @@
       (dotimes (i #x80)
         (assert (= (char-code (char string i)) i)))
       (assert (= 113 (count #\? string :start #x80))))))
-
 ;;; ucs-2 tests
 (with-test (:name (:multibyte :ucs2le))
   (let* ((size 120)
@@ -1259,7 +1239,6 @@
       (let ((string (read-line s)))
         (assert (char= (char string 0) (code-char #x10100)))
         (assert (char= (char string 1) #\replacement_character))))))
-
 ;;; utf tests
 (with-test (:name (:utf-16le :roundtrip))
   (let ((string (map 'string 'code-char '(#x20 #x200 #x2000 #xfffd #x10fffd))))

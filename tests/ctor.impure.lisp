@@ -17,7 +17,6 @@
   (:use "CL" "TEST-UTIL" "COMPILER-TEST-UTIL"))
 
 (in-package "CTOR-TEST")
-
 (defclass no-slots () ())
 
 (defun make-no-slots ()
@@ -35,7 +34,6 @@
 
 (assert (typep (make-no-slots) 'no-slots))
 (assert (typep (funcall (gethash '(sb-pcl::ctor no-slots nil) sb-pcl::*all-ctors*)) 'no-slots))
-
 (defclass one-slot ()
   ((a :initarg :a)))
 
@@ -61,7 +59,6 @@
                                 4) 'a) 4))
 (assert (not (slot-boundp (make-one-slot-noa) 'a)))
 (assert (not (slot-boundp (funcall (gethash '(sb-pcl::ctor one-slot nil) sb-pcl::*all-ctors*)) 'a)))
-
 (defclass one-slot-superclass ()
   ((b :initarg :b)))
 (defclass one-slot-subclass (one-slot-superclass)

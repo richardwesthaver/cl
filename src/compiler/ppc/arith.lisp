@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Unary operations.
 
 (define-vop (fast-safe-arith-op)
@@ -49,7 +48,6 @@
   (:translate lognot)
   (:generator 2
     (inst not res x)))
-
 ;;;; Binary fixnum operations.
 
 ;;; Assume that any constant operand is the second arg...
@@ -475,7 +473,6 @@
   (:translate *)
   (:generator 3
     (inst mulli r x y)))
-
 ;;; Shifting
 
 (macrolet ((def (name sc-type type result-type cost)
@@ -670,7 +667,6 @@
 
       (emit-label done))))
 
-
 ;;;; %LDB
 
 (define-vop (ldb-c/fixnum)
@@ -737,7 +733,6 @@
           (mod (- (+ 32 n-fixnum-tag-bits) posn) 32)
           (- 32 size n-fixnum-tag-bits)
           (- 31 n-fixnum-tag-bits))))
-
 ;;;; Modular functions:
 (define-modular-fun lognot-mod32 (x) lognot :untagged nil 32)
 (define-vop (lognot-mod32/unsigned=>unsigned)
@@ -785,7 +780,6 @@
   (define-modular-backend logandc2)
   (define-modular-backend logorc1)
   (define-modular-backend logorc2))
-
 ;;;; Binary conditional VOPs:
 
 (define-vop (fast-conditional)
@@ -1036,7 +1030,6 @@
   (:arg-types * (:constant (signed-byte 11)))
   (:variant-cost 6))
 
-
 ;;;; 32-bit logical operations
 
 (macrolet ((define (translate operation)
@@ -1054,7 +1047,6 @@
                  (inst ,operation r num amount)))))
   (define shift-towards-start slw)
   (define shift-towards-end   srw))
-
 ;;;; Bignum stuff.
 
 (define-vop (bignum-length get-header-data)
@@ -1291,7 +1283,6 @@
   (:generator 10
     (inst mullw temp dividend c)
     (inst mulhwu remainder temp divisor)))
-
 (in-package "SB-C")
 
 (deftransform * ((x y)

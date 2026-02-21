@@ -9,7 +9,6 @@
 (defun return-machine-address (scp)
   (context-register scp lr-offset))
 
-
 ;;;; "Sigcontext" access functions, cut & pasted from sparc-vm.lisp,
 ;;;; then modified for ARM.
 ;;;;
@@ -43,7 +42,6 @@
   (declare (ignore context index))
   (warn "stub %SET-CONTEXT-FLOAT-REGISTER")
   (coerce new-value format))
-
 ;;;; INTERNAL-ERROR-ARGS.
 
 ;;; Given a (POSIX) signal context, extract the internal error

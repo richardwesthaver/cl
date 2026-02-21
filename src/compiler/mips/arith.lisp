@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Unary operations.
 
 (define-vop (fast-safe-arith-op)
@@ -52,7 +51,6 @@
   (:translate lognot)
   (:generator 2
     (inst nor res x zero-tn)))
-
 ;;;; Binary fixnum operations.
 
 ;;; Assume that any constant operand is the second arg...
@@ -429,7 +427,6 @@
     (inst mfhi r)))
 
 
-
 ;;;; Binary conditional VOPs:
 
 (define-vop (fast-conditional)
@@ -588,7 +585,6 @@
   (:arg-types * (:constant (signed-byte 14)))
   (:variant-cost 6))
 
-
 ;;;; 32-bit logical operations
 
 (macrolet ((define (translate operation)
@@ -604,7 +600,6 @@
                 (:generator 1 (inst ,operation r num amount)))))
   (define shift-towards-start #+big-endian sll #+little-endian srl)
   (define shift-towards-end   #+big-endian srl #+little-endian sll))
-
 ;;;; Modular arithmetic
 (define-modular-fun +-mod32 (x y) + :untagged nil 32)
 (define-vop (fast-+-mod32/unsigned=>unsigned fast-+/unsigned=>unsigned)

@@ -78,7 +78,6 @@
         (sap-ref-8 sap (1+ offset)) (ldb (byte 8 16) value)
         (sap-ref-8 sap (+ offset 2)) (ldb (byte 8 8) value)
         (sap-ref-8 sap (+ offset 3)) (logand value #xff)))
-
 ;;;
 ;;;   octets
 ;;;
@@ -270,7 +269,6 @@
   ucs-2be->string-aref
   string->ucs-2be
  :char-encodable-p (< (char-code |ch|) #x10000))
-
 (declaim (inline char->ucs-4le))
 (defun char->ucs-4le (char dest string pos)
   (declare (optimize speed #.*safety-0*)

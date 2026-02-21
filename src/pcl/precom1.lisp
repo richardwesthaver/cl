@@ -22,6 +22,5 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 ;;; (We used to pre-allocate generic function caches here, but we let
 ;;; the GC deal with that stuff these days)

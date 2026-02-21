@@ -81,7 +81,6 @@
   (defregset boxed-regs a0 a1 a2 a3 a4 a5 l0 l1 #-sb-thread l2 ocfp lexenv code)
 
   (define-argument-register-set a0 a1 a2 a3 a4 a5))
-
 (!define-storage-bases
  (define-storage-base registers :finite :size 32)
  (define-storage-base control-stack :unbounded :size 0)

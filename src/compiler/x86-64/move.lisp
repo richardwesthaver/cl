@@ -55,7 +55,6 @@
    (signed-reg) (signed-stack)
    (unsigned-reg) (unsigned-stack))
   (inst mov y x))
-
 ;;;; the MOVE VOP
 (defun is-operand-immediate (val)
   (typep val '(or (signed-byte 32) #+(or immobile-space permgen) fixup)))
@@ -161,7 +160,6 @@
 (define-move-vop move-arg :move-arg
   (any-reg descriptor-reg)
   (any-reg descriptor-reg))
-
 ;;;; moves and coercions
 
 ;;; These MOVE-TO-WORD VOPs move a tagged integer to a raw full-word

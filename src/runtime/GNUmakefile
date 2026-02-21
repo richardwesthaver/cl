@@ -1,6 +1,6 @@
-# -*- makefile -*- for the C-level run-time support for SBCL
+# -*- makefile -*- for the C-level run-time support for CL
 
-# This software is part of the SBCL system. See the README file for
+# This software is part of the CL system. See the README file for
 # more information.
 #
 # This software is derived from the CMU CL system, which was
@@ -12,11 +12,11 @@
 .PHONY: all clean TAGS tags targets
 
 all: targets tags
-TARGET=sbcl
+TARGET=cl
 
 # Allow using paxctl(8) or similar programs to adjust PaX permissions
-# of src/runtime/sbcl during the build.
-SBCL_PAXCTL ?= :
+# of src/runtime/cl during the build.
+CL_PAXCTL ?= :
 
 # Defaults which might be overridden or modified by values in the
 # Config file. Most of them are same on most systems right now.
@@ -27,8 +27,8 @@ GREP = grep
 LD = ld
 
 # By default, don't make and use a library, just use the object files.
-LIBSBCL = $(OBJS)
-USE_LIBSBCL = $(OBJS)
+LIBCL = $(OBJS)
+USE_LIBCL = $(OBJS)
 __LDFLAGS__ =
 
 include ../../output/prefix.def
@@ -100,15 +100,15 @@ endif
 targets: $(TARGET) $(OBJTARGET) $(LDB_TARGET) sbcl.mk
 
 LDB_OBJS = $(filter-out main.o interr.o runtime.o monitor.o thread.o stop-the-world.o safepoint.o,$(OBJS))
-ldb: $(LIBSBCL)
+ldb: $(LIBCL)
 	$(CC) -g $(CPPFLAGS) $(CFLAGS) -DSTANDALONE_LDB -c -o standalone-monitor.o monitor.c
 	$(CC) -g $(CPPFLAGS) $(CFLAGS) -DSTANDALONE_LDB -c -o standalone-interr.o interr.c
 	$(CC) $(LINKFLAGS) -o ldb standalone-monitor.o standalone-interr.o \
 		$(LDB_OBJS) $(LIBS)
 
-$(TARGET): $(LIBSBCL)
-	$(CC) ${LINKFLAGS} -o $@ $(USE_LIBSBCL) $(LIBS)
-	$(SBCL_PAXCTL) $@
+$(TARGET): $(LIBCL)
+	$(CC) ${LINKFLAGS} -o $@ $(USE_LIBCL) $(LIBS)
+	$(CL_PAXCTL) $@
 
 # tests/heap-reloc/fake-mman.c assumes #+linux, so this recipe
 # only works on linux.
@@ -118,45 +118,45 @@ heap-reloc-test: ../../tests/heap-reloc/fake-mman.c $(OBJS)
 # Enable compiling gencgc with even more assertions and/or
 # data collection, with COMPILING_TESTS. Not really used yet.
 gc-unit-tests.o: CFLAGS=-g -DCOMPILING_TESTS
-unit-tests: gc-unit-tests.o libsbcl.a
+unit-tests: gc-unit-tests.o libcl.a
 	$(CC) -g -no-pie -o $@ $^ -ldl -lpthread -lm
 
-# ld -r -o sbcl.o works on Linux, but not on other platforms.
+# ld -r -o cl.o works on Linux, but not on other platforms.
 # On macOS, it fails to keep debug sections.
 # On mingw64, it leads to an executable that cannot be executed.
-sbcl.o: $(OBJS)
+cl.o: $(OBJS)
 	$(LD) $(__LDFLAGS__) -r -o $@ $^
 
-libsbcl.a: $(OBJS)
+libcl.a: $(OBJS)
 	rm -f $@ ; ar rcs $@ $^
 
 PIC_OBJS = $(subst .o,.pic.o,$(OBJS))
-libsbcl.so: $(PIC_OBJS)
+libcl.so: $(PIC_OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS) $(SOFLAGS)
 # for this to work, you must have with-gcc-tls in your build features already.
 # can't define it here because then it conflicts if you have it in both places.
 %.pic.o: %.c
 	$(CC) -fPIC -c $(CPPFLAGS) $(filter-out -fno-pie,$(CFLAGS)) $< -o $@
 %.pic.o: %.S # (-fPIC doesn't affect hand-written assembly source)
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@ -DLIBSBCL
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@ -DLIBCL
 
-SHRINKWRAP_DEPS = ../../output/sbcl.core ../../tools-for-build/elftool.lisp
-shrinkwrap-sbcl.s shrinkwrap-sbcl-core.o: $(SHRINKWRAP_DEPS)
+SHRINKWRAP_DEPS = ../../output/cl.core ../../tools-for-build/elftool.lisp
+shrinkwrap-cl.s shrinkwrap-cl-core.o: $(SHRINKWRAP_DEPS)
 	../../run-sbcl.sh --script ../../tools-for-build/elftool.lisp split \
-	--dynamic-space-size 256 ../../output/sbcl.core shrinkwrap-sbcl.s
-pie-shrinkwrap-sbcl.s pie-shrinkwrap-sbcl-core.o: $(SHRINKWRAP_DEPS)
+	--dynamic-space-size 256 ../../output/cl.core shrinkwrap-cl.s
+pie-shrinkwrap-cl.s pie-shrinkwrap-cl-core.o: $(SHRINKWRAP_DEPS)
 	../../run-sbcl.sh --script ../../tools-for-build/elftool.lisp split --pie \
-		../../output/sbcl.core pie-shrinkwrap-sbcl.s
+		../../output/cl.core pie-shrinkwrap-cl.s
 # "Commas ... cannot appear in the text of an argument as written"
 # There can not be any space after the comma on the next line,
 # or else it becomes part of the expansion of $(comma)
 comma := ,
-shrinkwrap-sbcl: shrinkwrap-sbcl.s shrinkwrap-sbcl-core.o $(LIBSBCL)
+shrinkwrap-cl: shrinkwrap-cl.s shrinkwrap-cl-core.o $(LIBCL)
 	$(CC) -no-pie $(filter-out -Wl$(comma)--export-dynamic, $(LINKFLAGS)) \
  $(CFLAGS) -o $@ $^ $(filter-out -ldl, $(LIBS))
-pie-shrinkwrap-sbcl: pie-shrinkwrap-sbcl.s pie-shrinkwrap-sbcl-core.o $(PIC_OBJS)
+pie-shrinkwrap-cl: pie-shrinkwrap-cl.s pie-shrinkwrap-cl-core.o $(PIC_OBJS)
 	$(CC) -pie -o $@ $^ $(LIBS)
-semiwrap-sbcl: shrinkwrap-sbcl.s $(LIBSBCL)
+semiwrap-cl: shrinkwrap-cl.s $(LIBCL)
 	$(CC) $(LINKFLAGS) $(CFLAGS) -o $@ $^ $(LIBS)
 
 # simpler version of core embedding where the core is just a section of the ELF file.
@@ -165,9 +165,9 @@ semiwrap-sbcl: shrinkwrap-sbcl.s $(LIBSBCL)
 # polished and secondly it did not remove the need for -Wl,--export-dynamic.
 # Note about $(LIBS) - we don't really need -ldl except os-common does reference it
 # so removing it would break that. Also certain platforms need -lm and -lpthread
-# to get in there so using the same link options as for the ordinary "sbcl"
+# to get in there so using the same link options as for the ordinary "cl"
 # is just easiest.
-embedcore-sbcl: $(LIBSBCL)
+embedcore-cl: $(LIBCL)
 	../../run-sbcl.sh --eval '(save-lisp-and-die "wrappedcore.o" :executable :elf-object)'
 	$(CC) -no-pie $(filter-out -Wl$(comma)--export-dynamic, $(LINKFLAGS)) \
  $(CFLAGS) -o $@ wrappedcore.o $^ $(LIBS)
@@ -182,8 +182,8 @@ sbcl.mk: Config
 	  echo '__LDFLAGS__=$(__LDFLAGS__)' ; \
 	  echo 'LIBS=$(LIBS)' ; \
 	  if [ -n '$(LISP_FEATURE_SB_LINKABLE_RUNTIME)' ] ; then \
-	    echo 'LIBSBCL=$(LIBSBCL)' ; \
-	    echo 'USE_LIBSBCL=$(USE_LIBSBCL)' ; \
+	    echo 'LIBCL=$(LIBCL)' ; \
+	    echo 'USE_LIBCL=$(USE_LIBCL)' ; \
 	  fi ; \
 	  : ) > $@
 
@@ -195,8 +195,8 @@ TAGS tags: $(SRCS) $(HEADERS) $(INC)
 	@etags --language=c $(SRCS) $(HEADERS) $(INC) || true
 
 clean:
-	-rm -f *.[do] ../../tlsf-bsd/tlsf/tlsf.o $(TARGET) *.tmp libsbcl.a \
- ldb unit-tests libsbcl.a shrinkwrap-sbcl* sbcl.mk core
+	-rm -f *.[do] ../../tlsf-bsd/tlsf/tlsf.o $(TARGET) *.tmp libcl.a \
+ ldb unit-tests libcl.a shrinkwrap-cl* sbcl.mk core
 
 %.d: %.c
 	@$(CC) $(DEPEND_FLAGS) $(CPPFLAGS) $< > $@.tmp; \

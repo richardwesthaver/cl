@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-KERNEL")
-
 ;;;; DYNAMIC-USAGE and friends
 
 (declaim (inline dynamic-usage))
@@ -31,7 +30,6 @@
 
 (defun binding-stack-usage ()
   (sap- (binding-stack-pointer-sap) (descriptor-sap sb-vm:*binding-stack-start*)))
-
 ;;;; GET-BYTES-CONSED
 
 ;;; the total number of bytes freed so far (including any freeing
@@ -76,7 +74,6 @@ and submit it as a patch."
          (with-alien ((sizer (function unsigned unsigned) :extern "primitive_object_size"))
            (with-pinned-objects (object)
              (alien-funcall sizer (get-lisp-obj-address object)))))))
-
 ;;;; GC hooks
 
 ;;; N.B.: hooks need to be sufficiently uncomplicated as to be harmless,
@@ -86,7 +83,6 @@ and submit it as a patch."
 triggered during thread exits. In a multithreaded environment these hooks may
 run in any thread.")
 
-
 ;;;; internal GC
 
 (define-alien-routine collect-garbage int (last-gen int))
@@ -98,7 +94,6 @@ run in any thread.")
 (defun dynamic-space-size ()
   "Size of the dynamic space in bytes."
   (extern-alien "dynamic_space_size" os-vm-size-t))
-
 ;;;; SUB-GC
 
 ;;; SUB-GC does a garbage collection.  This is called from three places:
@@ -323,7 +318,6 @@ used to specify the oldest generation guaranteed to be collected."
         (t
          (setq sb-di::*uncompacted-fun-maps* nil sb-di::*compiled-debug-funs* nil)
          (drop-all-hash-caches))))
-
 ;;;; auxiliary functions
 
 (defun bytes-consed-between-gcs ()

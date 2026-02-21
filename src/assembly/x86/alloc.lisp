@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Notinline allocators
 ;;;; Allocate bytes and return the start of the allocated space
 ;;;; in the specified destination register.

@@ -13,7 +13,6 @@
 (in-package "SB-KERNEL")
 
 (/show0 "code/defstruct.lisp 15")
-
 ;;;; getting LAYOUTs
 
 ;;; Return the compiler layout for NAME. (The class referred to by
@@ -85,7 +84,6 @@
                      (let ((object (%make-funcallable-instance ,(dd-length dd))))
                        (setf (%fun-layout object) ,(find-layout (dd-name dd)))
                        object)))))
-
 ;;;; DEFSTRUCT-DESCRIPTION
 
 ;;; The DEFSTRUCT-DESCRIPTION structure holds compile-time information
@@ -107,7 +105,6 @@
 
 (defun dd-layout-or-lose (dd)
   (compiler-layout-or-lose (dd-name dd)))
-
 ;;;; DEFSTRUCT-SLOT-DESCRIPTION
 
 ;;; A DEFSTRUCT-SLOT-DESCRIPTION holds compile-time information about
@@ -216,7 +213,6 @@
           (values '%funcallable-instance-info '%set-funcallable-instance-info))
          (t
           (values '%instance-ref '%instance-set))))
-
 ;;;; Typed (non-class) structures
 
 ;;; Return a type specifier we can use for testing :TYPE'd structures.
@@ -224,7 +220,6 @@
   (ecase (dd-type defstruct)
     (list 'list)
     (vector `(simple-array ,(dd-%element-type defstruct) (*)))))
-
 ;;;; Shared machinery for inline and out-of-line slot accessor functions
 
 ;;; Classic comment preserved for entertainment value:
@@ -529,7 +524,6 @@
        ,@(!expander-for-defstruct null-env-p optimize-speed delayp
                                   name-and-options slot-descriptions
                                   :target))))
-
 ;;;; Functions to generate code for various parts of DEFSTRUCT definitions
 
 ;;; First, a helper to determine whether a name names an inherited
@@ -601,7 +595,6 @@
                             slot with name ~S (accessing an inherited slot ~
                             instead).~:@>" name (dsd-name slot))))))))
     (stuff)))
-
 ;;;; Parsing
 
 ;;; CLHS says that
@@ -876,7 +869,6 @@ unless :NAMED is also specified.")))
       (values inherits (comparator-list)))))
 
 (defmacro dd-has-raw-slot-p (dd) `(eq (dd-%element-type ,dd) '*))
-
 ;;;; Stuff to parse slot descriptions
 
 ;;; Decide whether TYPE as stored in a structure can be a raw slot.
@@ -1179,7 +1171,6 @@ unless :NAMED is also specified.")))
               (when (and (dsd-safe-p included-slot) (not (dsd-safe-p new-slot)))
                 ;; XXX: notify?
                 ))))))))
-
 ;;;; Various helper functions for setting up DEFSTRUCTs
 
 ;;; This function is called at macroexpand time to compute the INHERITS
@@ -1249,7 +1240,6 @@ unless :NAMED is also specified.")))
     (when source-location
       (setf (classoid-source-location classoid) source-location))))
 
-
 ;;; Return the transform of OPERATION which is either :READ or :SETF.
 ;;; as applied to ARGS, given SLOT-KEY which is a cons of a DD and a DSD.
 ;;; FUN-OR-MACRO, which is used only for the :SETF operation,
@@ -1498,7 +1488,6 @@ could not be inlined because the structure definition for ~
 DEFSTRUCT should precede references to the affected functions, ~
 or they must be declared locally notinline at each call site.~@:>"
        :format-arguments (list (length it) (nreverse it) (dd-name dd))))))
-
 ;;;; Redefinition stuff
 
 ;;; Compare the slots of OLD and NEW, returning 3 lists of slot names:
@@ -1869,7 +1858,6 @@ or they must be declared locally notinline at each call site.~@:>"
              (progn
                (setf (layout-info old-layout) info)
                (values classoid old-layout nil)))))))))
-
 ;;; Return a list of pairs (name . index). Used for :TYPE'd
 ;;; constructors to find all the names that we have to splice in &
 ;;; where. Note that these types don't have a layout, so we can't look
@@ -1891,7 +1879,6 @@ or they must be declared locally notinline at each call site.~@:>"
           (setq i (dd-length info)))))
 
     (res)))
-
 ;;; These functions are called to actually make a constructor after we
 ;;; have processed the arglist. The correct variant (according to the
 ;;; DD-TYPE) should be called. The function is defined with the
@@ -2176,7 +2163,6 @@ or they must be declared locally notinline at each call site.~@:>"
                          ;; because the container itself will check.
                          (if (eq type t) initform `(the ,type ,initform)))))
                  (dd-slots dd))))))))))
-
 ;;;; Instances with ALTERNATE-METACLASS
 ;;;;
 ;;;; The CMU CL support for structures with ALTERNATE-METACLASS was a
@@ -2316,7 +2302,6 @@ or they must be declared locally notinline at each call site.~@:>"
 #+sb-xc-host
 (defun !target-defstruct-altmetaclass (&rest args)
   (declare (ignore args)))
-
 ;;;; Finalizing bootstrapping
 
 ;;; Set up DD and LAYOUT for STRUCTURE-OBJECT class itself.

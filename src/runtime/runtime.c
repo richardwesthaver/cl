@@ -64,11 +64,10 @@
 
 struct timespec lisp_init_time;
 
-static char libpath[] = "../lib/sbcl";
+static char libpath[] = "../lib/cl";
 char *sbcl_runtime_home;
 char *sbcl_runtime;
 
-
 /*
  * helper functions for dealing with command line args
  */
@@ -124,14 +123,12 @@ copied_realpath(const char *pathname)
     return tidy;
 }
 #endif /* LISP_FEATURE_WIN32 */
-
 /* miscellaneous chattiness */
 
 static void
 print_help()
 {
-    puts(
-"Usage: sbcl [runtime-options] [toplevel-options] [user-options]\n\
+  puts("Usage: cl [runtime-options] [toplevel-options] [user-options]\n\
 Common runtime options:\n\
   --help                     Print this message and exit.\n\
   --version                  Print version information and exit.\n\
@@ -154,29 +151,26 @@ Common toplevel options that are processed in order:\n\
   --eval <form>              Form to eval when processing this option.\n\
   --load <filename>          File to load when processing this option.\n\
 \n\
-User options are not processed by SBCL. All runtime options must\n\
+User options are not processed by CL. All runtime options must\n\
 appear before toplevel options, and all toplevel options must\n\
 appear before user options.\n\
 \n\
-For more information please refer to the SBCL User Manual, which\n\
-should be installed along with SBCL, and is also available from the\n\
-website <http://www.sbcl.org/>.\n");
+");
 }
 
 static void
 print_version()
 {
-    printf("SBCL %s\n", SBCL_VERSION_STRING);
+    printf("CL %s\n", SBCL_VERSION_STRING);
 }
 
 static void
 print_banner()
 {
     printf(
-"This is SBCL %s, an implementation of ANSI Common Lisp.\n\
-More information about SBCL is available at <http://www.sbcl.org/>.\n\
+"This is CL %s, an implementation of ANSI Common Lisp.\n\
 \n\
-SBCL is free software, provided as is, with absolutely no warranty.\n\
+CL is free software, provided as is, with absolutely no warranty.\n\
 It is mostly in the public domain; some portions are provided under\n\
 BSD-style licenses.  See the CREDITS and COPYING files in the\n\
 distribution for more information.\n\
@@ -184,14 +178,14 @@ distribution for more information.\n\
 }
 
 /* Look for a core file to load, first in the directory named by the
- * SBCL_HOME environment variable, then in a hardcoded default
+ * CL_HOME environment variable, then in a hardcoded default
  * location.  Returns a malloced copy of the core filename. */
 static char *
 search_for_core ()
 {
-    char *env_sbcl_home = getenv("SBCL_HOME");
+    char *env_sbcl_home = getenv("CL_HOME");
     char *lookhere;
-    char *stem = "/sbcl.core";
+    char *stem = "/cl.core";
     char *core;
     struct stat filename_stat;
 
@@ -210,7 +204,7 @@ search_for_core ()
         free(lookhere);
     } else {
         free(lookhere);
-        core = copied_existing_filename_or_null ("sbcl.core");
+        core = copied_existing_filename_or_null ("cl.core");
         if (!core) {
             lookhere = (char *) calloc(strlen(env_sbcl_home) +
                                        strlen(stem) +
@@ -369,7 +363,6 @@ char *dir_name(char *path) {
     }
 }
 
-
 struct lisp_startup_options lisp_startup_options;
 
 struct cmdline_options {
@@ -449,7 +442,7 @@ parse_argv(struct memsize_options memsize_options,
          * flags such as "--my-opt" "--merge-core-pages" where "--merge-core-pages"
          * is literally (and perversely) the value the user gives to "--my-opt",
          * that's just too bad! The somewhat conventional "--" option will stop
-         * parsing SBCL options and pass everything else through including the "--".
+         * parsing CL options and pass everything else through including the "--".
          * The rationale for passing "--" through is that we're trying to be
          * as uninvasive as possible. Let's hope that nobody needs to put a "--"
          * to the left of any of the memory size options */
@@ -727,7 +720,7 @@ initialize_lisp(int argc, char *argv[], char *envp[])
           goto lose;
       } else {
       lose:
-        lose("Can't find sbcl.core");
+        lose("Can't find cl.core");
       }
     }
 

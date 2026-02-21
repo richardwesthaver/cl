@@ -160,7 +160,6 @@ futex_wake(int *lock_word, int n)
 }
 #endif
 
-
 void os_init()
 {
 #ifdef LISP_FEATURE_SB_FUTEX
@@ -263,7 +262,6 @@ int os_preinit(char *argv[], char *envp[])
 #endif
     return 0;
 }
-
 /*
  * any OS-dependent special low-level handling for signals
  */

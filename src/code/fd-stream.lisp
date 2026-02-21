@@ -85,7 +85,6 @@
   (reset-buffer buffer)
   (atomic-push buffer *available-buffers*))
 
-
 ;;;; the FD-STREAM structure
 
 ;;; Coarsely characterizes the element type of an FD-STREAM w.r.t.
@@ -245,7 +244,6 @@
         ;; No charpos means the error is before reading the first char
         ;; e.g. an encoding error. Take the last Newline.
         (cons (1+ (length newlines)) 0))))
-
 ;;;; CORE OUTPUT FUNCTIONS
 
 ;;; Buffer the section of THING delimited by START and END by copying
@@ -495,7 +493,6 @@
                     (if (= errno sb-unix:ewouldblock)
                         (buffer-output stream thing start end)
                         (simple-stream-perror +write-failed+ stream errno)))))))))
-
 ;;;; output routines and related noise
 
 (define-load-time-global *output-routines* ()
@@ -1022,7 +1019,6 @@
                                     (ldb (byte 8 (- i 8 (* j 8))) byte)))))))
               `(signed-byte ,i)
               (/ i 8)))))
-
 ;;;; input routines and related noise
 
 ;;; a list of all available input routines. Each element is a list of
@@ -1917,7 +1913,6 @@
         :string-to-octets-fun (lambda (&rest rest)
                                 (declare (dynamic-extent rest))
                                 (apply ',string-to-octets-sym rest))))))
-
 ;;;; utility functions (misc routines, etc)
 
 ;;; Fill in the various routine slots for the given type. INPUT-P and
@@ -2454,7 +2449,6 @@
            (return-from fd-stream-set-file-position
              (typep posn '(alien sb-unix:unix-offset))))))))
 
-
 ;;;; creation routines (MAKE-FD-STREAM and OPEN)
 
 ;;; Create a stream for the given Unix file descriptor.

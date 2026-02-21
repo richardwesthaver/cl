@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;; a list of (NAME LABEL OFFSET) for every entry point
 (defvar *entry-points* nil)
 

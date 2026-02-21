@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Unary operations.
 
 (define-vop (fast-safe-arith-op)
@@ -49,7 +48,6 @@
   (:translate lognot)
   (:generator 2
     (inst not res x)))
-
 ;;;; Binary fixnum operations.
 
 ;;; Assume that any constant operand is the second arg...
@@ -289,7 +287,6 @@
   (define-vop (fast-*-c/unsigned=>unsigned fast-unsigned-binop-c)
     (:translate *)
     (:generator 3 (generate))))
-
 ;;; Shifting
 
 (macrolet ((def (name sc-type type result-type cost)
@@ -468,7 +465,6 @@
   (:result-types unsigned-num)
   (:generator 2
     (inst popcntd res arg)))
-
 ;;;; %LDB
 #+nil
 (deftransform %ldb ((size posn integer) (:or (((constant-arg (integer 1 #.(1- n-word-bits)))
@@ -538,7 +534,6 @@
           (mod (- (+ 32 n-fixnum-tag-bits) posn) 32)
           (- 32 size n-fixnum-tag-bits)
           (- 31 n-fixnum-tag-bits))))
-
 ;;;; Modular functions:
 
 ;;; FIXME: This should all be correctly ported to 64 bit
@@ -610,7 +605,6 @@
   (def - t)
   (def * nil))
 
-
 ;;;; Binary conditional VOPs:
 
 (define-vop (fast-conditional)
@@ -908,7 +902,6 @@
   (:arg-types * (:constant (signed-byte 11))) ; wtf is 11?
   (:variant-cost 6))
 
-
 ;;;; 64-bit logical operations
 
 (macrolet ((define (translate operation)
@@ -927,7 +920,6 @@
                  (inst ,operation r num temp)))))
   (define shift-towards-start #+big-endian sld #+little-endian srd)
   (define shift-towards-end   #+big-endian srd #+little-endian sld))
-
 ;;;; Bignum stuff.
 
 (define-vop (bignum-length get-header-data)
@@ -1182,7 +1174,6 @@
   (:generator 10
     (inst mulld temp dividend c) ; want only the low 64 bits
     (inst mulhdu remainder temp divisor))) ; want only the high 64 bits
-
 (define-vop (fast-truncate/signed=>signed fast-safe-arith-op)
   (:translate truncate)
   (:args (x :scs (signed-reg) :to :result)

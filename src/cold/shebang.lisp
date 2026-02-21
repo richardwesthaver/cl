@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-COLD")
-
 ;;;; definition of #+ and #- as a mechanism analogous to #+/#-, but
 ;;;; for SB-XC:*FEATURES* instead of CL:*FEATURES*. (This is handy
 ;;;; when cross-compiling, so that we can make a distinction between
@@ -225,7 +224,6 @@
   (frob #\x 16)
   (frob #\o 8)
   (frob #\b 2))
-
 ;;;; string checker, for catching non-portability early
 
 (defun make-quote-reader (standard-quote-reader)

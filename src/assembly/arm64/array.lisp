@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 (macrolet ((def (name sys)
              `(define-assembly-routine (,name
                                         (:policy :fast-safe)

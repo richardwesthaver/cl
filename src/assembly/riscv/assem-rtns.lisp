@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Return-multiple with other than one value
 #+sb-assembling ;; we don't want a vop for this one.
 (define-assembly-routine
@@ -134,7 +133,6 @@
         (- (ash simple-fun-insts-offset word-shift)
            fun-pointer-lowtag)))
 
-
 ;;;; Non-local exit noise.
 
 (define-assembly-routine throw

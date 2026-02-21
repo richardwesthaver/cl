@@ -27,14 +27,12 @@
                  (sb-mop:class-direct-superclasses (make-instance 'standard-class))))
   (assert (equal (list (find-class 'sb-mop:funcallable-standard-object))
                  (sb-mop:class-direct-superclasses (make-instance 'sb-mop:funcallable-standard-class)))))
-
 ;;; Readers for Class Metaobjects (pp. 212--214 of AMOP)
 (defclass red-herring (forward-ref) ())
 
 (assert (null (class-direct-slots (find-class 'forward-ref))))
 (assert (null (class-direct-default-initargs
                (find-class 'forward-ref))))
-
 ;;; Readers for Generic Function Metaobjects (pp. 216--218 of AMOP)
 (defgeneric fn-with-odd-arg-precedence (a b c)
   (:argument-precedence-order b c a))
@@ -60,7 +58,6 @@
   (assert (= (length decls) 2))
   (assert (member '(optimize (speed 3)) decls :test #'equal))
   (assert (member '(optimize (safety 0)) decls :test #'equal)))
-
 ;;; Readers for Slot Definition Metaobjects (pp. 221--224 of AMOP)
 
 ;;; Ensure that SLOT-DEFINITION-ALLOCATION returns :INSTANCE/:CLASS as
@@ -76,7 +73,6 @@
                  (accessor-method-slot-definition
                   (car methods)))
                 (cadr m)))))
-
 ;;; Class Finalization Protocol (see section 5.5.2 of AMOP)
 (let ((finalized-count 0))
   (defmethod finalize-inheritance :after ((x standard-class))
@@ -92,7 +88,6 @@
 (assert (or (= (get-count) 2) (= (get-count) 3)))
 (make-instance 'finalization-test-2)
 (assert (= (get-count) 3))
-
 ;;; Bits of FUNCALLABLE-STANDARD-CLASS are easy to break; make sure
 ;;; that it is at least possible to define classes with that as a
 ;;; metaclass.
@@ -100,7 +95,6 @@
   (:metaclass funcallable-standard-class))
 (defgeneric g (a b c)
   (:generic-function-class gf-class))
-
 ;;; until sbcl-0.7.12.47, PCL wasn't aware of some direct class
 ;;; relationships.  These aren't necessarily true, but are probably
 ;;; not going to change often.
@@ -109,14 +103,12 @@
               (find-class t)))
   (assert (member (find-class x)
                   (class-direct-subclasses (find-class t)))))
-
 ;;; the class-prototype of the NULL class used to be some weird
 ;;; standard-instance-like thing.  Make sure it's actually NIL.
 ;;;
 ;;; (and FIXME: eventually turn this into asserting that the prototype
 ;;; of all built-in-classes is of the relevant type)
 (assert (null (class-prototype (find-class 'null))))
-
 ;;; simple consistency checks for the SB-MOP package: all of the
 ;;; functionality specified in AMOP is in functions and classes:
 (assert (null (loop for x being each external-symbol in "SB-MOP"
@@ -131,7 +123,6 @@
                                            (fdefinition x)))
                                   0))
                     collect x)))
-
 ;;; make sure that ENSURE-CLASS-USING-CLASS's arguments are the right
 ;;; way round (!)
 (defvar *e-c-u-c-arg-order* nil)
@@ -142,7 +133,6 @@
 (assert (null *e-c-u-c-arg-order*))
 (defclass e-c-u-c-arg-order () ())
 (assert (eq *e-c-u-c-arg-order* t))
-
 ;;; verify that FIND-CLASS works after FINALIZE-INHERITANCE
 (defclass automethod-class (standard-class) ())
 (defmethod validate-superclass ((c1 automethod-class) (c2 standard-class))
@@ -154,7 +144,6 @@
   (:metaclass automethod-class))
 (defvar *automethod-object* (make-instance 'automethod-object))
 (assert (typep *automethod-object* 'automethod-object))
-
 ;;; COMPUTE-EFFECTIVE-SLOT-DEFINITION should take three arguments, one
 ;;; of which is the name of the slot.
 (defvar *compute-effective-slot-definition-count* 0)
@@ -169,7 +158,6 @@
 ;;; sequence, nor whether that's compliant with AMOP.  -- CSR,
 ;;; 2003-04-17
 (assert (> *compute-effective-slot-definition-count* 0))
-
 ;;; this used to cause a nasty uncaught metacircularity in PCL.
 (defclass substandard-method (standard-method) ())
 (defgeneric substandard-defgeneric (x y)
@@ -178,7 +166,6 @@
   (:method ((x string) (y string)) (concatenate 'string x y)))
 (assert (= (substandard-defgeneric 1 2) 3))
 (assert (string= (substandard-defgeneric "1" "2") "12"))
-
 (let* ((x (find-class 'pathname))
        (xs (class-direct-subclasses x)))
   (assert (>= (length xs) 1))
@@ -202,7 +189,6 @@
     ;; architecture allows raw words on the stack.
     #+(and (not interpreter) (or 64-bit c-stack-is-control-stack))
     (ctu:assert-no-consing (typep 4.0 spec))))
-
 ;;; BUG #334, relating to programmatic addition of slots to a class
 ;;; with COMPUTE-SLOTS.
 ;;;
@@ -267,7 +253,6 @@
   (assert (slot-boundp x 'x))
   (assert (eq t (slot-value x 'x)))
   (assert (not (slot-boundp x 'y))))
-
 ;;;; the CTOR optimization was insufficiently careful about its
 ;;;; assumptions: firstly, it failed with a failed AVER for
 ;;;; non-standard-allocation slots:
@@ -308,7 +293,6 @@
     (incf *special-ssvuc-counter-2*))
   (funcall fun)
   (assert (= *special-ssvuc-counter-2* 1)))
-
 ;;; vicious metacycle detection and resolution wasn't good enough: it
 ;;; didn't take account that the slots (and hence the slot readers)
 ;;; might be inherited from superclasses.  This example, due to Bruno
@@ -450,7 +434,6 @@
           :name 'class-as-metaclass-test
           :direct-superclasses (list (find-class 'standard-object)))
          'class))
-
 ;;; COMPUTE-DEFAULT-INITARGS protocol mismatch reported by Bruno
 ;;; Haible
 (defparameter *extra-initarg-value* 'extra)
@@ -473,7 +456,6 @@
   ((slot :initarg :extra))
   (:metaclass custom-default-initargs-class))
 (assert (eq (slot-value (make-instance 'extra-initarg) 'slot) 'extra))
-
 ;;; STANDARD-CLASS valid as a superclass for FUNCALLABLE-STANDARD-CLASS
 (defclass standard-class-for-fsc ()
   ((scforfsc-slot :initarg :scforfsc-slot :accessor scforfsc-slot)))
@@ -506,12 +488,10 @@
      ()
      (:metaclass funcallable-standard-class))
    (make-instance 'bad-funcallable-standard-class)))
-
 ;;; we should be able to make classes with silly names
 (make-instance 'standard-class :name 3)
 (defclass foo () ())
 (reinitialize-instance (find-class 'foo) :name '(a b))
-
 ;;; classes (including anonymous ones) and eql-specializers should be
 ;;; allowed to be specializers.
 (defvar *anonymous-class*
@@ -525,20 +505,17 @@
         ((obj ,(intern-eql-specializer *object-of-anonymous-class*)))
         42))
 (assert (eql (method-on-anonymous-class *object-of-anonymous-class*) 42))
-
 ;;; accessors can cause early finalization, which caused confusion in
 ;;; the system, leading to uncompileable TYPEP problems.
 (defclass funcallable-class-for-typep ()
   ((some-slot-with-accessor :accessor some-slot-with-accessor))
   (:metaclass funcallable-standard-class))
 (compile nil '(lambda (x) (typep x 'funcallable-class-for-typep)))
-
 ;;; even anonymous classes should be valid types
 (let* ((class1 (make-instance 'standard-class :direct-superclasses (list (find-class 'standard-object))))
        (class2 (make-instance 'standard-class :direct-superclasses (list class1))))
   (assert (subtypep class2 class1))
   (assert (typep (make-instance class2) class1)))
-
 ;;; ensure-class got its treatment of :metaclass wrong.
 (ensure-class 'better-be-standard-class :direct-superclasses '(standard-object)
               :metaclass 'standard-class
@@ -731,7 +708,6 @@
          (slot (first (class-slots class))))
     (assert (equal (slot-definition-initargs slot) '(:a)))))
 
-
 (defclass change-class-test-m (standard-class) ())
 (defmethod validate-superclass ((c1 change-class-test-m) (c2 standard-class))
   t)

@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; unary operations
 
 (define-vop (fast-safe-arith-op)
@@ -69,7 +68,6 @@
   (:generator 2
     (move res x)
     (inst not res)))
-
 ;;;; binary fixnum operations
 
 ;;; Assume that any constant operand is the second arg...
@@ -357,7 +355,6 @@
     DONE
     (unless (= mask most-positive-word)
       (inst and r mask))))
-
 
 (define-vop (fast-+-c/signed=>signed fast-safe-arith-op)
   (:translate +)
@@ -420,7 +417,6 @@
            (if (= y 1)
                (inst inc r)
              (inst add r y))))))
-
 ;;;; multiplication and division
 
 (define-vop (fast-*/fixnum=>fixnum fast-safe-arith-op)
@@ -651,7 +647,6 @@
     (move rem edx)))
 
 
-
 ;;;; Shifting
 (define-vop (fast-ash-c/fixnum=>fixnum)
   (:translate ash)
@@ -1047,7 +1042,6 @@
     (inst shl result :cl)
 
     DONE))
-
 (define-vop (signed-byte-32-len)
   (:translate integer-length)
   (:note "inline (signed-byte 32) integer-length")
@@ -1140,7 +1134,6 @@
     (inst shr result 16)
     (inst add result temp)
     (inst and result #xff)))
-
 ;;;; binary conditional VOPs
 
 (define-vop (fast-conditional)
@@ -1349,7 +1342,6 @@
   (:args (x :scs (any-reg descriptor-reg control-stack)))
   (:arg-types * (:constant (signed-byte 30)))
   (:variant-cost 6))
-
 ;;;; 32-bit logical operations
 
 ;;; Only the lower 5 bits of the shift amount are significant.
@@ -1370,7 +1362,6 @@
                  (inst ,operation r :cl)))))
   (define shift-towards-start shr)
   (define shift-towards-end   shl))
-
 ;;;; Modular functions
 (defmacro define-mod-binop ((name prototype) function)
   `(define-vop (,name ,prototype)
@@ -1576,7 +1567,6 @@
   `(lognot (logior ,x ,y)))
 (define-source-transform lognand (x y)
   `(lognot (logand ,x ,y)))
-
 ;;;; bignum stuff
 
 (define-vop (bignum-length get-header-data)
@@ -1833,7 +1823,6 @@
     (move result digit)
     (move ecx count)
     (inst shl result :cl)))
-
 (in-package "SB-C")
 
 (defun mask-result (class width result)
@@ -1963,7 +1952,6 @@
 
 ;;; FIXME: we should also be able to write an optimizer or two to
 ;;; convert (+ (* x 2) 17), (- (* x 9) 5) to a %LEA.
-
 (in-package :sb-vm)
 
 (macrolet ((def (name excl-low excl-high &optional check)

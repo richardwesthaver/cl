@@ -9,7 +9,6 @@
 ;;;; provided with absolutely no warranty. See the COPYING and CREDITS
 ;;;; files for more information.
 (in-package "SB-VM")
-
 
 (defglobal *other-pointer-type-vops*
   ;; A special case due to NIL

@@ -174,7 +174,6 @@
               (invoke-alien-type-method :result-tn
                                         (alien-fun-type-result-type type)
                                         (make-result-state))))))
-
 (define-vop (foreign-symbol-sap)
   (:translate foreign-symbol-sap)
   (:policy :fast-safe)
@@ -371,7 +370,6 @@
                                               :result-type result-type)
                                            ,@(new-args))))))
         (sb-c::give-up-ir1-transform))))
-
 ;;; Callback
 #-sb-xc-host
 (defun alien-callback-accessor-form (type sap offset)

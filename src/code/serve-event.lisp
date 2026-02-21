@@ -188,7 +188,6 @@
           :report "Go on, leaving handlers marked as bogus.")))
   nil))
 
-
 ;;;; SERVE-ALL-EVENTS, SERVE-EVENT, and friends
 
 (declaim (start-block wait-until-fd-usable serve-event serve-all-events compute-pollfds))
@@ -265,7 +264,6 @@ waiting."
                    else
                    do (when to-sec (maybe-update-timeout))
                    #+win32 (sb-thread:thread-yield)))))))
-
 ;;; Wait for up to timeout seconds for an event to happen. Make sure all
 ;;; pending events are processed before returning.
 (defun serve-all-events (&optional timeout)

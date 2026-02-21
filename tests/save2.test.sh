@@ -10,7 +10,7 @@ run_sbcl <<EOF
   (save-lisp-and-die "$tmpcore" :toplevel (lambda () 42))
 EOF
 run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit \
-    --eval "(setf sb-ext:*evaluator-mode* :${TEST_SBCL_EVALUATOR_MODE:-compile})"
+    --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})"
 check_status_maybe_lose "SAVE-LISP-AND-DIE :TOPLEVEL" $? 0 "(saved core ran)"
 
 run_sbcl --eval '(save-lisp-and-die "'$tmpcore'" :toplevel (lambda () (format t "Ahoy-hoy.~%")))'

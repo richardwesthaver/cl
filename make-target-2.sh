@@ -25,9 +25,9 @@ export LANG LC_ALL
 # Load our build configuration
 . output/build-config
 
-if [ -n "$SBCL_HOST_LOCATION" ]; then
+if [ -n "$CL_HOST_LOCATION" ]; then
     echo //copying host-2 files to target
-    rsync -a "$SBCL_HOST_LOCATION/output/" output/
+    rsync -a "$CL_HOST_LOCATION/output/" output/
 fi
 
 # Do warm init stuff, e.g. building and loading CLOS, and stuff which
@@ -52,13 +52,13 @@ elif [ "x$1" != x ]; then
 fi
 if [ "$warm_compile" = yes ]; then
     echo //doing warm init - compilation phase
-    ./src/runtime/sbcl --core output/cold-sbcl.core \
-     --lose-on-corruption $SBCL_MAKE_TARGET_2_OPTIONS --no-sysinit --no-userinit \
+    ./src/runtime/cl --core output/cold-cl.core \
+     --lose-on-corruption $CL_MAKE_TARGET_2_OPTIONS --no-sysinit --no-userinit \
      --eval '(sb-fasl::!warm-load "src/cold/warm.lisp")' --quit
 fi
 echo //doing warm init - load and dump phase
-./src/runtime/sbcl --noinform --core output/cold-sbcl.core \
-                   --lose-on-corruption $SBCL_MAKE_TARGET_2_OPTIONS \
+./src/runtime/cl --noinform --core output/cold-cl.core \
+                   --lose-on-corruption $CL_MAKE_TARGET_2_OPTIONS \
                    --no-sysinit --no-userinit --noprint <<EOF
 (progn ${devel})
 (sb-fasl::!warm-load "make-target-2-load.lisp")
@@ -70,10 +70,10 @@ echo //doing warm init - load and dump phase
 ; Turn off IR consistency checking in release mode.
 (setq sb-c::*check-consistency* nil)
 (let ((sb-ext:*invoke-debugger-hook* (prog1 sb-ext:*invoke-debugger-hook* (sb-ext:enable-debugger))))
- (sb-ext:save-lisp-and-die "output/sbcl.core"))
+ (sb-ext:save-lisp-and-die "output/cl.core"))
 EOF
 
-./src/runtime/sbcl --noinform --core output/sbcl.core \
+./src/runtime/cl --noinform --core output/cl.core \
                    --no-sysinit --no-userinit --noprint <<EOF
   (load "validate-float.lisp")
   (check-float-file "output/xfloat-math.lisp-expr")
@@ -82,9 +82,9 @@ EOF
   #+(and mark-region-gc x86-64 (not sb-core-compression))
   (progn
    (load "tools-for-build/editcore")
-   (funcall (intern "REORGANIZE-CORE" "SB-EDITCORE") "output/sbcl.core" "output/reorg.core"))
+   (funcall (intern "REORGANIZE-CORE" "SB-EDITCORE") "output/cl.core" "output/reorg.core"))
 EOF
 if [ -r output/reorg.core ]
 then
-    mv output/reorg.core output/sbcl.core
+    mv output/reorg.core output/cl.core
 fi

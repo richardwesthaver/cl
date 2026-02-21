@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Type frobbing VOPs
 
 (define-vop (descriptor-hash32)
@@ -140,7 +139,6 @@
        ;; maybe it should be promoted to an instruction-macro?
        (inst orr t1 t1 (ash (tn-value data) n-widetag-bits))))
     (storew t1 x 0 other-pointer-lowtag)))
-
 ;;;; Allocation
 
 (define-vop (binding-stack-pointer-sap)
@@ -158,7 +156,6 @@
   (:policy :fast-safe)
   (:generator 1
     (load-csp int)))
-
 ;;;; Code object frobbing.
 
 (define-vop (code-instructions)
@@ -208,7 +205,6 @@
     (inst add ndescr offset ndescr)
     (inst sub ndescr ndescr (- other-pointer-lowtag fun-pointer-lowtag))
     (inst add func code ndescr)))
-
 ;;;; other miscellaneous VOPs
 
 (defknown sb-unix::receive-pending-interrupt () (values))

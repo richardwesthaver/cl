@@ -24,7 +24,6 @@
 (deftype reg () '(unsigned-byte 3))
 
 (defconstant +default-operand-size+ :dword)
-
 (defparameter *default-address-size*
   ;; Actually, :DWORD is the only one really supported.
   :dword)
@@ -36,7 +35,6 @@
     (:dword 32)
     (:float 32)
     (:double 64)))
-
 ;;;; disassembler argument types
 
 (define-arg-type displacement
@@ -180,7 +178,6 @@
   (cdr (assoc condition +conditions+ :test #'eq)))
 (defun negate-condition (name)
   (aref +condition-name-vec+ (logxor 1 (conditional-opcode name))))
-
 ;;;; disassembler instruction formats
 
 (defun swap-if (direction field1 separator field2)
@@ -336,7 +333,6 @@
                                         :default-printer
                                         '(:name :tab reg/mem ", " imm))
   (imm :type 'imm-byte))
-
 ;;;; This section was added by jrd, for fp instructions.
 
 ;;; regular fp inst to/from registers/memory
@@ -456,7 +452,6 @@
   (op :field (byte 16 0))
   (code :field (byte 8 16) :reader word-imm-code))
 
-
 ;;;; primitive emitters
 
 (define-bitfield-emitter emit-word 16
@@ -470,7 +465,6 @@
 
 (define-bitfield-emitter emit-sib-byte 8
   (byte 2 6) (byte 3 3) (byte 3 0))
-
 ;;;; fixup emitters
 
 (defun emit-absolute-fixup (segment fixup &optional (extra-addend 0))
@@ -500,7 +494,6 @@
 (defun emit-relative-fixup (segment fixup)
   (note-fixup segment :relative fixup)
   (emit-dword segment (fixup-offset fixup)))
-
 ;;;; the effective-address (ea) structure
 
 (declaim (ftype (sfunction (tn) (mod 8)) reg-tn-encoding))
@@ -644,7 +637,6 @@
 (defun accumulator-p (thing)
   (and (register-p thing)
        (= (tn-offset thing) 0)))
-
 ;;;; utilities
 
 (defconstant +operand-size-prefix-byte+ #b01100110)
@@ -683,7 +675,6 @@
     (:byte  (emit-byte segment value))
     (:dword (emit-dword segment value))
     (:word  (emit-word segment value))))
-
 ;;;; prefixes
 
 (define-instruction x66 (segment)
@@ -913,7 +904,6 @@
   (:emitter
    (emit-byte segment #xf3)
    (emit-byte segment #x90)))
-
 ;;;; flag control instructions
 
 (macrolet ((def (mnemonic opcode)
@@ -945,7 +935,6 @@
   (def cld   #xFC) ; Clear Direction Flag
   (def std   #xFD) ; Set Direction Flag
 )
-
 ;;;; arithmetic
 
 (defun emit-random-arith-inst (name segment dst src opcode)
@@ -1167,7 +1156,6 @@
      (emit-byte segment (if (eq size :byte) #b11000000 #b11000001))
      (emit-ea segment dst (reg-tn-encoding src)))))
 
-
 ;;;; logic
 
 (defun emit-shift-inst (segment dst amount opcode)
@@ -1268,7 +1256,6 @@
      (maybe-emit-operand-size-prefix segment size)
      (emit-byte segment (if (eq size :byte) #b11110110 #b11110111))
      (emit-ea segment dst #b010))))
-
 ;;;; string manipulation
 
 (define-instruction cmps (segment size)
@@ -1322,7 +1309,6 @@
      (aver (accumulator-p acc))
      (maybe-emit-operand-size-prefix segment size)
      (emit-byte segment (if (eq size :byte) #b10101010 #b10101011)))))
-
 ;;;; bit manipulation
 
 (define-instruction bsf (segment dst src)
@@ -1379,7 +1365,6 @@
   (define btr 6)
   (define btc 7))
 
-
 ;;;; control transfer
 
 (defun emit-byte-displacement-backpatch (segment target)
@@ -1516,7 +1501,6 @@
   (:emitter
    (emit-byte segment #b11100000)
    (emit-byte-displacement-backpatch segment target)))
-
 ;;;; conditional move
 (define-instruction cmov (segment cond dst src)
   (:printer cond-move ())
@@ -1537,7 +1521,6 @@
    (emit-byte segment #b00001111)
    (emit-byte segment (dpb (conditional-opcode cond) (byte 4 0) #b10010000))
    (emit-ea segment dst #b000)))
-
 (define-instruction enter (segment disp &optional (level 0))
   (:declare (type (unsigned-byte 16) disp)
             (type (unsigned-byte 8) level))
@@ -1546,7 +1529,6 @@
    (emit-byte segment #b11001000)
    (emit-word segment disp)
    (emit-byte segment level)))
-
 ;;;; prefetch
 (define-instruction prefetchnta (segment ea)
   (:printer prefetch ((op #b00011000) (reg #b000)))
@@ -1583,7 +1565,6 @@
    (emit-byte segment #b00001111)
    (emit-byte segment #b00011000)
    (emit-ea segment ea #b011)))
-
 ;;;; interrupt instructions
 
 (define-instruction break (segment &optional (code nil codep))
@@ -1614,7 +1595,6 @@
      (emit-byte segment #b01100010)
      (emit-ea segment bounds (reg-tn-encoding reg)))))
 
-
 ;;;; processor control
 
 (define-instruction nop (segment)
@@ -1623,7 +1603,6 @@
   (:emitter
    (emit-byte segment #b10010000)))
 
-
 ;;;; miscellaneous hackery
 
 (define-instruction byte (segment byte)
@@ -1645,7 +1624,6 @@
 (define-instruction simple-fun-header-word (segment)
   (:emitter
    (emit-header-data segment simple-fun-widetag)))
-
 ;;;; fp instructions
 ;;;;
 ;;;; FIXME: This section said "added by jrd", which should end up in CREDITS.

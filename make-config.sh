@@ -19,19 +19,14 @@ set -e
 
 print_help="no"
 
-if [ "$OSTYPE" = "cygwin" -o "$OSTYPE" = "msys" ]
-then
-    SBCL_PREFIX="$PROGRAMFILES/sbcl"
-else
-    SBCL_PREFIX="/usr/local"
-fi
-SBCL_XC_HOST="sbcl --no-userinit --no-sysinit"
+CL_PREFIX="/usr/"
+CL_XC_HOST="sbcl --no-userinit --no-sysinit"
 
 # Parse command-line options.
 bad_option() {
-    echo $1
-    echo "Enter \"$0 --help\" for list of valid options."
-    exit 1
+  echo $1
+  echo "Enter \"$0 --help\" for list of valid options."
+  exit 1
 }
 
 WITH_FEATURES=""
@@ -39,113 +34,113 @@ WITHOUT_FEATURES=""
 FANCY_FEATURES=":sb-core-compression :sb-xref-for-internals :sb-after-xc-core"
 CONTRIBS=""
 for dir in `cd contrib ; echo *`; do
-    if [ -d "contrib/$dir" -a -f "contrib/$dir/Makefile" ]; then
-        CONTRIBS="$CONTRIBS ${dir}"
-    fi
+  if [ -d "contrib/$dir" -a -f "contrib/$dir/Makefile" ]; then
+    CONTRIBS="$CONTRIBS ${dir}"
+  fi
 done
-SBCL_CONTRIB_BLOCKLIST=${SBCL_CONTRIB_BLOCKLIST:-""}
+CL_CONTRIB_BLOCKLIST=${CL_CONTRIB_BLOCKLIST:-""}
 
 perform_host_lisp_check=no
 fancy=false
 some_options=false
 android=false
 if [ -z "$ANDROID_API" ]; then
-    ANDROID_API=21
+  ANDROID_API=21
 fi
 for option
 do
   optarg_ok=true
   # Split --foo=bar into --foo and bar.
   case $option in
-      *=*)
-        # For ease of scripting skip valued options with empty
-        # values.
-        optarg=`expr "X$option" : '[^=]*=\(.*\)'` || optarg_ok=false
-        option=`expr "X$option" : 'X\([^=]*=\).*'`
-        ;;
-      --with*)
-        optarg=`expr "X$option" : 'X--[^-]*-\(.*\)'` \
-            || bad_option "Malformed feature toggle: $option"
-        option=`expr "X$option" : 'X\(--[^-]*\).*'`
-        ;;
-      *)
-        optarg=""
-        ;;
+    *=*)
+      # For ease of scripting skip valued options with empty
+      # values.
+      optarg=`expr "X$option" : '[^=]*=\(.*\)'` || optarg_ok=false
+      option=`expr "X$option" : 'X\([^=]*=\).*'`
+      ;;
+    --with*)
+      optarg=`expr "X$option" : 'X--[^-]*-\(.*\)'` \
+        || bad_option "Malformed feature toggle: $option"
+      option=`expr "X$option" : 'X\(--[^-]*\).*'`
+      ;;
+    *)
+      optarg=""
+      ;;
   esac
 
   case $option in
-      --help | -help | -h)
-        print_help="yes" ;;
-      --prefix=)
-        $optarg_ok && SBCL_PREFIX=$optarg
-        ;;
-      --arch=)
-        $oparg_ok && SBCL_ARCH=$optarg
-        ;;
-      --xc-host=)
-        $optarg_ok && SBCL_XC_HOST=$optarg
-        ;;
-      --host-location=)
-        $optarg_ok && SBCL_HOST_LOCATION=$optarg
-        ;;
-      --target-location=)
-        $optarg_ok && SBCL_TARGET_LOCATION=$optarg
-        ;;
-      --dynamic-space-size=)
-        $optarg_ok && SBCL_DYNAMIC_SPACE_SIZE=$optarg
-	;;
-      --with)
-        WITH_FEATURES="$WITH_FEATURES :$optarg"
-        if [ "$optarg" = "android" ]
-        then
-            android=true
-        fi
-        ;;
-      --without)
-        WITHOUT_FEATURES="$WITHOUT_FEATURES :$optarg"
-        case $CONTRIBS
-        in *"$optarg"*)
-               SBCL_CONTRIB_BLOCKLIST="$SBCL_CONTRIB_BLOCKLIST $optarg"
-        ;; esac
-	;;
-      --android-api=)
-        $optarg_ok && ANDROID_API=$optarg
-        ;;
-      --ndk=)
-        $optarg_ok && NDK=$optarg
-        ;;
-      --fancy)
-        WITH_FEATURES="$WITH_FEATURES $FANCY_FEATURES"
-        # Lower down we add :sb-thread for platforms where it can be built.
-        fancy=true
-        ;;
-      --check-host-lisp)
-        perform_host_lisp_check=yes
-        ;;
-      -*)
+    --help | -help | -h)
+      print_help="yes" ;;
+    --prefix=)
+    $optarg_ok && CL_PREFIX=$optarg
+    ;;
+    --arch=)
+    $oparg_ok && CL_ARCH=$optarg
+    ;;
+    --xc-host=)
+    $optarg_ok && CL_XC_HOST=$optarg
+    ;;
+    --host-location=)
+    $optarg_ok && CL_HOST_LOCATION=$optarg
+    ;;
+    --target-location=)
+    $optarg_ok && CL_TARGET_LOCATION=$optarg
+    ;;
+    --dynamic-space-size=)
+    $optarg_ok && CL_DYNAMIC_SPACE_SIZE=$optarg
+    ;;
+    --with)
+      WITH_FEATURES="$WITH_FEATURES :$optarg"
+      if [ "$optarg" = "android" ]
+      then
+        android=true
+      fi
+      ;;
+    --without)
+      WITHOUT_FEATURES="$WITHOUT_FEATURES :$optarg"
+      case $CONTRIBS
+      in *"$optarg"*)
+           CL_CONTRIB_BLOCKLIST="$CL_CONTRIB_BLOCKLIST $optarg"
+      ;; esac
+      ;;
+    --android-api=)
+    $optarg_ok && ANDROID_API=$optarg
+    ;;
+    --ndk=)
+    $optarg_ok && NDK=$optarg
+    ;;
+    --fancy)
+      WITH_FEATURES="$WITH_FEATURES $FANCY_FEATURES"
+      # Lower down we add :sb-thread for platforms where it can be built.
+      fancy=true
+      ;;
+    --check-host-lisp)
+      perform_host_lisp_check=yes
+      ;;
+    -*)
+      bad_option "Unknown command-line option to $0: \"$option\""
+      ;;
+    *)
+      if $some_options
+      then
         bad_option "Unknown command-line option to $0: \"$option\""
-        ;;
-      *)
-        if $some_options
-        then
-            bad_option "Unknown command-line option to $0: \"$option\""
-        else
-            SBCL_XC_HOST=$option
-        fi
-        ;;
+      else
+        CL_XC_HOST=$option
+      fi
+      ;;
   esac
   some_options=true
 done
 
 if (test -f customize-target-features.lisp && \
-    (test -n "$WITH_FEATURES" || test -n "$WITHOUT_FEATURES"))
+      (test -n "$WITH_FEATURES" || test -n "$WITHOUT_FEATURES"))
 then
-    # Actually there's no reason why it would not work, but it would
-    # be confusing to say --with-thread only to have it turned off by
-    # customize-target-features.lisp...
-    echo "ERROR: Both customize-target-features.lisp, and feature-options"
-    echo "to make.sh present -- cannot use both at the same time."
-    exit 1
+  # Actually there's no reason why it would not work, but it would
+  # be confusing to say --with-thread only to have it turned off by
+  # customize-target-features.lisp...
+  echo "ERROR: Both customize-target-features.lisp, and feature-options"
+  echo "to make.sh present -- cannot use both at the same time."
+  exit 1
 fi
 
 if test "$print_help" = "yes"
@@ -170,7 +165,7 @@ Options:
       prefix/lib/sbcl, and documentation under prefix/share.
 
       This option also affects the binaries: built-in default for
-      SBCL_HOME is: prefix/lib/sbcl/
+      CL_HOME is: prefix/lib/sbcl/
 
       Default prefix is: /usr/local
 
@@ -243,18 +238,18 @@ EOF
 fi
 
 mkdir -p output
-echo "SBCL_TEST_HOST=\"$SBCL_XC_HOST\"" > output/build-config
+echo "CL_TEST_HOST=\"$CL_XC_HOST\"" > output/build-config
 . output/build-config # may come out differently due to escaping
 
 if [ $perform_host_lisp_check = yes ]
 then
-    if echo '(lisp-implementation-type)' | $SBCL_TEST_HOST; then
-        :
-    else
-        echo "No working host Common Lisp implementation."
-        echo 'See ./INSTALL, the "SOURCE DISTRIBUTION" section'
-        exit 1
-    fi
+  if echo '(lisp-implementation-type)' | $CL_TEST_HOST; then
+    :
+  else
+    echo "No working host Common Lisp implementation."
+    echo 'See ./INSTALL, the "SOURCE DISTRIBUTION" section'
+    exit 1
+  fi
 fi
 
 # Running make.sh with different options without clean.sh in the middle
@@ -262,8 +257,8 @@ fi
 sh clean.sh
 
 # Save prefix for make and install.sh.
-echo "SBCL_PREFIX='$SBCL_PREFIX'" > output/prefix.def
-echo "$SBCL_DYNAMIC_SPACE_SIZE" > output/dynamic-space-size.txt
+echo "CL_PREFIX='$CL_PREFIX'" > output/prefix.def
+echo "$CL_DYNAMIC_SPACE_SIZE" > output/dynamic-space-size.txt
 
 # FIXME: Tweak this script, and the rest of the system, to support
 # a second bootstrapping pass in which the cross-compilation host is
@@ -280,98 +275,75 @@ echo "$SBCL_DYNAMIC_SPACE_SIZE" > output/dynamic-space-size.txt
 # dependencies, write them out to a file to be sourced by other
 # scripts.
 
-echo "SBCL_XC_HOST=\"$SBCL_XC_HOST\"; export SBCL_XC_HOST" >> output/build-config
-if [ -n "$SBCL_HOST_LOCATION" ]; then
-    echo "SBCL_HOST_LOCATION=\"$SBCL_HOST_LOCATION\"; export SBCL_HOST_LOCATION" >> output/build-config
+echo "CL_XC_HOST=\"$CL_XC_HOST\"; export CL_XC_HOST" >> output/build-config
+if [ -n "$CL_HOST_LOCATION" ]; then
+  echo "CL_HOST_LOCATION=\"$CL_HOST_LOCATION\"; export CL_HOST_LOCATION" >> output/build-config
 fi
-if [ -n "$SBCL_TARGET_LOCATION" ]; then
-    echo "SBCL_TARGET_LOCATION=\"$SBCL_TARGET_LOCATION\"; export SBCL_TARGET_LOCATION" >> output/build-config
+if [ -n "$CL_TARGET_LOCATION" ]; then
+  echo "CL_TARGET_LOCATION=\"$CL_TARGET_LOCATION\"; export CL_TARGET_LOCATION" >> output/build-config
 fi
 echo "android=$android; export android" >> output/build-config
 
 # And now, sorting out the per-target dependencies...
 
 case `uname` in
-    Linux)
-        sbcl_os="linux"
+  Linux)
+    sbcl_os="linux"
+    ;;
+  *BSD)
+    case `uname` in
+      FreeBSD)
+        sbcl_os="freebsd"
         ;;
-    *BSD)
-        case `uname` in
-            FreeBSD)
-                sbcl_os="freebsd"
-                ;;
-            GNU/kFreeBSD)
-                sbcl_os="gnu-kfreebsd"
-                ;;
-            OpenBSD)
-                sbcl_os="openbsd"
-                ;;
-            NetBSD)
-                sbcl_os="netbsd"
-                ;;
-            *)
-                echo unsupported BSD variant: `uname`
-                exit 1
-                ;;
-        esac
+      GNU/kFreeBSD)
+        sbcl_os="gnu-kfreebsd"
         ;;
-    DragonFly)
-	sbcl_os="dragonflybsd"
-	;;
-    Darwin)
-        sbcl_os="darwin"
+      OpenBSD)
+        sbcl_os="openbsd"
         ;;
-    SunOS)
-        sbcl_os="sunos"
+      NetBSD)
+        sbcl_os="netbsd"
         ;;
-    CYGWIN* | WindowsNT | MINGW* | MSYS*)
-        sbcl_os="win32"
-        ;;
-    Haiku)
-        sbcl_os="haiku"
-        ;;
-    *)
-        echo unsupported OS type: `uname`
+      *)
+        echo unsupported BSD variant: `uname`
         exit 1
         ;;
+    esac
+    ;;
+  DragonFly)
+    sbcl_os="dragonflybsd"
+    ;;
+  Darwin)
+    sbcl_os="darwin"
+    ;;
+  SunOS)
+    sbcl_os="sunos"
+    ;;
+  Haiku)
+    sbcl_os="haiku"
+    ;;
+  *)
+    echo unsupported OS type: `uname`
+    exit 1
+    ;;
 esac
 
 link_or_copy() {
-   if [ "$sbcl_os" = "win32" ] ; then
-      # Use preprocessor or makefile includes instead of copying if
-      # possible, to avoid unexpected use of the original, unchanged
-      # files when re-running only make-target-1 during development.
-      if echo "$1" | egrep '[.][ch]$'; then
-         echo "#include \"$1\"" >"$2"
-      elif echo "$1" | egrep '^Config[.]'; then
-         echo "include $1" >"$2"
-      else
-         cp -r "$1" "$2"
-      fi
-   elif $android ; then
-       # adb push doesn't like symlinks on unrooted devices.
-       cp -r "$1" "$2"
-   else
-       ln -s "$1" "$2"
-   fi
+  if $android ; then
+    # adb push doesn't like symlinks on unrooted devices.
+    cp -r "$1" "$2"
+  else
+    ln -s "$1" "$2"
+  fi
 }
 
 remove_dir_safely() {
-   if [ "$sbcl_os" = "win32" ] ; then
-        if [ -d "$1" ] ; then
-            rm -rf "$1"
-        elif [ -e "$1" ] ; then
-            echo "I'm afraid to remove non-directory $1."
-            exit 1
-        fi
-    else
-        if [ -h "$1" ] ; then
-            rm "$1"
-        elif [ -w "$1" ] ; then
-            echo "I'm afraid to replace non-symlink $1 with a symlink."
-            exit 1
-        fi
-    fi
+  if [ -h "$1" ] ; then
+    rm "$1"
+  elif [ -w "$1" ] ; then
+    echo "I'm afraid to replace non-symlink $1 with a symlink."
+    exit 1
+  fi
 }
 
 echo //entering make-config.sh
@@ -382,163 +354,163 @@ if [ ! -d output ] ; then mkdir output; fi
 echo //guessing default target CPU architecture from host architecture
 if $android
 then
-    uname_arch=`adb shell uname -m`
+  uname_arch=`adb shell uname -m`
 else
-    uname_arch=`uname -m`
+  uname_arch=`uname -m`
 fi
 
 case $uname_arch in
-    *86) guessed_sbcl_arch=x86 ;;
-    i86pc) guessed_sbcl_arch=x86 ;;
-    *x86_64) guessed_sbcl_arch=x86-64 ;;
-    amd64) guessed_sbcl_arch=x86-64 ;;
-    sparc*) guessed_sbcl_arch=sparc ;;
-    sun*) guessed_sbcl_arch=sparc ;;
-    *powerpc|*ppc) guessed_sbcl_arch=ppc ;;
-    ppc64) guessed_sbcl_arch=ppc ;;
-    ppc64le) guessed_sbcl_arch=ppc64 ;; # is ok because there was never 32-bit LE
-    Power*Macintosh) guessed_sbcl_arch=ppc ;;
-    ibmnws) guessed_sbcl_arch=ppc ;;
-    mips*) guessed_sbcl_arch=mips ;;
-    arm64) guessed_sbcl_arch=arm64 ;;
-    *arm*) guessed_sbcl_arch=arm ;;
-    aarch64) guessed_sbcl_arch=arm64 ;;
-    riscv32) guessed_sbcl_arch=riscv xlen=32;;
-    riscv64) guessed_sbcl_arch=riscv xlen=64;;
-    loongarch64) guessed_sbcl_arch=loongarch64;;
-    *)
-        # If we're not building on a supported target architecture, we
-        # we have no guess, but it's not an error yet, since maybe
-        # target architecture will be specified explicitly below.
-        guessed_sbcl_arch=''
-        ;;
+  *86) guessed_sbcl_arch=x86 ;;
+  i86pc) guessed_sbcl_arch=x86 ;;
+  *x86_64) guessed_sbcl_arch=x86-64 ;;
+  amd64) guessed_sbcl_arch=x86-64 ;;
+  sparc*) guessed_sbcl_arch=sparc ;;
+  sun*) guessed_sbcl_arch=sparc ;;
+  *powerpc|*ppc) guessed_sbcl_arch=ppc ;;
+  ppc64) guessed_sbcl_arch=ppc ;;
+  ppc64le) guessed_sbcl_arch=ppc64 ;; # is ok because there was never 32-bit LE
+  Power*Macintosh) guessed_sbcl_arch=ppc ;;
+  ibmnws) guessed_sbcl_arch=ppc ;;
+  mips*) guessed_sbcl_arch=mips ;;
+  arm64) guessed_sbcl_arch=arm64 ;;
+  *arm*) guessed_sbcl_arch=arm ;;
+  aarch64) guessed_sbcl_arch=arm64 ;;
+  riscv32) guessed_sbcl_arch=riscv xlen=32;;
+  riscv64) guessed_sbcl_arch=riscv xlen=64;;
+  loongarch64) guessed_sbcl_arch=loongarch64;;
+  *)
+    # If we're not building on a supported target architecture, we
+    # we have no guess, but it's not an error yet, since maybe
+    # target architecture will be specified explicitly below.
+    guessed_sbcl_arch=''
+    ;;
 esac
 
 # Under Solaris, uname -m returns "i86pc" even if CPU is amd64.
 if [ "$sbcl_os" = "sunos" ] && [ `isainfo -k` = "amd64" ]; then
-    guessed_sbcl_arch=x86-64
+  guessed_sbcl_arch=x86-64
 fi
 
 # Under Darwin, uname -m returns "i386" even if CPU is x86_64.
 # (I suspect this is not true any more - it reports "x86_64 for me)
 if [ "$sbcl_os" = "darwin" ] && [ "`/usr/sbin/sysctl -n hw.optional.x86_64`" = "1" ]; then
-    guessed_sbcl_arch=x86-64
+  guessed_sbcl_arch=x86-64
 fi
 
 # Under NetBSD, uname -m returns "evbarm" even if CPU is arm64.
 if [ "$sbcl_os" = "netbsd" ] && [ `uname -p` = "aarch64" ]; then
-    guessed_sbcl_arch=arm64
+  guessed_sbcl_arch=arm64
 fi
 
 # Under FreeBSD, uname -m returns "powerpc" even if CPU is powerpc64.
 if [ "$sbcl_os" = "freebsd" ] && [ `uname -p` = "powerpc64" ]; then
-    guessed_sbcl_arch=ppc64
+  guessed_sbcl_arch=ppc64
 fi
 
 # Under FreeBSD, uname -m returns "powerpc" even if CPU is powerpc64le.
 if [ "$sbcl_os" = "freebsd" ] && [ `uname -p` = "powerpc64le" ]; then
-    guessed_sbcl_arch=ppc64
+  guessed_sbcl_arch=ppc64
 fi
 
 echo //setting up CPU-architecture-dependent information
-if test -n "$SBCL_ARCH"
+if test -n "$CL_ARCH"
 then
-    # Normalize it.
-    SBCL_ARCH=`echo $SBCL_ARCH | tr '[A-Z]' '[a-z]' | tr _ -`
-    case $SBCL_ARCH in
-        riscv*)
-            case $SBCL_ARCH in
-                riscv32) SBCL_ARCH=riscv xlen=32;;
-                riscv64) SBCL_ARCH=riscv xlen=64;;
-                *)
-                    echo "Please choose between riscv32 and riscv64."
-                    exit 1
-            esac
-    esac
+  # Normalize it.
+  CL_ARCH=`echo $CL_ARCH | tr '[A-Z]' '[a-z]' | tr _ -`
+  case $CL_ARCH in
+    riscv*)
+      case $CL_ARCH in
+        riscv32) CL_ARCH=riscv xlen=32;;
+        riscv64) CL_ARCH=riscv xlen=64;;
+        *)
+          echo "Please choose between riscv32 and riscv64."
+          exit 1
+      esac
+  esac
 fi
-sbcl_arch=${SBCL_ARCH:-$guessed_sbcl_arch}
+sbcl_arch=${CL_ARCH:-$guessed_sbcl_arch}
 echo sbcl_arch=\"$sbcl_arch\"
 if [ "$sbcl_arch" = "" ] ; then
-    echo "can't guess target SBCL architecture, please specify --arch=<name>"
-    exit 1
+  echo "can't guess target SBCL architecture, please specify --arch=<name>"
+  exit 1
 fi
 
 if $android
 then
-    case $sbcl_arch in
-        arm64) TARGET_TAG=aarch64-linux-android ;;
-        arm) TARGET_TAG=armv7a-linux-androideabi
-             echo "Unsupported configuration"
-             exit 1
-             ;;
-        x86) TARGET_TAG=i686-linux-android
-             echo "Unsupported configuration"
-             exit 1
-             ;;
-        x86-64) TARGET_TAG=x86_64-linux-android ;;
-    esac
-    HOST_TAG=$sbcl_os-x86_64
-    TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
-    export CC=$TOOLCHAIN/bin/$TARGET_TAG$ANDROID_API-clang
-    echo "CC=$CC; export CC" >> output/build-config
-    echo "NDK=$NDK" > output/ndk-config
-    echo "HOST_TAG=$HOST_TAG" >> output/ndk-config
-    echo "TARGET_TAG=$TARGET_TAG" >> output/ndk-config
-    echo "TOOLCHAIN=$TOOLCHAIN" >> output/ndk-config
-    echo "ANDROID_API=$ANDROID_API" >> output/ndk-config
+  case $sbcl_arch in
+    arm64) TARGET_TAG=aarch64-linux-android ;;
+    arm) TARGET_TAG=armv7a-linux-androideabi
+         echo "Unsupported configuration"
+         exit 1
+         ;;
+    x86) TARGET_TAG=i686-linux-android
+         echo "Unsupported configuration"
+         exit 1
+         ;;
+    x86-64) TARGET_TAG=x86_64-linux-android ;;
+  esac
+  HOST_TAG=$sbcl_os-x86_64
+  TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
+  export CC=$TOOLCHAIN/bin/$TARGET_TAG$ANDROID_API-clang
+  echo "CC=$CC; export CC" >> output/build-config
+  echo "NDK=$NDK" > output/ndk-config
+  echo "HOST_TAG=$HOST_TAG" >> output/ndk-config
+  echo "TARGET_TAG=$TARGET_TAG" >> output/ndk-config
+  echo "TOOLCHAIN=$TOOLCHAIN" >> output/ndk-config
+  echo "ANDROID_API=$ANDROID_API" >> output/ndk-config
 fi
 
 if $fancy
 then
-    # If --fancy, enable threads on platforms where they can be built.
-    case $sbcl_arch in
-        x86|x86-64|ppc|arm64|riscv|loongarch64)
-	    if [ "$sbcl_os" = "dragonflybsd" ]
-	    then
-		echo "No threads on this platform."
-	    else
-		WITH_FEATURES="$WITH_FEATURES :sb-thread"
-		echo "Enabling threads due to --fancy."
-	    fi
-            ;;
-        *)
-            echo "No threads on this platform."
-            ;;
-    esac
+  # If --fancy, enable threads on platforms where they can be built.
+  case $sbcl_arch in
+    x86|x86-64|ppc|arm64|riscv|loongarch64)
+      if [ "$sbcl_os" = "dragonflybsd" ]
+      then
+	echo "No threads on this platform."
+      else
+	WITH_FEATURES="$WITH_FEATURES :sb-thread"
+	echo "Enabling threads due to --fancy."
+      fi
+      ;;
+    *)
+      echo "No threads on this platform."
+      ;;
+  esac
 else
-    case $sbcl_arch in
-        x86|x86-64)
-            case $sbcl_os in
-                linux|darwin)
-                    WITH_FEATURES="$WITH_FEATURES :sb-thread"
-            esac
-    esac
-    case $sbcl_arch in
-        arm64|riscv|loongarch64)
-            WITH_FEATURES="$WITH_FEATURES :sb-thread"
-    esac
+  case $sbcl_arch in
+    x86|x86-64)
+      case $sbcl_os in
+        linux|darwin)
+          WITH_FEATURES="$WITH_FEATURES :sb-thread"
+      esac
+  esac
+  case $sbcl_arch in
+    arm64|riscv|loongarch64)
+      WITH_FEATURES="$WITH_FEATURES :sb-thread"
+  esac
 fi
 
 case "$sbcl_os" in
-    netbsd)
-        # default to using paxctl to disable mprotect restrictions
-        if [ "x$(sysctl -n security.pax.mprotect.enabled 2>/dev/null)" = x1 -a \
-             "x$SBCL_PAXCTL" = x ]; then
-            echo "SBCL_PAXCTL=\"/usr/sbin/paxctl +m\"; export SBCL_PAXCTL" \
-                 >> output/build-config
-        fi
-        ;;
-    openbsd)
-        # openbsd 6.0 and newer restrict mmap of RWX pages
-        if [ `uname -r | tr -d .` -gt 60 ]; then
-            rm -f tools-for-build/mmap-rwx
-            LDFLAGS="$LDFLAGS -Wl,-zwxneeded" make -C tools-for-build mmap-rwx -I ../src/runtime
-            if ! ./tools-for-build/mmap-rwx; then
-                echo "Can't mmap() RWX pages!"
-                echo "Is the current filesystem mounted with wxallowed?"
-                exit 1
-            fi
-        fi
+  netbsd)
+    # default to using paxctl to disable mprotect restrictions
+    if [ "x$(sysctl -n security.pax.mprotect.enabled 2>/dev/null)" = x1 -a \
+                                                                   "x$CL_PAXCTL" = x ]; then
+      echo "CL_PAXCTL=\"/usr/sbin/paxctl +m\"; export CL_PAXCTL" \
+           >> output/build-config
+    fi
+    ;;
+  openbsd)
+    # openbsd 6.0 and newer restrict mmap of RWX pages
+    if [ `uname -r | tr -d .` -gt 60 ]; then
+      rm -f tools-for-build/mmap-rwx
+      LDFLAGS="$LDFLAGS -Wl,-zwxneeded" make -C tools-for-build mmap-rwx -I ../src/runtime
+      if ! ./tools-for-build/mmap-rwx; then
+        echo "Can't mmap() RWX pages!"
+        echo "Is the current filesystem mounted with wxallowed?"
+        exit 1
+      fi
+    fi
     ;;
 esac
 
@@ -551,10 +523,10 @@ echo "(lambda (features) (set-difference (union features (list :${sbcl_arch}$WIT
 
 # Automatically block sb-simd on non-x86 platforms, at least for now.
 case "$sbcl_arch" in
-    x86-64) ;; *) SBCL_CONTRIB_BLOCKLIST="$SBCL_CONTRIB_BLOCKLIST sb-simd" ;;
+  x86-64) ;; *) CL_CONTRIB_BLOCKLIST="$CL_CONTRIB_BLOCKLIST sb-simd" ;;
 esac
 case "$sbcl_os" in
-    linux) ;; *) SBCL_CONTRIB_BLOCKLIST="$SBCL_CONTRIB_BLOCKLIST sb-perf" ;;
+  linux) ;; *) CL_CONTRIB_BLOCKLIST="$CL_CONTRIB_BLOCKLIST sb-perf" ;;
 esac
 
 echo //setting up OS-dependent information
@@ -569,207 +541,176 @@ rm -f sbcl.mk sbcl.o libsbcl.a
 link_or_copy $sbcl_arch-arch.h target-arch.h
 link_or_copy $sbcl_arch-lispregs.h target-lispregs.h
 case "$sbcl_os" in # all but 2 unconditionally have clock-gettime
-    darwin) ;;
-    win32) ;;
-    *) printf ' :os-provides-clock-gettime' >> $ltf ;;
+  darwin) ;;
+  *) printf ' :os-provides-clock-gettime' >> $ltf ;;
 esac
 case "$sbcl_os" in
-    linux)
-        printf ' :unix :linux :elf' >> $ltf
-        case "$sbcl_arch" in
-          arm64 | ppc64 | x86 | x86-64)
-	        printf ' :gcc-tls' >> $ltf
-        esac
-        case "$sbcl_arch" in
-          arm | arm64 | ppc | ppc64 | x86 | x86-64)
-	        printf ' :use-sys-mmap' >> $ltf
-        esac
+  linux)
+    printf ' :unix :linux :elf' >> $ltf
+    case "$sbcl_arch" in
+      arm64 | ppc64 | x86 | x86-64)
+	printf ' :gcc-tls' >> $ltf
+    esac
+    case "$sbcl_arch" in
+      arm | arm64 | ppc | ppc64 | x86 | x86-64)
+	printf ' :use-sys-mmap' >> $ltf
+    esac
 
-        # If you add other platforms here, don't forget to edit
-        # src/runtime/Config.foo-linux too.
+    # If you add other platforms here, don't forget to edit
+    # src/runtime/Config.foo-linux too.
+    case "$sbcl_arch" in
+      mips | arm | x86 | x86-64)
+	printf ' :largefile' >> $ltf
+	;;
+    esac
+    if $android
+    then
+      link_or_copy Config.$sbcl_arch-android Config
+      link_or_copy $sbcl_arch-android-os.h target-arch-os.h
+      link_or_copy android-os.h target-os.h
+    else
+      link_or_copy Config.$sbcl_arch-linux Config
+      link_or_copy $sbcl_arch-linux-os.h target-arch-os.h
+      link_or_copy linux-os.h target-os.h
+    fi
+    ;;
+  haiku)
+    printf ' :unix :haiku :elf :int4-breakpoints' >> $ltf
+    link_or_copy Config.$sbcl_arch-haiku Config
+    link_or_copy $sbcl_arch-haiku-os.h target-arch-os.h
+    link_or_copy haiku-os.h target-os.h
+    ;;
+  *bsd)
+    printf ' :unix :bsd :elf' >> $ltf
+    # FIXME: can we enable :gcc-tls across all variants?
+    link_or_copy $sbcl_arch-bsd-os.h target-arch-os.h
+    link_or_copy bsd-os.h target-os.h
+    case "$sbcl_os" in
+      *freebsd)
+        printf ' :freebsd' >> $ltf
+        printf ' :gcc-tls' >> $ltf
+        if [ $sbcl_os = "gnu-kfreebsd" ]; then
+          printf ' :gnu-kfreebsd' >> $ltf
+        fi
+        link_or_copy Config.$sbcl_arch-$sbcl_os Config
+        ;;
+      openbsd)
+        printf ' :openbsd' >> $ltf
         case "$sbcl_arch" in
-	    mips | arm | x86 | x86-64)
-		printf ' :largefile' >> $ltf
-		;;
-        esac
-        if $android
-        then
-            link_or_copy Config.$sbcl_arch-android Config
-            link_or_copy $sbcl_arch-android-os.h target-arch-os.h
-            link_or_copy android-os.h target-os.h
-        else
-            link_or_copy Config.$sbcl_arch-linux Config
-            link_or_copy $sbcl_arch-linux-os.h target-arch-os.h
-            link_or_copy linux-os.h target-os.h
-        fi
-        ;;
-    haiku)
-        printf ' :unix :haiku :elf :int4-breakpoints' >> $ltf
-        link_or_copy Config.$sbcl_arch-haiku Config
-        link_or_copy $sbcl_arch-haiku-os.h target-arch-os.h
-        link_or_copy haiku-os.h target-os.h
-        ;;
-    *bsd)
-        printf ' :unix :bsd :elf' >> $ltf
-        # FIXME: can we enable :gcc-tls across all variants?
-        link_or_copy $sbcl_arch-bsd-os.h target-arch-os.h
-        link_or_copy bsd-os.h target-os.h
-        case "$sbcl_os" in
-            *freebsd)
-                printf ' :freebsd' >> $ltf
-                printf ' :gcc-tls' >> $ltf
-                if [ $sbcl_os = "gnu-kfreebsd" ]; then
-                    printf ' :gnu-kfreebsd' >> $ltf
-                fi
-                link_or_copy Config.$sbcl_arch-$sbcl_os Config
-                ;;
-            openbsd)
-                printf ' :openbsd' >> $ltf
-                case "$sbcl_arch" in
-                  arm64 | x86 | x86-64)
-                  	printf ' :gcc-tls' >> $ltf
-                esac
-                link_or_copy Config.$sbcl_arch-openbsd Config
-                ;;
-            netbsd)
-                printf ' :netbsd' >> $ltf
-                link_or_copy Config.$sbcl_arch-netbsd Config
-                ;;
-            dragonflybsd)
-                printf ' :dragonfly' >> $ltf
-                link_or_copy Config.$sbcl_arch-dragonfly Config
-                ;;
-            *)
-                echo unsupported BSD variant: `uname`
-                exit 1
-                ;;
-        esac
-        ;;
-    darwin)
-        printf ' :unix :bsd :darwin :mach-o' >> $ltf
-        darwin_version=`uname -r`
-        darwin_version_major=${DARWIN_VERSION_MAJOR:-${darwin_version%%.*}}
-        if (( 10 > $darwin_version_major )) || [ $sbcl_arch = "ppc" ]; then
-            printf ' :use-darwin-posix-semaphores' >> $ltf
-        else
-            printf ' :os-provides-pthread-setname-np' >> $ltf
-        fi
-        if (( $darwin_version_major >= 15 )); then
-            printf ' :os-provides-clock-gettime' >> $ltf
-        fi
-        if [ $sbcl_arch = "x86-64" ]; then
-            if (( 8 < $darwin_version_major )); then
-	        printf ' :inode64' >> $ltf
-            fi
+          arm64 | x86 | x86-64)
             printf ' :gcc-tls' >> $ltf
-        fi
-        if [ $sbcl_arch = "arm64" ]; then
-            printf ' :darwin-jit :gcc-tls' >> $ltf
-        fi
-        if $android; then
-            echo "Android build is unsupported on darwin"
-        fi
-        link_or_copy $sbcl_arch-darwin-os.h target-arch-os.h
-        link_or_copy bsd-os.h target-os.h
-        link_or_copy Config.$sbcl_arch-darwin Config
-        ;;
-    sunos)
-        printf ' :unix :sunos :elf' >> $ltf
-        link_or_copy Config.$sbcl_arch-sunos Config
-        link_or_copy $sbcl_arch-sunos-os.h target-arch-os.h
-        link_or_copy sunos-os.h target-os.h
-        ;;
-    win32)
-        printf ' :win32' >> $ltf
-        #
-        # Required features -- Some of these used to be optional, but
-        # building without them is no longer considered supported:
-        #
-        # (Of course it doesn't provide dlopen, but there is
-        # roughly-equivalent magic nevertheless:)
-        printf ' :os-provides-dlopen' >> $ltf
-        printf ' :sb-thread :sb-safepoint' >> $ltf
-        #
-        case "$sbcl_arch" in
-            arm64)
-                ;;
-            x86 | x86-64)
-                ;;
-            *)
-                echo "unsupported architecture for win32: $sbcl_arch"
-                exit 1
-                ;;
         esac
-        link_or_copy Config.$sbcl_arch-win32 Config
-        link_or_copy $sbcl_arch-win32-os.h target-arch-os.h
-        link_or_copy win32-os.h target-os.h
+        link_or_copy Config.$sbcl_arch-openbsd Config
         ;;
-    *)
-        echo unsupported OS type: `uname`
+      netbsd)
+        printf ' :netbsd' >> $ltf
+        link_or_copy Config.$sbcl_arch-netbsd Config
+        ;;
+      dragonflybsd)
+        printf ' :dragonfly' >> $ltf
+        link_or_copy Config.$sbcl_arch-dragonfly Config
+        ;;
+      *)
+        echo unsupported BSD variant: `uname`
         exit 1
         ;;
+    esac
+    ;;
+  darwin)
+    printf ' :unix :bsd :darwin :mach-o' >> $ltf
+    darwin_version=`uname -r`
+    darwin_version_major=${DARWIN_VERSION_MAJOR:-${darwin_version%%.*}}
+    if (( 10 > $darwin_version_major )) || [ $sbcl_arch = "ppc" ]; then
+      printf ' :use-darwin-posix-semaphores' >> $ltf
+    else
+      printf ' :os-provides-pthread-setname-np' >> $ltf
+    fi
+    if (( $darwin_version_major >= 15 )); then
+      printf ' :os-provides-clock-gettime' >> $ltf
+    fi
+    if [ $sbcl_arch = "x86-64" ]; then
+      if (( 8 < $darwin_version_major )); then
+	printf ' :inode64' >> $ltf
+      fi
+      printf ' :gcc-tls' >> $ltf
+    fi
+    if [ $sbcl_arch = "arm64" ]; then
+      printf ' :darwin-jit :gcc-tls' >> $ltf
+    fi
+    if $android; then
+      echo "Android build is unsupported on darwin"
+    fi
+    link_or_copy $sbcl_arch-darwin-os.h target-arch-os.h
+    link_or_copy bsd-os.h target-os.h
+    link_or_copy Config.$sbcl_arch-darwin Config
+    ;;
+  sunos)
+    printf ' :unix :sunos :elf' >> $ltf
+    link_or_copy Config.$sbcl_arch-sunos Config
+    link_or_copy $sbcl_arch-sunos-os.h target-arch-os.h
+    link_or_copy sunos-os.h target-os.h
+    ;;
+  *)
+    echo unsupported OS type: `uname`
+    exit 1
+    ;;
 esac
 cd "$original_dir"
 
 if $android
 then
-    . tools-for-build/android_run.sh
+  . tools-for-build/android_run.sh
 fi
 
 case "$sbcl_arch" in
   x86)
-    if [ "$sbcl_os" = "win32" ]; then
-        # of course it doesn't provide dlopen, but there is
-        # roughly-equivalent magic nevertheless.
-        printf ' :os-provides-dlopen' >> $ltf
-    fi
     if [ "$sbcl_os" = "openbsd" ]; then
-        rm -f src/runtime/openbsd-sigcontext.h
-        sh tools-for-build/openbsd-sigcontext.sh > src/runtime/openbsd-sigcontext.h
+      rm -f src/runtime/openbsd-sigcontext.h
+      sh tools-for-build/openbsd-sigcontext.sh > src/runtime/openbsd-sigcontext.h
     fi
     ;;
   x86-64)
     printf ' :sb-simd-pack :sb-simd-pack-256 :avx2' >> $ltf # not mandatory
 
     if $android; then
-        make -C tools-for-build avx2 2> /dev/null
-        if ! android_run tools-for-build/avx2 ; then
-            SBCL_CONTRIB_BLOCKLIST="$SBCL_CONTRIB_BLOCKLIST sb-simd"
-        fi
+      make -C tools-for-build avx2 2> /dev/null
+      if ! android_run tools-for-build/avx2 ; then
+        CL_CONTRIB_BLOCKLIST="$CL_CONTRIB_BLOCKLIST sb-simd"
+      fi
     else
-        if ! make -C tools-for-build avx2 2> /dev/null || tools-for-build/avx2 ; then
-            SBCL_CONTRIB_BLOCKLIST="$SBCL_CONTRIB_BLOCKLIST sb-simd"
-        fi
+      if ! make -C tools-for-build avx2 2> /dev/null || tools-for-build/avx2 ; then
+        CL_CONTRIB_BLOCKLIST="$CL_CONTRIB_BLOCKLIST sb-simd"
+      fi
     fi
 
     case "$sbcl_os" in
-    linux | darwin | *bsd | win32)
+      linux | darwin | *bsd)
         printf ' :immobile-space' >> $ltf
     esac
     ;;
   ppc)
     if [ "$sbcl_os" = "darwin" ]; then
-        # We provide a dlopen shim, so a little lie won't hurt
- 	printf ' :os-provides-dlopen' >> $ltf
-        # The default stack ulimit under darwin is too small to run PURIFY.
-        # Best we can do is complain and exit at this stage
-        if [ "`ulimit -s`" = "512" ]; then
-            echo "Your stack size limit is too small to build SBCL."
-            echo "See the limit(1) or ulimit(1) commands and the README file."
-            exit 1
-        fi
+      # We provide a dlopen shim, so a little lie won't hurt
+      printf ' :os-provides-dlopen' >> $ltf
+      # The default stack ulimit under darwin is too small to run PURIFY.
+      # Best we can do is complain and exit at this stage
+      if [ "`ulimit -s`" = "512" ]; then
+        echo "Your stack size limit is too small to build SBCL."
+        echo "See the limit(1) or ulimit(1) commands and the README file."
+        exit 1
+      fi
     fi
     ;;
   ppc64)
-   ;;
+    ;;
   riscv)
     if [ "$xlen" = "64" ]; then
-        printf ' :64-bit' >> $ltf
+      printf ' :64-bit' >> $ltf
     elif [ "$xlen" = "32" ]; then
-        :
+      :
     else
-        echo 'Architecture word width unspecified. (Either 32-bit or 64-bit.)'
-        exit 1
+      echo 'Architecture word width unspecified. (Either 32-bit or 64-bit.)'
+      exit 1
     fi
     ;;
   loongarch64)
@@ -778,24 +719,24 @@ esac
 
 if [ "$sbcl_os" = darwin -a  "$sbcl_arch" = arm64 ]
 then
-    # Launching new executables is pretty slow on macOS, but this configuration is pretty uniform
-    echo ' :little-endian :os-provides-dlopen :os-provides-dladdr' >> $ltf
-    echo ' :os-provides-blksize-t :os-provides-suseconds-t :os-provides-posix-spawn' >> $ltf
+  # Launching new executables is pretty slow on macOS, but this configuration is pretty uniform
+  echo ' :little-endian :os-provides-dlopen :os-provides-dladdr' >> $ltf
+  echo ' :os-provides-blksize-t :os-provides-suseconds-t :os-provides-posix-spawn' >> $ltf
 else
-    # Use a little C program to try to guess the endianness.  Ware
-    # cross-compilers!
-    #
-    # FIXME: integrate to grovel-features, mayhaps
-    if $android
-    then
-        $CC tools-for-build/determine-endianness.c -o tools-for-build/determine-endianness
-        android_run tools-for-build/determine-endianness >> $ltf
-    else
-        make -C tools-for-build determine-endianness -I ../src/runtime
-        tools-for-build/determine-endianness >> $ltf
-    fi
-    export sbcl_os sbcl_arch android
-    sh tools-for-build/grovel-features.sh >> $ltf
+  # Use a little C program to try to guess the endianness.  Ware
+  # cross-compilers!
+  #
+  # FIXME: integrate to grovel-features, mayhaps
+  if $android
+  then
+    $CC tools-for-build/determine-endianness.c -o tools-for-build/determine-endianness
+    android_run tools-for-build/determine-endianness >> $ltf
+  else
+    make -C tools-for-build determine-endianness -I ../src/runtime
+    tools-for-build/determine-endianness >> $ltf
+  fi
+  export sbcl_os sbcl_arch android
+  sh tools-for-build/grovel-features.sh >> $ltf
 fi
 
 
@@ -803,7 +744,7 @@ echo //finishing $ltf
 printf " %s" "`cat crossbuild-runner/backends/${sbcl_arch}/features`" >> $ltf
 echo ")) (list$WITHOUT_FEATURES)))" >> $ltf
 
-echo "SBCL_CONTRIB_BLOCKLIST=\"$SBCL_CONTRIB_BLOCKLIST\"; export SBCL_CONTRIB_BLOCKLIST" >> output/build-config
+echo "CL_CONTRIB_BLOCKLIST=\"$CL_CONTRIB_BLOCKLIST\"; export CL_CONTRIB_BLOCKLIST" >> output/build-config
 
 # FIXME: The version system should probably be redone along these lines:
 #
@@ -826,8 +767,8 @@ else
   echo '"'`hostname`-`id -un`-`date +%Y-%m-%d-%H-%M-%S`'"' > output/build-id.inc
 fi
 
-if [ -n "$SBCL_HOST_LOCATION" ]; then
-    echo //setting up host configuration
-    rsync --delete-after -a output/ "$SBCL_HOST_LOCATION/output/"
-    rsync -a local-target-features.lisp-expr version.lisp-expr "$SBCL_HOST_LOCATION/"
+if [ -n "$CL_HOST_LOCATION" ]; then
+  echo //setting up host configuration
+  rsync --delete-after -a output/ "$CL_HOST_LOCATION/output/"
+  rsync -a local-target-features.lisp-expr version.lisp-expr "$CL_HOST_LOCATION/"
 fi

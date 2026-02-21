@@ -16,7 +16,6 @@
 ;;;; files for more information.
 
 (in-package "SB-KERNEL")
-
 ;;;; Constants
 (defconstant mt19937-n 624)
 (defconstant mt19937-m 397)
@@ -240,7 +239,6 @@ http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
          (incf i) (when (>= i mt19937-n) (setf (aref s 3) (aref s (+ 2 mt19937-n)) i 1)))
        (setf (aref s 3) #x80000000) ;; MSB is 1; assuring non-zero initial array
        (%make-random-state s))))))
-
 ;;;; random entries
 
 ;;; This function generates a 32bit integer between 0 and #xffffffff
@@ -298,7 +296,6 @@ http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
   (declare (type random-state state))
   (logior (ash (random-chunk state) 32)
           (random-chunk state)))
-
 ;;; Handle the single or double float case of RANDOM. We generate a
 ;;; float between 0.0 and 1.0 by clobbering the significand of 1.0
 ;;; with random bits, then subtracting 1.0. This hides the fact that
@@ -342,7 +339,6 @@ http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
                #-x86 =
                candidate arg)
         finally (return (truly-the (double-float 0d0) candidate))))
-
 ;;;; random fixnums
 
 ;;; Generate and return a pseudo random fixnum less than ARG. To achieve

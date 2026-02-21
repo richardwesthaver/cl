@@ -37,7 +37,6 @@
 
 (declaim (type (or pathname null) *load-truename* *load-pathname*))
 
-
 ;;;; LOAD-AS-SOURCE
 
 ;;; something not EQ to anything we might legitimately READ
@@ -122,7 +121,6 @@
                           (eval-form form nil)))))))))
   t)
 ) ; end MACROLET
-
 ;;;; LOAD itself
 
 (define-condition fasl-header-missing (invalid-fasl)
@@ -359,7 +357,6 @@
                      defaulted-fasl-pathname)))
           (fasl-existsp defaulted-fasl-pathname)
           (source-existsp defaulted-source-pathname))))
-
 ;;;; linkage fixups
 
 (defun %asm-routine-table (code-obj)

@@ -5,7 +5,6 @@
 
 (in-package #:sb-sprof)
 
-
 ;;;; Call counting
 
 ;;; The following functions tell sb-sprof to do call count profiling

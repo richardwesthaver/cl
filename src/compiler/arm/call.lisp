@@ -45,7 +45,6 @@
 ;;; passed when we are using non-standard conventions.
 (defun make-arg-count-location ()
   (make-wired-tn *fixnum-primitive-type* immediate-arg-scn nargs-offset))
-
 ;;;; Frame hackery:
 
 ;;; Return the number of bytes needed for the current non-descriptor
@@ -245,7 +244,6 @@
         ;; Deallocate the callee stack frame.
         (store-csp ocfp-tn))))
   (values))
-
 ;;;; Unknown values receiving:
 
 ;;;    Emit code needed at the return point for an unknown-values call for an
@@ -294,7 +292,6 @@
   (:temporary (:sc any-reg :offset nargs-offset
                :from :eval :to (:result 1))
               nvals))
-
 ;;; This hook in the codegen pass lets us insert code before fall-thru entry
 ;;; points, local-call entry points, and tail-call entry points.  The default
 ;;; does nothing.
@@ -304,7 +301,6 @@
     (emit-label trampoline-label))
   (emit-label start-label))
 
-
 ;;;; XEP hackery:
 
 ;;; Get the lexical environment from its passing location.
@@ -581,7 +577,6 @@
              ((plusp min)
               (inst cmp nargs (maybe-load-immediate min))
               (inst b :lo err-lab)))))))
-
 ;;;; Local call with unknown values convention return:
 
 ;;; Non-TR local call for a fixed number of values passed according to the
@@ -675,7 +670,6 @@
       (receive-unknown-values values-start nvals start count label temp lip)
       (when cur-nfp
         (load-stack-tn cur-nfp nfp-save)))))
-
 ;;;; Local call with known values return:
 
 ;;; Non-TR local call with known return locations.  Known-value return works
@@ -741,7 +735,6 @@
         (move nsp-tn cur-nfp)))
     (move cfp-tn old-fp-temp)
     (lisp-return return-pc-temp :known)))
-
 ;;;; Full call:
 ;;;
 ;;; There is something of a cross-product effect with full calls.
@@ -1030,7 +1023,6 @@
         (emit-label fixup-lab)
         (inst word (make-fixup 'tail-call-variable :assembly-routine)))
       (inst load-from-label pc-tn lip fixup-lab))))
-
 ;;;; Unknown values return:
 
 ;;; Return a single value using the unknown-values convention.
@@ -1156,7 +1148,6 @@
     (inst ldr pc-tn (@ fixup))
     FIXUP
     (inst word (make-fixup 'return-multiple :assembly-routine))))
-
 ;;; Single-stepping
 
 (define-vop (step-instrument-before-vop)

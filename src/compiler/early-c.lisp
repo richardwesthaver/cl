@@ -34,7 +34,6 @@
 (defconstant multiple-values-limit call-arguments-limit
   "The exclusive upper bound on the number of multiple VALUES that you can
   return.")
-
 
 ;;;; miscellaneous types used both in the cross-compiler and on the target
 
@@ -106,7 +105,6 @@
   "If true (the default), the compiler believes DYNAMIC-EXTENT declarations
 and stack allocates otherwise inaccessible parts of the object whenever
 possible.")
-
 ;;;; miscellaneous utilities
 
 ;;; COMPILE-FILE usually puts all nontoplevel code in immobile space, but COMPILE

@@ -14,7 +14,6 @@
 
 (in-package "SB-IMPL")
 
-
 ;;;; fdefinition (fdefn) objects
 
 (declaim (ftype (sfunction (t) (or fdefn #+linkage-space symbol)) find-or-create-fdefn))
@@ -201,7 +200,6 @@
 ;;; Behaves just like %COERCE-CALLABLE-TO-FUN but has an ir2-convert optimizer.
 (setf (symbol-function '%coerce-callable-for-call) (symbol-function '%coerce-callable-to-fun))
 
-
 ;;;; definition encapsulation
 
 (defstruct (encapsulation-info (:constructor make-encapsulation-info
@@ -303,7 +301,6 @@
               (when specialized-xep
                 (fset (%fun-name specialized-xep) specialized-xep)))))))))
 
-
 ;;;; FDEFINITION
 
 ;;; KLUDGE: Er, it looks as though this means that
@@ -421,7 +418,6 @@
   (declare (type function new-value) (optimize (safety 1)))
   (declare (explicit-check))
   (setf-fdefinition new-value name t))
-
 ;;;; FBOUNDP and FMAKUNBOUND
 
 (defun fboundp (name)

@@ -353,7 +353,7 @@ Please check that all strings which were not recognizable to the compiler
 (sb-ext:gc :full t)
 
 ;;; resetting compilation policy to neutral values in preparation for
-;;; SAVE-LISP-AND-DIE as final SBCL core (not in warm.lisp because
+;;; SAVE-LISP-AND-DIE as final CL core (not in warm.lisp because
 ;;; SB-C::*POLICY* has file scope)
 (setq sb-c::*policy* (copy-structure sb-c::**baseline-policy**))
 

@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; internal type predicates
 
 ;;; Simple TYPEP uses that don't have any standard predicate are
@@ -95,7 +94,6 @@
 ;;; Predicates that don't accept T for the first argument type
 (defknown (float-infinity-p float-nan-p float-infinity-or-nan-p)
   (float) boolean (movable foldable flushable))
-
 ;;;; miscellaneous "sub-primitives"
 
 (defknown descriptor-hash32 (t) #+64-bit (unsigned-byte 32) #-64-bit (unsigned-byte 29)
@@ -508,7 +506,6 @@
          (and fixnum unsigned-byte)) ; not flushable
        (defknown symbol-tls-index (symbol)
          (and fixnum unsigned-byte) (flushable)))
-
 ;;;; debugger support
 
 (defknown sb-vm::current-thread-offset-sap (fixnum)
@@ -527,7 +524,6 @@
   (movable flushable))
 (defknown %make-lisp-obj (sb-vm:word) t (movable flushable))
 (defknown get-lisp-obj-address (t) sb-vm:word (flushable))
-
 ;;;; 32-bit logical operations
 
 (defknown word-logical-not (sb-vm:word) sb-vm:word
@@ -544,7 +540,6 @@
 (defknown (shift-towards-start shift-towards-end) (sb-vm:word fixnum)
   sb-vm:word
   (foldable flushable movable))
-
 ;;;; bignum operations
 
 (defknown %allocate-bignum (bignum-length) bignum
@@ -634,7 +629,6 @@
 (defknown (%ashl %ashr %digit-logical-shift-right)
           (bignum-element-type (mod #.sb-vm:n-word-bits)) bignum-element-type
   (foldable flushable movable always-translatable))
-
 ;;;; bit-bashing routines
 
 ;;; FIXME: there's some ugly duplication between the (INTERN (FORMAT ...))
@@ -669,7 +663,6 @@
    (or (simple-unboxed-array (*)) system-area-pointer) index index)
   (values)
   ())
-
 ;;;; code/function/fdefn object manipulation routines
 
 ;;; Return a SAP pointing to the instructions part of CODE-OBJ.
@@ -722,7 +715,6 @@
 #+sb-fasteval
 (defknown sb-interpreter:fun-proto-fn (interpreted-function)
   sb-interpreter::interpreted-fun-prototype (flushable))
-
 
 (defknown %data-vector-and-index
     (array index)

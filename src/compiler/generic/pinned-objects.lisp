@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;; Push a feature indicating whether ambiguous stack words pin what they see.
 (eval-when (:compile-toplevel :execute)
   #+(or x86 x86-64) (pushnew :conservative-stack-scan sb-xc:*features*))

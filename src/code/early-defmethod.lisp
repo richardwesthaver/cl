@@ -48,7 +48,6 @@
                             key))
             (make-lambda-list llks nil required optional rest key aux)
             specializers)))
-
 
 ;;; PARSE-DEFMETHOD is used by DEFMETHOD to parse the &REST argument
 ;;; into the 'real' arguments. This is where the syntax of DEFMETHOD

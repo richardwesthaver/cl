@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; cleanup hackery
 
 ;;; Return the innermost cleanup enclosing NODE, or NIL if there is
@@ -52,7 +51,6 @@
         (setf (block-last block) (ctran-use next))
         (setf (node-next (block-last block)) nil)
         block))))
-
 ;;;; lvar use hacking
 
 ;;; Return a list of all the nodes which use LVAR.
@@ -889,7 +887,6 @@
              (lvar-almost-immediately-used-p lvar
                                              :flushable flushable :no-effect no-effect))))))
 
-
 
 (declaim (inline block-to-be-deleted-p))
 (defun block-to-be-deleted-p (block)
@@ -914,7 +911,6 @@
   (declare (type cblock block))
   (ctran-next (block-start block)))
 
-
 ;;;; lvar substitution
 
 (defun update-ref-dependencies (new old)
@@ -1122,7 +1118,6 @@
                  (or (and (allocator-p allocator)
                           (born-before-p allocator))
                      (pseudo-static-value-p value-lvar)))))))))
-
 ;;;; block starting/creation
 
 ;;; Return the block that CTRAN is the start of, making a block if
@@ -1168,7 +1163,6 @@
        (node-ends-block (ctran-use ctran)))))
   (values))
 
-
 ;;;;
 
 ;;; Filter values of LVAR through the form produced by
@@ -1326,7 +1320,6 @@
       (setf (leaf-ever-used leaf) t)
       (use-lvar ref lvar)
       (values lvar ref))))
-
 ;;;; miscellaneous shorthand functions
 
 ;;; Return the home (i.e. enclosing non-LET) CLAMBDA for NODE. Since
@@ -1675,7 +1668,6 @@
         do (setf (node-derived-type dest)
                  (sb-kernel::convert-to-single-value-type (node-derived-type dest)))
            (reoptimize-lvar prev)))
-
 ;;; Return a new LEXENV just like DEFAULT except for the specified
 ;;; slot values. Values for the alist slots are APPENDed to the
 ;;; beginning of the current value, rather than replacing it entirely.
@@ -1745,7 +1737,6 @@
      policy
      (lexenv-user-data lexenv)
      lexenv)))
-
 ;;;; flow/DFO/component hackery
 
 ;;; Join BLOCK1 and BLOCK2.
@@ -2069,7 +2060,6 @@
           (setf (ctran-block ctran) new-block))
         new-block))))
 
-
 ;;;; deleting stuff
 
 (declaim (start-block delete-ref delete-functional flush-node flush-dest
@@ -2938,7 +2928,6 @@ is :ANY, the function name is not checked."
        (change-ref-leaf node constant :recklessly t))
       (t
        (insert-ref-before constant node t)))))
-
 ;;;; leaf hackery
 
 ;;; Change the LEAF that a REF refers to.
@@ -3066,7 +3055,6 @@ is :ANY, the function name is not checked."
          (eq same
              (ref-same-refs ref2)))))
 
-
 ;;; Return true if VAR would have to be closed over if environment
 ;;; analysis ran now (i.e. if there are any uses that have a different
 ;;; home lambda than VAR's home.)
@@ -3094,7 +3082,6 @@ is :ANY, the function name is not checked."
       (when (and (eq (nlx-info-block nlx) block)
                  (eq (nlx-info-cleanup nlx) cleanup))
         (return nlx)))))
-
 ;;;; functional hackery
 
 (defun main-entry (functional)
@@ -3277,7 +3264,6 @@ is :ANY, the function name is not checked."
     (functional
      (assure-functional-live-p leaf))))
 
-
 ;;;; careful call
 
 ;;; Apply a function to some arguments, returning a list of the values
@@ -3325,7 +3311,6 @@ is :ANY, the function name is not checked."
   (deffrob specifier-type careful-specifier-type compiler-specifier-type ir1-transform-specifier-type)
   (deffrob values-specifier-type careful-values-specifier-type compiler-values-specifier-type ir1-transform-values-specifier-type))
 
-
 ;;;; utilities used at run-time for parsing &KEY args in IR1
 
 ;;; This function is used by the result of PARSE-DEFTRANSFORM to find
@@ -3369,7 +3354,6 @@ is :ANY, the function name is not checked."
            ((null arg) t)
          (unless (member (lvar-value (first arg)) keys)
            (return nil)))))
-
 ;;;; miscellaneous
 
 ;;; Called by the expansion of the EVENT macro.
@@ -3548,7 +3532,6 @@ is :ANY, the function name is not checked."
         (values (gethash name *backend-predicate-types*)
                 (car (combination-args test)))))))
 
-
 (defun proper-or-circular-list-p (x)
   (if (consp x)
       (let ((rabbit (cdr x))

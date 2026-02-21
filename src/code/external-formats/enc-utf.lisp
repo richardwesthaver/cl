@@ -16,7 +16,6 @@
 
 (in-package "SB-IMPL")
 
-
 (declaim (inline utf-noncharacter-code-p))
 (defun utf-noncharacter-code-p (code)
   (or (<= #xd800 code #xdfff)
@@ -326,7 +325,6 @@
   utf-16be->string-aref
   string->utf-16be
   :char-encodable-p (not (utf-noncharacter-code-p (char-code |ch|))))
-
 (declaim (inline char->utf-32le))
 (defun char->utf-32le (char dest string pos replacement)
   (declare (optimize speed #.*safety-0*)

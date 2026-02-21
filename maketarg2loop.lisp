@@ -20,7 +20,7 @@
         (let ((job
                (sb-ext:run-program
                 "src/runtime/sbcl"
-                `("--core" "output/cold-sbcl.core"
+                `("--core" "output/cold-cl.core"
                            "--lose-on-corruption" "--no-sysinit" "--no-userinit"
                            "--eval" ,(format nil "(defvar *objfile-prefix* ~S)" dir)
                            "--load" "src/cold/warm.lisp")

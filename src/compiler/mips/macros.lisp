@@ -20,7 +20,6 @@
             ,expr))
        (,gensym))))
 
-
 ;;; Instruction-like macros.
 
 (defmacro move (dst src)
@@ -104,7 +103,6 @@ byte-ordering issues."
      (inst lra-header-word)))
 
 
-
 ;;;; Stack TN's
 
 ;;; Move a stack TN to a register and vice-versa.
@@ -136,7 +134,6 @@ byte-ordering issues."
           ((control-stack)
            (loadw ,n-reg cfp-tn (tn-offset ,n-stack))))))))
 
-
 ;;;; Storage allocation:
 (defmacro with-fixed-allocation ((result-tn flag-tn temp-tn type-code
                                   size
@@ -176,7 +173,6 @@ placed inside the PSEUDO-ATOMIC, and presumably initializes the object."
   (inst li temp1 (lognot lowtag-mask))
   (inst addu temp2 csp-tn lowtag-mask)
   (inst and csp-tn temp2 temp1))
-
 ;;;; Three Way Comparison
 (defun three-way-comparison (x y condition flavor not-p target temp)
   (ecase condition
@@ -205,7 +201,6 @@ placed inside the PSEUDO-ATOMIC, and presumably initializes the object."
   (inst nop))
 
 
-
 ;;;; Error Code
 (defun emit-error-break (vop kind code values)
   (assemble ()
@@ -225,7 +220,6 @@ placed inside the PSEUDO-ATOMIC, and presumably initializes the object."
       (apply #'error-call vop error-code values)
       start-lab)))
 
-
 ;;;; PSEUDO-ATOMIC
 
 (defmacro pseudo-atomic ((flag-tn &key elide-if (extra nil)) &rest forms)
@@ -240,7 +234,6 @@ placed inside the PSEUDO-ATOMIC, and presumably initializes the object."
          (store-symbol-value null-tn *pseudo-atomic-atomic*)
          (load-symbol-value ,flag-tn *pseudo-atomic-interrupted*)
          (inst tne zero-tn ,flag-tn)))))
-
 ;;;; memory accessor vop generators
 
 (sb-xc:deftype load/store-index (scale lowtag min-offset

@@ -31,7 +31,6 @@
 ;;; Moreover, it would be nice if some of the declarations were commented
 ;;; with their reason for existence.
 
-
 ;;;; mapping onto lists: the MAPFOO functions
 
 ;; This expander allows a compiler-macro for FN to take effect by eliding
@@ -136,7 +135,6 @@
 
 (define-source-transform mapcon (function list &rest more-lists)
   (mapfoo-transform function (cons list more-lists) :nconc nil))
-
 ;;;; mapping onto sequences: the MAP function
 
 ;;; MAP is %MAP plus a check to make sure that any length specified in
@@ -398,7 +396,6 @@
                (setf node (cdr node)))
          result)))
 
-
 ;;; Arrays with a fill-pointer check bounds differently in ELT.
 (deftransform elt ((s i) (simple-array t) *)
   '(aref s i))
@@ -1065,7 +1062,6 @@
   `(sb-sequence:fill seq item
                      :start start
                      :end (%check-generic-sequence-bounds seq start end)))
-
 ;;;; hairy sequence transforms
 
 ;;; FIXME: no hairy sequence transforms in SBCL?
@@ -1076,7 +1072,6 @@
 ;;; transforms might want to look at it for inspiration, even though
 ;;; the actual code is ancient CMUCL -- and hence bitrotted. The code
 ;;; was deleted in 1.0.7.23.
-
 ;;;; string operations
 
 ;;; We transform the case-sensitive string predicates into a non-keyword
@@ -1480,7 +1475,6 @@
   '(if (symbolp x) (symbol-name x) x))
 (deftransform string ((x) (symbol)) '(symbol-name x))
 (deftransform string ((x) (string)) '(progn x))
-
 ;;;; transforms for sequence functions
 
 ;;; FIXME: In the copy loops below, we code the loops in a strange
@@ -2070,7 +2064,6 @@
   (defoptimizer ($fun rewrite-full-call) ((x seq &rest args) node)
     (when (csubtypep (lvar-type seq) (specifier-type 'vector))
       '$with)))
-
 (deftransform search ((pattern text &key start1 start2 end1 end2 test test-not
                                key from-end)
                       ((constant-arg sequence) t &rest t))
@@ -2747,7 +2740,6 @@
                          ,@(coerce-constants vars 'vector))
                        `(%concatenate-to-vector
                          ,vector-widetag ,@(coerce-constants vars 'list))))))))))
-
 ;;;; CONS accessor DERIVE-TYPE optimizers
 
 ;;; Find a possible CAR type a variable bound to a constant list with
@@ -2933,7 +2925,6 @@
        (fold-list-accessors cons)
        (give-up-ir1-transform))))
 
-
 ;;;; FIND, POSITION, and their -IF and -IF-NOT variants
 
 ;;; We want to make sure that %FIND-POSITION is inline-expanded into
@@ -3793,7 +3784,6 @@
   (define-trimmer-transform string-right-trim nil t)
   (define-trimmer-transform string-trim t t))
 
-
 
 ;;; Pop anonymous constant values from the end, list/list* them if
 ;;; any, and link the remainder with list* at runtime. We don't try to
@@ -3884,7 +3874,6 @@
       `(lambda ,gensyms
          (declare (ignore ,@ignored))
          (append ,@arguments)))))
-
 (deftransform reverse ((sequence) (vector) * :important nil)
   `(sb-impl::vector-reverse sequence))
 
@@ -3896,7 +3885,6 @@
 
 (deftransform nreverse ((sequence) (list) * :important nil)
   `(sb-impl::list-nreverse sequence))
-
 (deftransforms (intersection nintersection)
     ((list1 list2 &key key test test-not))
   (let ((null-type (specifier-type 'null)))
@@ -4009,7 +3997,6 @@
            'list1)
           (t
            (give-up-ir1-transform)))))
-
 (deftransform tree-equal ((list1 list2 &key test test-not))
   (cond ((and (same-leaf-ref-p list1 list2)
               (not test-not)

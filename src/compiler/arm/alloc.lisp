@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 (define-vop (list)
   (:args (things :more t :scs (any-reg descriptor-reg null control-stack)))
   (:temporary (:scs (descriptor-reg)) ptr)
@@ -51,7 +50,6 @@
                              null-tn)
                      ptr cons-cdr-slot list-pointer-lowtag))
         (move result res)))))
-
 ;;;; Special purpose inline allocators.
 
 (define-vop (make-fdefn)
@@ -103,7 +101,6 @@
     (with-fixed-allocation (result pa-flag value-cell-widetag
                             value-cell-size)
       (storew value result value-cell-value-slot other-pointer-lowtag))))
-
 ;;;; Automatic allocators for primitive objects.
 
 (define-vop (make-unbound-marker)

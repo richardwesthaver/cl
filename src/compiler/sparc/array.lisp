@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; allocator for the array header.
 (define-vop (make-array-header)
   (:translate make-array-header)
@@ -38,7 +37,6 @@
       (inst srl ndescr ndescr n-fixnum-tag-bits)
       (storew ndescr header 0 other-pointer-lowtag))
     (move result header)))
-
 ;;;; Additional accessors and setters for the array header.
 (define-vop (%array-dimension word-index-ref)
   (:translate %array-dimension)
@@ -61,7 +59,6 @@
     (inst ldub res x (- 2 other-pointer-lowtag)) ; big-endian only
     (inst add res res 1)
     (inst and res res array-rank-mask)))
-
 ;;;; Bounds checking routine.
 (define-vop (check-bound)
   (:translate %check-bound)
@@ -78,7 +75,6 @@
       (inst cmp index bound)
       (inst b :geu error)
       (inst nop))))
-
 ;;;; Accessors/Setters
 
 ;;; Variants built on top of word-index-ref, etc.  I.e. those vectors whos
@@ -376,7 +372,6 @@
     (unless (location= result value)
       (move-long-reg result value))))
 
-
 ;;; XXX FIXME: Don't we have these above, in DEF-DATA-VECTOR-FROBS?
 (define-vop (data-vector-ref/simple-array-signed-byte-8 signed-byte-index-ref)
   (:note "inline array access")
@@ -414,7 +409,6 @@
          (index :scs (any-reg zero immediate))
          (value :scs (signed-reg))))
 
-
 ;;; Complex float arrays.
 
 (define-vop (data-vector-ref/simple-array-complex-single-float)
@@ -547,7 +541,6 @@
       (unless (location= result-imag value-imag)
         (move-long-reg result-imag value-imag)))))
 
-
 ;;; These vops are useful for accessing the bits of a vector irrespective of
 ;;; what type of vector it is.
 (define-vop (vector-raw-bits word-index-ref)

@@ -31,7 +31,6 @@
     (inst neg sb-vm::tmp-tn count)
     (inst ror (sb-vm::32-bit-reg res)
           (sb-vm::32-bit-reg integer) (sb-vm::32-bit-reg sb-vm::tmp-tn))))
-
 ;;; 64-bit
 (define-vop (%64bit-rotate-byte/c)
   (:policy :fast-safe)

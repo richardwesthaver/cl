@@ -12,7 +12,6 @@
  * provided with absolutely no warranty. See the COPYING and CREDITS
  * files for more information.
  */
-
 #ifdef __ELF__
 // Mark the object as not requiring an executable stack.
 .section .note.GNU-stack,"",%progbits
@@ -127,7 +126,6 @@ GNAME(lspmain): # so much easier to type 'b lspmain' in gdb
 	LOAD_PIC_VAR(all_threads, %rax)
 	mov     THREAD_CONTROL_STACK_END_OFFSET(%rax) ,%rsp
 	jmp     Lstack
-
 	.text
 	.globl  GNAME(call_into_lisp_)
 	TYPE(GNAME(call_into_lisp_))
@@ -224,7 +222,6 @@ LsingleValue:
 #endif
 	ret
 	SIZE(GNAME(call_into_lisp_))
-
 	.text
 	.globl  GNAME(funcall_alien_callback)
 	TYPE(GNAME(funcall_alien_callback))
@@ -271,7 +268,6 @@ GNAME(funcall_alien_callback):
 
 	ret
 	SIZE(GNAME(funcall_alien_callback))
-
 /*
  * fun-end breakpoint magic
  */
@@ -306,7 +302,6 @@ GNAME(fun_end_breakpoint_trap):
 	.globl  GNAME(fun_end_breakpoint_end)
 GNAME(fun_end_breakpoint_end):
 
-
 	.globl 	GNAME(do_pending_interrupt)
 	TYPE(GNAME(do_pending_interrupt))
 	.align	align_16byte,0x90
@@ -315,7 +310,6 @@ GNAME(do_pending_interrupt):
 	.byte 	trap_PendingInterrupt
 	ret
 	SIZE(GNAME(do_pending_interrupt))
-
 #ifdef LISP_FEATURE_SB_SAFEPOINT
 	.globl 	GNAME(handle_global_safepoint_violation)
 	TYPE(GNAME(handle_global_safepoint_violation))
@@ -335,7 +329,6 @@ GNAME(handle_csp_safepoint_violation):
 	ret
 	SIZE(GNAME(handle_csp_safepoint_violation))
 #endif /* SB-SAFEPOINT */
-
 	.globl 	GNAME(memory_fault_emulation_trap)
 	TYPE(GNAME(memory_fault_emulation_trap))
 	.align	align_16byte,0x90
@@ -343,7 +336,6 @@ GNAME(memory_fault_emulation_trap):
 	TRAP
 	.byte 	trap_MemoryFaultEmulation
 	SIZE(GNAME(memory_fault_emulation_trap))
-
 	.globl	GNAME(post_signal_tramp)
 	TYPE(GNAME(post_signal_tramp))
 	.align	align_16byte,0x90
@@ -370,7 +362,6 @@ GNAME(post_signal_tramp):
 	leave
 	ret
 	SIZE(GNAME(post_signal_tramp))
-
 /* When LISP_FEATURE_C_STACK_IS_CONTROL_STACK, we cannot safely scrub
  * the control stack from C, largely due to not knowing where the
  * active stack frame ends.  On such platforms, we reimplement the

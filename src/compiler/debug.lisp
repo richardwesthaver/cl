@@ -124,7 +124,6 @@
       (clrhash *seen-blocks*)
       (clrhash *seen-funs*))
     (values)))
-
 ;;;; function consistency checking
 
 (defun observe-functional (x)
@@ -242,7 +241,6 @@
       (check-fun-stuff fun)
       (dolist (let (lambda-lets fun))
         (check-fun-stuff let)))))
-
 ;;;; loop consistency checking
 
 ;;; Descend through the loop nesting and check that the tree is well-formed
@@ -405,7 +403,6 @@
          (barf "~S ends in normal node, but doesn't have one successor."
                block)))))
   (values))
-
 ;;;; node consistency checking
 
 ;;; Check that the DEST for LVAR is the specified NODE. We also mark
@@ -520,7 +517,6 @@
                 (barf "~S has VALUE but no ENTRY." node)))))))
 
   (values))
-
 ;;;; IR2 consistency checking
 
 ;;; Check for some kind of consistency in some REFs linked together by
@@ -645,7 +641,6 @@
   (do-ir2-blocks (block component)
     (check-ir2-block-consistency block))
   (values))
-
 ;;;; lifetime analysis checking
 
 ;;; Dump some info about how many TNs there, and what the conflicts data
@@ -824,7 +819,6 @@
   (check-tn-conflicts component)
   (check-block-conflicts component)
   (check-environment-lifetimes component))
-
 ;;;; pack consistency checking
 
 (defun check-pack-consistency (component)
@@ -848,7 +842,6 @@
           (check (vop-info-result-load-scs info) (vop-results vop))
           (check (vop-info-arg-load-scs info) (vop-args vop))))))
   (values))
-
 ;;;; data structure dumping routines
 
 ;;; IR2 blocks don't get a convenient number until LIFETIME-ANALYZE which is

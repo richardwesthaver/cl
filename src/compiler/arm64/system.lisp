@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Type frobbing VOPs
 
 (define-vop (descriptor-hash32)
@@ -159,7 +158,6 @@
               byte 2))
       (inst ldrb tmp-tn (@ array (- byte other-pointer-lowtag)))
       (inst tst tmp-tn mask))))
-
 ;;;; Allocation
 
 (define-vop (binding-stack-pointer-sap)
@@ -177,7 +175,6 @@
   (:policy :fast-safe)
   (:generator 1
     (move int csp-tn)))
-
 ;;;; Code object frobbing.
 
 (define-vop (code-instructions)
@@ -226,7 +223,6 @@
   (:generator 3
     (loadw result function closure-fun-slot fun-pointer-lowtag)
     (inst add-sub result result (- fun-pointer-lowtag (* simple-fun-insts-offset n-word-bytes)))))
-
 ;;;; other miscellaneous VOPs
 
 (defknown sb-unix::receive-pending-interrupt () (values))

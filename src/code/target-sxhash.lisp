@@ -20,7 +20,6 @@
 (defconstant +max-hash-depthoid+ 4)
 
 (defconstant +max-hash-table-bits+ #-64-bit 29 #+64-bit 31)
-
 ;;; This is an out-of-line callable entrypoint that the compiler can
 ;;; transform SXHASH into when hashing a non-simple string.
 (defun %sxhash-string (x)
@@ -53,7 +52,6 @@
                ,on-truncate)
              ,hash)
            (%sxhash-string ,x)))))
-
 ;;;; the SXHASH function
 
 ;; simple cases
@@ -379,7 +377,6 @@
 
 (defun sxhash (x)
   (%sxhash x +max-hash-depthoid+ nil))
-
 ;;;; the PSXHASH function
 
 ;;; like SXHASH, but for EQUALP hashing instead of EQUAL hashing

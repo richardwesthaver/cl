@@ -47,7 +47,6 @@
 (defvar *b*)
 (defvar *c*)
 
-
 ;;;; Test RESTART-FRAME
 
 (define-condition restart-condition () ())
@@ -97,7 +96,6 @@
 (with-test (:name (:restart-frame :normal))
   (test-restart 'restart/normal))
 
-
 ;;;; Test RETURN-FROM-FRAME with normal functions
 
 (define-condition return-condition () ())
@@ -158,7 +156,6 @@
                  (throw-y))
                'y)))
 
-
 ;;;; Test RETURN-FROM-FRAME with local functions
 
 (define-condition in-a () ())
@@ -218,7 +215,6 @@
 (with-test (:name (:return-from-frame :hairy-local-function))
   (test-locals 'hairy-locals))
 
-
 ;;;; Test RETURN-FROM-FRAME with anonymous functions
 
 (define-condition anon-condition () ())
@@ -277,7 +273,6 @@
 (with-test (:name (:return-from-frame :anonymous :special))
   (test-anon *anon-4* '*foo* 'make-anon-4))
 
-
 ;;;; Test that unwind cleanups are executed
 
 (defvar *unwind-state* nil)

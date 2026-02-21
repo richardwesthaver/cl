@@ -398,7 +398,6 @@
         (when ugt
           (return-from best-modular-version
             (values (car ugt) :untagged (cdr ugt))))))))
-
 (defoptimizer (logand optimizer) ((x y) node &optional result-type)
   (let ((result-type (or result-type
                          (single-value-type (node-derived-type node)))))

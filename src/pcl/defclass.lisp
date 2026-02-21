@@ -22,7 +22,6 @@
 ;;;; specification.
 
 (in-package "SB-KERNEL")
-
 (defun call-with-defining-class (kind name thunk)
   (declare (ignorable kind name))
   (with-single-package-locked-error
@@ -85,7 +84,6 @@
      (%%compiler-defclass name readers writers slots))))
 
 (in-package "SB-PCL")
-
 ;;;; DEFCLASS macro and close personal friends
 
 ;;; state for the current DEFCLASS expansion

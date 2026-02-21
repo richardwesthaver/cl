@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;; Instruction-like macros.
 
 (defmacro move (dst src &optional (predicate :al))
@@ -131,7 +130,6 @@
      (emit-label ,label)
      (inst lra-header-word)))
 
-
 ;;;; Stack TN's
 
 ;;; Move a stack TN to a register and vice-versa.
@@ -185,7 +183,6 @@
            (move ,n-reg ,n-stack))
           ((control-stack)
            (load-stack-offset ,n-reg cfp-tn ,n-stack)))))))
-
 ;;;; Storage allocation:
 
 (defun generate-stack-overflow-check (vop size temp temp2)
@@ -287,7 +284,6 @@
        (load-immediate-word ,flag-tn (compute-object-header ,size ,type-code))
        (storew ,flag-tn ,result-tn 0 ,lowtag)
        ,@body)))
-
 ;;;; Error Code
 (defun emit-error-break (vop kind code values)
   (assemble ()
@@ -307,7 +303,6 @@
       (emit-label start-lab)
       (emit-error-break vop error-trap (error-number-or-lose error-code) values)
       start-lab)))
-
 ;;;; PSEUDO-ATOMIC
 
 
@@ -332,7 +327,6 @@
        ,(if link
             `(inst blx :ne ,flag-tn)
             `(inst bx :ne ,flag-tn)))))
-
 ;;;; memory accessor vop generators
 
 (defmacro define-full-reffer (name type offset lowtag scs el-type

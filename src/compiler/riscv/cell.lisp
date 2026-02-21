@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Data object ref/set stuff.
 
 (define-vop (slot)
@@ -47,7 +46,6 @@
     (inst sc temp new lip :aq :rl)
     (inst bne temp zero-tn LOOP)
     EXIT))
-
 ;;;; Symbol hacking VOPs:
 (define-vop (%compare-and-swap-symbol-value)
   (:translate %compare-and-swap-symbol-value)
@@ -432,7 +430,6 @@
 (define-full-casser instance-index-cas * instance-slots-offset
   instance-pointer-lowtag (descriptor-reg any-reg) * %instance-cas)
 
-
 ;;;; Code object frobbing.
 
 (define-full-reffer code-header-ref * 0 other-pointer-lowtag
@@ -472,7 +469,6 @@
       (inst slli temp index (- word-shift n-fixnum-tag-bits))
       (inst add temp object temp)
       (inst #+64-bit sd #-64-bit sw value temp (- other-pointer-lowtag)))))
-
 ;;;; raw instance slot accessors
 
 (macrolet ((define-raw-slot-word-vops (name value-sc value-primtype)

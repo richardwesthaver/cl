@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; putting ourselves out of our misery when things become too much to bear
 
 (declaim (ftype (function (simple-string) nil) !cold-lose))
@@ -28,7 +27,6 @@
   (%primitive print "internal error: Control should never reach here, i.e.")
   (%primitive print where)
   (%halt))
-
 ;;;; !COLD-INIT
 
 ;;; a list of toplevel things set by GENESIS
@@ -437,7 +435,6 @@ process to continue normally."
               *exit-timeout* timeout)
         (throw '%end-of-the-world t)))
   (critically-unreachable "After trying to die in EXIT."))
-
 ;;;; initialization functions
 
 (defun reinit (total)
@@ -467,7 +464,6 @@ process to continue normally."
   (call-hooks "initialization" *init-hooks*)
   #+sb-thread (finalizer-thread-start)
   (sb-vm::!setup-cpu-specific-routines))
-
 ;;;; some support for any hapless wretches who end up debugging cold
 ;;;; init code
 

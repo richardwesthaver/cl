@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-BIGNUM")
-
 ;;;; notes
 
 ;;; comments from CMU CL:
@@ -96,13 +95,11 @@
 ;;;          gcd of x and y.
 ;;;          "truncate" each by gcd, ignoring remainder 0.
 ;;;          form ratio of each result, bottom is positive.
-
 ;;;; What's a bignum?
 
 (defconstant digit-size sb-vm:n-word-bits)
 
 (defconstant all-ones-digit most-positive-word)
-
 #+bignum-assertions
 (progn
 (declaim (notinline %allocate-bignum))
@@ -248,9 +245,7 @@
 
 (defmacro %lognot (x)
   `(ldb (byte digit-size 0) (lognot ,x)))
-
 (declaim (optimize (speed 3) (safety 0)))
-
 ;;;; general utilities
 
 ;;; Internal in-place operations use this to fixup remaining digits in the
@@ -369,7 +364,6 @@
                 (%add-with-carry (%bignum-ref a i) sign-digit-b carry)))))
     (%normalize-bignum res len-res)))
 
-
 ;;;; subtraction
 
 ;;; This subtracts b from a plugging result into res. Return-fun is the
@@ -479,7 +473,6 @@
            (type bignum-length len-a len-b))
   (subtract-bignum-loop a len-a b len-b result (max len-a len-b)
                         %normalize-bignum-buffer))
-
 ;;;; multiplication
 
 (defun multiply-bignums (a b)
@@ -577,7 +570,6 @@
               (%bignum-set res 1 high)
               (unless (eq a-minusp b-minusp) (negate-bignum-in-place res))
               (%normalize-bignum res 2)))))))
-
 ;;;; BIGNUM-REPLACE and WITH-BIGNUM-BUFFERS
 
 #-bignum-assertions
@@ -638,7 +630,6 @@
     `(let* ,(binds)
        ,@(inits)
        ,@body)))
-
 ;;;; GCD
 
   ;; The asserts in the GCD implementation are way too expensive to
@@ -1006,7 +997,6 @@
                                                  (+ (* index digit-size)
                                                     increment)))))))
 
-
 ;;;; negation
 (declaim (inline negate-bignum))
 (defun negate-bignum (x &optional (fully-normalize t))
@@ -1087,7 +1077,6 @@
 (defun bignum-abs-buffer (bignum len)
   (unless (%bignum-0-or-plusp bignum len)
     (negate-bignum-buffer-in-place bignum len)))
-
 ;;;; shifting
 
 ;;; This macro is used by BIGNUM-ASHIFT-RIGHT, BIGNUM-BUFFER-ASHIFT-RIGHT, and
@@ -1332,7 +1321,6 @@
           (setf (%bignum-ref result (1+ right-zero-digits))
                 (ldb (byte digit-size 0) left-half)))
         result))))
-
 ;;;; relational operators
 
 ;;; This compares two bignums returning -1, 0, or 1, depending on
@@ -1362,7 +1350,6 @@
           ((> len-a len-b)
            (if a-plusp 1 -1))
           (t (if a-plusp -1 1)))))
-
 ;;;; float conversion
 
 ;;; Return T if the least significant N-BITS bits of BIGNUM are all
@@ -1558,7 +1545,6 @@
   (def single-float)
   #+64-bit
   (def double-float))
-
 ;;;; integer length and logbitp/logcount
 
 (defun bignum-integer-length (bignum)
@@ -1590,7 +1576,6 @@
       (let ((digit (%bignum-ref bignum index)))
         (declare (type bignum-element-type digit))
         (incf result (logcount digit))))))
-
 ;;;; logical operations
 
 ;;;; NOT
@@ -1732,7 +1717,6 @@
     (declare (type bignum-index i))
     (setf (%bignum-ref res i) (logxor sign (%bignum-ref b i))))
   (%normalize-bignum res len-b))
-
 ;;;; There used to be a bunch of code to implement "efficient" versions of LDB
 ;;;; and DPB here.  But it apparently was never used, so it's been deleted.
 ;;;;   --njf, 2007-02-04
@@ -1810,7 +1794,6 @@
                                                    (truly-the (integer 0 (#.digit-size)) (- digit-size bit-index))))
                               (ash one (- bit-index)))))))))
 
-
 ;;;; TRUNCATE
 
 ;;; This is the original sketch of the algorithm from which I implemented this
@@ -2380,7 +2363,6 @@
   (def double-float)
   (def single-float))
 
-
 ;;;; hashing
 
 ;;; Needs to be synchronized with sxhash-bignum
@@ -2444,7 +2426,6 @@
   (clear-info :function :inlining-data s)
   (clear-info :function :inlinep s)
   (clear-info :source-location :declaration s))
-
 #|
 (let (code-components)
   (do-symbols (s 'sb-bignum)

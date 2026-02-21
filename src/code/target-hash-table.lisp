@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 
 (defvar *show-putweak* nil)
 
@@ -96,7 +95,6 @@
                 (ash hash -3)
                 (ash hash -12)
                 (ash hash -20))))
-
 
 ;;;; Generic adaptive hashing machinery
 ;;;;
@@ -167,7 +165,6 @@
              (unless (eql (%sxstate-limit ,state) (%sxstate-limit ,orig-state))
                (setq ,hash (rehash-key ,hash-table ,key
                                        (truly-the fixnum ,state))))))))))
-
 
 ;;; EQ hash functions
 
@@ -459,7 +456,6 @@
          (return)))
      (fill index-vector 0)
      (setq next-free 0)))
-
 
 ;;; EQL hash
 
@@ -507,7 +503,6 @@
               nil)
       ;; Consider picking off %INSTANCEP too before using EQ-HASH?
       (eq-hash/non-adaptive key)))
-
 
 ;;;; HASH-TABLE-HASH-FUN-STATEs of ADAPTIVE-EQUAL-HASH. These tell
 ;;;; %SXHASH and %PSXHASH how much effort to make to calculate a good
@@ -587,7 +582,6 @@
                            (hash-table-hash-fun-state hash-table))
                           (max-chain-length (length (hash-table-index-vector
                                                      hash-table))))))))
-
 
 ;;;; EQUAL and EQUALP hash functions
 
@@ -692,7 +686,6 @@
     (instance (values (clip-hash (instance-sxhash key)) nil))
     (t
      (eq-hash/non-adaptive key))))
-
 ;;;; user-defined hash table tests
 
 (define-load-time-global *user-hash-table-tests* nil)
@@ -780,7 +773,6 @@ Examples:
              `(register-hash-table-test ',name #',hash-function))
             (t
              (error "Malformed HASH-FUNCTION: ~S" hash-function)))))
-
 ;;;; construction and simple accessors
 
 ;;; The smallest table holds 7 items distributed among 8 buckets. So
@@ -1175,7 +1167,6 @@ Examples:
   (error "Corrupt NEXT-chain in ~A. This is probably caused by ~
 multiple threads accessing the same hash-table without locking."
          hash-table))
-
 
 ;;;; Flat hash tables (https://zenodo.org/doi/10.5281/zenodo.10991321)
 ;;;;
@@ -1397,7 +1388,6 @@ multiple threads accessing the same hash-table without locking."
                (when (and (sb-vm:is-lisp-pointer (get-lisp-obj-address key))
                           (eql-hash-defer-to-eq-hash-p key))
                  (return t)))))))
-
 
 ;;;; accessing functions
 
@@ -3173,7 +3163,6 @@ table itself."
           (clear))))
   hash-table)
 
-
 ;;;; methods on HASH-TABLE
 
 ;;; Return an association list representing the same data as HASH-TABLE.

@@ -97,7 +97,6 @@
     (funcall fun)))
 
 (setf *in-target-compilation-mode-fn* #'in-target-cross-compilation-mode)
-
 ;; Update the xc-readtable
 (set-macro-character #\` #'sb-impl::backquote-charmacro nil *xc-readtable*)
 (set-macro-character #\, #'sb-impl::comma-charmacro nil *xc-readtable*)

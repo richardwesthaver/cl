@@ -390,7 +390,6 @@
       (ensure-directories-exist dest-path)
       (compile-file src-path :output-file dest-path))
     dest-path))
-
 ;;;; implementation of commands
 
 (defun apropos-cmd (string)
@@ -610,7 +609,6 @@
     (format *output* "~a~%" dir))
   (values))
 
-
 ;;;; dispatch table for commands
 
 (let ((cmd-table
@@ -656,7 +654,6 @@
   (dolist (cmd cmd-table)
     (destructuring-bind (cmd-string abbr-len func-name desc &key parsing) cmd
       (add-cmd-table-entry cmd-string abbr-len func-name desc parsing))))
-
 ;;;; machinery for aliases
 
 (defsetf alias (name &key abbr-len description) (user-func)
@@ -721,7 +718,6 @@
     (dolist (key keys)
       (remhash key *cmd-table-hash*))
     keys))
-
 ;;;; low-level reading/parsing functions
 
 ;;; Skip white space (but not #\NEWLINE), and peek at the next
@@ -747,7 +743,6 @@
 (defun whitespace-char-not-newline-p (x)
   (and (whitespace-char-p x)
        (not (char= x #\newline))))
-
 ;;;; linking into SBCL hooks
 
 (defun repl-prompt-fun (stream)

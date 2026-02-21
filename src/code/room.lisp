@@ -11,7 +11,6 @@
 
 (in-package "SB-VM")
 
-
 ;;;; type format database
 
 (defun room-info-type-name (info)
@@ -92,7 +91,6 @@
 (defconstant-eqx +heap-space-keywords+ (mapcar #'first +heap-spaces+) #'equal)
 (deftype spaces () `(member . ,+heap-space-keywords+))
 
-
 ;;;; MAP-ALLOCATED-OBJECTS
 
 ;;; Return the lower limit and current free-pointer of SPACE as fixnums
@@ -446,7 +444,6 @@ We could try a few things to mitigate this:
 (defun close-thread-alloc-region ()
   (alien-funcall (extern-alien "close_current_thread_tlab" (function void)))
   nil)
-
 ;;;; MEMORY-USAGE
 
 #-immobile-space
@@ -642,7 +639,6 @@ We could try a few things to mitigate this:
     (when print-summary (print-summary spaces totals)))
 
   (values))
-
 ;;; Print a breakdown by instance type of all the instances allocated
 ;;; in SPACE. If TOP-N is true, print only information for the
 ;;; TOP-N types with largest usage.
@@ -745,7 +741,6 @@ We could try a few things to mitigate this:
             (type-usage "Other types" residual-objects residual-bytes)))
         (type-usage totals-label total-objects total-bytes))))
   (values))
-
 ;;;; PRINT-ALLOCATED-OBJECTS
 
 ;;; This function is sheer madness.  You're better off using
@@ -830,7 +825,6 @@ We could try a few things to mitigate this:
                               (subseq str 0 (min (length str) 60))))))))))
          space))))
   (values))
-
 ;;;; LIST-ALLOCATED-OBJECTS, LIST-REFERENCING-OBJECTS
 
 (defun list-allocated-objects (space &key type larger smaller count

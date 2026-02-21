@@ -105,7 +105,6 @@
   to optimize code which uses those definitions? Setting this true
   gives non-ANSI, early-CMU-CL behavior. It can be useful for improving
   the efficiency of stable code.")
-
 ;;;; namespace management utilities
 
 ;;; Unpack (INFO :FUNCTION :INLINING-DATA FUN-NAME). If an explicit expansion
@@ -160,7 +159,6 @@
     ;; If ANSWER is NIL, go for the global value
     (eq (or answer (info :function :inlinep name)) 'notinline)))
 
-
 (declaim (start-block find-free-fun find-lexically-apparent-fun
                       check-global-fun
                       ;; needed by ir1-translators
@@ -329,7 +327,6 @@
                    (make-constant value (ctype-of value) name)))
                 (t
                  (make-global-var kind name where-from (sb-kernel::maybe-reparse-specifier type))))))))
-
 ;;; Return T if and only if OBJ's nature as an externalizable thing renders
 ;;; it a leaf for dumping purposes. Symbols are leaflike despite havings slots
 ;;; containing pointers; similarly (COMPLEX RATIONAL) and RATIO.
@@ -404,7 +401,6 @@
             "Objects of type ~/sb-impl:print-type-specifier/ can't be dumped into fasl files."
             (type-of value)))))))
   (values))
-
 ;;;; some flow-graph hacking utilities
 
 ;; Bind *COMPILER-ERROR-BAILOUT* to a function that throws out of the
@@ -503,7 +499,6 @@
 (defun use-continuation (node ctran lvar)
   (use-ctran node ctran)
   (use-lvar node lvar))
-
 ;;;; exported functions
 
 ;;; This function takes a form and the top level form number for that
@@ -595,7 +590,6 @@
          (frob)
          (setq trail (cdr trail)))))))
 
-
 ;;;; IR1-CONVERT, macroexpansion and special form dispatching
 
 (declaim (start-block ir1-convert ir1-convert-progn-body
@@ -989,7 +983,6 @@
         #-sb-xc-host
         (recover-source-paths form result)
         result))))
-
 ;;;; conversion utilities
 
 ;;; Convert a bunch of forms, discarding all the values except the
@@ -1015,7 +1008,6 @@
                     forms (cdr forms)))))))
   (values))
 
-
 ;;;; converting combinations
 
 ;;; Does this form look like something that we should add single-stepping
@@ -1218,7 +1210,6 @@
   (ir1-convert-combination start next result
                            form
                            (maybe-reanalyze-functional functional)))
-
 ;;;; PROCESS-DECLS
 
 (declaim (start-block process-decls make-new-inlinep
@@ -1855,7 +1846,6 @@
 
 (declaim (end-block))
 
-
 ;;;; Proclamations:
 ;;;
 ;;; PROCLAIM changes the global environment, so we must handle its

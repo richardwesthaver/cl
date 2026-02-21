@@ -12,7 +12,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; coercions
 
 (deftransform float ((n f) (t single-float) *)
@@ -164,7 +163,6 @@
                              (when (< bits ,(* num d))
                                (return (values (truncate bits ,d)))))))))))))))
 
-
 ;;;; float accessors
 
 ;;; On the face of it, these transforms are ridiculous because if we're going
@@ -230,7 +228,6 @@
                ((plusp x) ,(sb-xc:coerce 1 result-type))
                (t ,(sb-xc:coerce -1 result-type)))
         (give-up-ir1-transform))))
-
 ;;;; DECODE-FLOAT, INTEGER-DECODE-FLOAT, and SCALE-FLOAT
 
 (defknown decode-single-float (single-float)
@@ -386,7 +383,6 @@
            (one-arg-derive-type number #'%double-float-derive-type-aux))
         (type-error ()
           nil)))))
-
 (macrolet ((def (type &rest args)
              `(deftransform * ((x y) (,type (constant-arg (member ,@args))) *
                                ;; Beware the SNaN!
@@ -492,7 +488,6 @@
   (frob =)
   (frob = t))
 
-
 ;;;; irrational transforms
 
 (make-defs (($type double-float single-float))
@@ -616,7 +611,6 @@
          (and (csubtypep (lvar-type power) (specifier-type 'single-float))
               'expt-single-float))))
 
-
 ;;; Handle some simple transformations.
 
 (deftransform abs ((x) ((and (real 0)
@@ -1492,7 +1486,6 @@
   (frob single-float (or rational single-float))
   (frob double-float (or rational single-float double-float)))
 
-
 ;;;; float contagion
 
 (make-defs (($type single-float double-float))
@@ -1781,7 +1774,6 @@
       (specifier-type
        `(complex ,(or (numeric-type-format arg) 'float))))))
 
-
 ;;;; TRUNCATE, FLOOR, CEILING, and ROUND
 (deftransform truncate ((x &optional by)
                         (t &optional (constant-arg (member 1))))
@@ -2112,7 +2104,6 @@
   (def ftruncate :truncate single-float)
   #+round-float
   (def fround :round single-float))
-
 ;;;; TESTS
 
 ;;; Dumping of double-float literals in genesis got some bits messed up,

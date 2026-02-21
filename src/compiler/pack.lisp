@@ -19,7 +19,6 @@
 (defvar *pack-optimize-saves* t)
 
 (declaim (ftype (function (component) index) ir2-block-count))
-
 ;;;; conflict determination
 
 ;;; Return true if TN has a conflict in SC at the specified offset.
@@ -260,7 +259,6 @@
     (setf (finite-sb-current-size sb) new-size))
   (values))
 
-
 ;;;; internal errors
 
 ;;; Give someone a hard time because there isn't any load function
@@ -466,7 +464,6 @@
              (primitive-type-name ptype)
              (mapcar #'sc-name (listify-restrictions load-scs))
              incon))))
-
 ;;;; register saving
 
 (declaim (start-block optimized-emit-saves emit-saves assign-tn-costs
@@ -642,7 +639,6 @@
           (basic-save-tn tn vop)))))
 
   (values))
-
 ;;;; optimized saving
 
 ;;; Save TN if it isn't a single-writer TN that has already been
@@ -808,7 +804,6 @@
                 (return t)))
         (setq block (optimized-emit-saves-block block saves restores)))
       (setq block (ir2-block-prev block)))))
-
 ;;; Iterate over the normal TNs, finding the cost of packing on the
 ;;; stack in units of the number of references. We count all read
 ;;; references as +1, write references as + *tn-write-cost*, and
@@ -904,7 +899,6 @@
   #-sb-xc-host (declare (inline unbounded-sc-p))
   (unbounded-sc-p (tn-sc tn)))
 
-
 ;;;; load TN packing
 
 (declaim (start-block pack-load-tns load-tn-conflicts-in-sc))
@@ -1326,7 +1320,6 @@
           (check-operand-restrictions (vop-info-arg-load-scs info)
                                       (vop-args vop))))))
   (values))
-
 ;;;; targeting
 
 (declaim (start-block pack pack-tn target-if-desirable
@@ -1424,7 +1417,6 @@
                 (neq (tn-kind target) :arg-pass)
                 (check-ok-target target tn sc))
       (return-from find-ok-target-offset it))))
-
 ;;;; location selection
 
 ;;; Select some location for TN in SC, returning the offset if we
@@ -1472,7 +1464,6 @@
   (if (member (tn-kind tn) '(:save :save-once :specified-save))
       (tn-save-tn tn)
       tn))
-
 ;;;; pack interface
 
 ;;; Attempt to pack TN in all possible SCs, first in the SC chosen by

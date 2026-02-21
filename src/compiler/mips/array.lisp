@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Allocator for the array header.
 (define-vop (make-array-header)
   (:policy :fast-safe)
@@ -37,7 +36,6 @@
     (pseudo-atomic (pa-flag)
       (allocation type bytes result other-pointer-lowtag `(,pa-flag ,temp))
       (storew header result 0 other-pointer-lowtag))))
-
 ;;;; Additional accessors and setters for the array header.
 (define-full-reffer %array-dimension *
   array-dimensions-offset other-pointer-lowtag
@@ -61,7 +59,6 @@
     (inst nop)
     (inst addu res 1)
     (inst and res array-rank-mask)))
-
 ;;;; Bounds checking routine.
 (define-vop (check-bound)
   (:translate %check-bound)
@@ -79,7 +76,6 @@
       (inst sltu temp index bound)
       (inst beq temp error)
       (inst nop))))
-
 ;;;; Accessors/Setters
 
 ;;; Variants built on top of word-index-ref, etc.  I.e. those vectors whos
@@ -416,7 +412,6 @@
              (+ (- (* vector-data-offset n-word-bytes)
                    other-pointer-lowtag)
                 n-word-bytes))))))
-
 ;;; Complex float arrays.
 (define-vop (data-vector-ref/simple-array-complex-single-float)
   (:note "inline array access")
@@ -502,7 +497,6 @@
       (str-double value-imag lip (- (* (+ vector-data-offset 2) n-word-bytes)
                                     other-pointer-lowtag)))))
 
-
 ;;; These vops are useful for accessing the bits of a vector irrespective of
 ;;; what type of vector it is.
 (define-full-reffer vector-raw-bits * vector-data-offset other-pointer-lowtag

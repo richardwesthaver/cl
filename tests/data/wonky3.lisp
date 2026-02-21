@@ -2,7 +2,6 @@
 #|
  More randomness
 |#
-
 
 #+no-such-feature (defun foo
                    (hooey))

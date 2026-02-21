@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-KERNEL")
-
 (fmakunbound 'install-condition-slot-reader)
 (fmakunbound 'install-condition-slot-writer)
 

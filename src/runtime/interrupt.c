@@ -318,7 +318,6 @@ sigset_tostring(const sigset_t *sigset, char* result, int result_length)
     result[len] = '}';
     result[len+1] = 0;
 }
-
 
 /* Deferrables, blockables, gc signals. */
 
@@ -618,7 +617,6 @@ they are not safe to interrupt at all, this is a pretty severe occurrence.\n");
         unblock_deferrable_signals(sigset);
     }
 }
-
 
 /* Note that the comment from rev aa0ed5a420 seems back-ass-wards.
  * "if there is no pending signal .. because that means deferrable are blocked"?
@@ -764,7 +762,6 @@ check_interrupt_context_or_lose(os_context_t *context)
 #endif
     }
 }
-
 /*
  * utility routines used by various signal handlers
  */
@@ -1185,7 +1182,6 @@ interrupt_handle_pending(os_context_t *context)
      * without actually doing anything, the tests in Lisp for
      * when to call receive-pending-interrupt are not exact. */
 }
-
 
 void
 interrupt_handle_now(int signal, siginfo_t *info, os_context_t *context)
@@ -1789,7 +1785,6 @@ bool handle_guard_page_triggered(os_context_t *context,os_vm_address_t addr)
     }
     else return 0;
 }
-
 #ifndef LISP_FEATURE_WIN32
 extern void restore_sbcl_signals () {
     int signal;

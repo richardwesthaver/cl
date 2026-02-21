@@ -179,7 +179,6 @@
                            GO/RETURN-FROM with SAFETY 0, or declare the exit ~
                            function DYNAMIC-EXTENT to avoid.~:@>"
                        (node-source-form exit)))))
-
 ;;;; non-local exit
 
 ;;; Insert the entry stub before the original exit target, and add a
@@ -281,7 +280,6 @@
           (aver (neq (node-environment exit) target-env))
           (note-non-local-exit target-env exit)))))
   (values))
-
 
 ;;; For each downward funarg, mark the funarg as dynamic extent. For
 ;;; now this only works on globally named functions.
@@ -542,7 +540,6 @@
                  (dolist (dynamic-extent derived-dynamic-extents)
                    (setf (dynamic-extent-info dynamic-extent) lvar))))))))
   (values))
-
 ;;;; cleanup emission
 
 ;;; Zoom up the cleanup nesting until we hit CLEANUP1, accumulating

@@ -15,7 +15,7 @@
 ;;;; provided with absolutely no warranty. See the COPYING and CREDITS
 ;;;; files for more information.
 
-;;; SB-COLD holds stuff used to build the initial SBCL core file
+;;; SB-COLD holds stuff used to build the initial CL core file
 ;;; (including not only the final construction of the core file, but
 ;;; also the preliminary steps like e.g. building the cross-compiler
 ;;; and running the cross-compiler to produce target FASL files).
@@ -63,7 +63,7 @@
 #+sbcl
 (progn
   (setq *make-host-parallelism*
-        (let ((envvar (sb-ext:posix-getenv "SBCL_MAKE_PARALLEL")))
+        (let ((envvar (sb-ext:posix-getenv "CL_MAKE_PARALLEL")))
           (when envvar
             (require :sb-posix)
             (parse-make-host-parallelism envvar))))
@@ -97,7 +97,7 @@
 
 (defvar *target-obj-suffix*
   ;; Target fasl files are LOADed (actually only quasi-LOADed, in
-  ;; GENESIS) only by SBCL code, and it doesn't care about particular
+  ;; GENESIS) only by CL code, and it doesn't care about particular
   ;; extensions, so we can use something arbitrary.
   ".lisp-obj")
 (defvar *target-assem-obj-suffix*
@@ -422,11 +422,11 @@
     ;; cross-compiled by the host, so that it executes on the target)
     :not-host
     ;; meaning: This file is not to be compiled as part of the target
-    ;; SBCL. ("not target code" -- but still presumably host code,
+    ;; CL. ("not target code" -- but still presumably host code,
     ;; used to support the cross-compilation process)
     :not-target
     ;; meaning: The #'COMPILE-STEM argument :TRACE-FILE should be T.
-    ;; When the compiler is SBCL's COMPILE-FILE or something like it,
+    ;; When the compiler is CL's COMPILE-FILE or something like it,
     ;; compiling "foo.lisp" will generate "foo.trace" which contains lots
     ;; of exciting low-level information about representation selection,
     ;; VOPs used by the compiler, and bits of assembly.
@@ -440,9 +440,9 @@
     ;; :TRACE-FILE, this applies to all COMPILE-FILEs which support
     ;; something like :BLOCK-COMPILE.
     :block-compile
-    ;; meaning: This file is to be processed with the SBCL assembler,
+    ;; meaning: This file is to be processed with the CL assembler,
     ;; not COMPILE-FILE. (Note that this doesn't make sense unless
-    ;; :NOT-HOST is also set, since the SBCL assembler doesn't exist
+    ;; :NOT-HOST is also set, since the CL assembler doesn't exist
     ;; while the cross-compiler is being built in the host ANSI Lisp.)
     :assem
     ;; meaning: ignore this flag.
@@ -559,14 +559,13 @@
           (error "found unexpected flag(s) in *STEMS-AND-FLAGS*: ~S"
                  set-difference)))))
   (cdr *stems-and-flags*))
-
-;;;; tools to compile SBCL sources to create the cross-compiler
+;;;; tools to compile CL sources to create the cross-compiler
 
 ;;; a wrapper for compilation/assembly, used mostly to centralize
 ;;; the procedure for finding full filenames from "stems"
 ;;;
 ;;; Compile the source file whose basic name is STEM, using some
-;;; standard-for-the-SBCL-build-process procedures to generate the
+;;; standard-for-the-CL-build-process procedures to generate the
 ;;; full pathnames of source file and object file. Return the pathname
 ;;; of the object file for STEM.
 ;;;
@@ -724,9 +723,8 @@
    (with-simple-restart (recompile "Reload")
      (return (load (stem-object-path stem flags :host-compile))))))
 (compile 'host-load-stem)
-
-;;;; tools to compile SBCL sources to create object files which will
-;;;; be used to create the target SBCL .core file
+;;;; tools to compile CL sources to create object files which will
+;;;; be used to create the target CL .core file
 
 (defun lpnify-stem (stem)
   ;; Don't want genfiles path to sneak in - avoid (STEM-SOURCE-PATH ...) here.
@@ -817,7 +815,7 @@
 
 ;;;; One more journal file because the math file isn't enough
 ;;; Define this before renaming the SB- packages
-;;; A non-parallelized compile using a sufficiently new SBCL as the host
+;;; A non-parallelized compile using a sufficiently new CL as the host
 ;;; will use a paravirtualized implementation of generate-perfect-hash-sexpr
 ;;; which is to say, it just uses the host; as a side-effect it records
 ;;; the generated string so that we can replay it for any host

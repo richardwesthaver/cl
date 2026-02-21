@@ -37,7 +37,7 @@ esac
 shift
 host=$1 # can have the form 'user@host' if necessary
 root=$2 # path to source directory on $host
-ENV=$3  # if you need to set SBCL_ARCH,CFLAGS,etc remotely
+ENV=$3  # if you need to set CL_ARCH,CFLAGS,etc remotely
 
 set -ex
 
@@ -59,7 +59,7 @@ scp $scp_port_opt $host:$root/output/stuff-groveled-from-headers.lisp output
 
 # make-host-2 and copy over the artifact
 sh make-host-2.sh
-scp $scp_port_opt -C output/cold-sbcl.core $host:$root/output
+scp $scp_port_opt -C output/cold-cl.core $host:$root/output
 
 # make-target-2 and the two contribs required to execute 'core.test.sh'
 ssh $ssh_port_opt $host cd $root \; sh make-target-2.sh '&&' \

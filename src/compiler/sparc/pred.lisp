@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; the Branch VOP.
 
 ;;; The unconditional branch, emitted when we can't drop through to
@@ -22,7 +21,6 @@
     (inst b dest)
     (inst nop)))
 
-
 ;;;; Generic conditional VOPs
 
 ;;; The generic conditional branch, emitted immediately after test
@@ -38,7 +36,6 @@
   (declare (ignore dst-tn))
   nil)
 
-
 ;;;; conditional VOPs:
 
 (define-vop (if-eq)

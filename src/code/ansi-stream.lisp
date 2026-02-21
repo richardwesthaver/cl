@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;; HOW THE ANSI-STREAM STRUCTURE IS USED
 ;;;
 ;;; Many of the slots of the ANSI-STREAM structure contain functions
@@ -75,7 +74,6 @@
 ;;; operations. If the FAST-READ-CHAR and FAST-READ-BYTE macros are
 ;;; used, nearly all function call overhead is removed, vastly
 ;;; speeding up these important operations.
-
 ;;; the size of a stream in-buffer
 (defconstant +ansi-stream-in-buffer-length+ 512)
 

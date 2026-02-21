@@ -5,7 +5,7 @@
 # The relocation test binary can only be built on linux.
 # FIXME: This test _should_ work on any architecture, but it doesn't,
 #        so there must have been a regression in the heap relocator.
-data=`run_sbcl --eval '(progn #+linux(progn(princ "fakemap") #+64-bit(princ "_64")))' \
+data=`run_cl --eval '(progn #+linux(progn(princ "fakemap") #+64-bit(princ "_64")))' \
   --quit`
 if [ -z "$data" ]
 then
@@ -13,9 +13,9 @@ then
     exit $EXIT_TEST_WIN
 fi
 
-test_sbcl=../src/runtime/heap-reloc-test
+test_cl=../src/runtime/heap-reloc-test
 
-rm -f $test_sbcl
+rm -f $test_cl
 
 set -e
 (cd ../src/runtime ; make heap-reloc-test)
@@ -24,12 +24,12 @@ set -e
 # KLUDGE: assume N = 6
 # FIXME: don't assume that N = 6
 
-export SBCL_FAKE_MMAP_INSTRUCTION_FILE=`pwd`/heap-reloc/$data
+export CL_FAKE_MMAP_INSTRUCTION_FILE=`pwd`/heap-reloc/$data
 i=1
 while [ $i -le 6 ]
 do
-  export SBCL_FAKE_MMAP_INSTRUCTION_LINE=$i
-  $test_sbcl --lose-on-corruption --disable-ldb --noinform --core ../output/sbcl.core \
+  export CL_FAKE_MMAP_INSTRUCTION_LINE=$i
+  $test_cl --lose-on-corruption --disable-ldb --noinform --core ../output/cl.core \
               --no-sysinit --no-userinit --noprint --disable-debugger \
               --eval '(gc :full t)' \
               --eval '(defun fib (n) (if (<= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))' \
@@ -40,7 +40,7 @@ done
 create_test_subdirectory
 tmpcore=$TEST_DIRECTORY/$TEST_FILESTEM.core
 
-run_sbcl <<EOF
+run_cl <<EOF
   (defglobal original-static-space-bounds
     (cons sb-vm:static-space-start (sb-sys:sap-int sb-vm:*static-space-free-pointer*)))
   ;; there's no point in testing for #-x86-64. While arm64 allows #+relocatable-static-space
@@ -52,7 +52,7 @@ run_sbcl <<EOF
   (save-lisp-and-die "$tmpcore")
 EOF
 
-$test_sbcl --lose-on-corruption --disable-ldb --noinform --core $tmpcore \
+$test_cl --lose-on-corruption --disable-ldb --noinform --core $tmpcore \
               --no-sysinit --no-userinit --noprint --disable-debugger <<EOF
 #-do-test (quit)
 ;; check that static space relocation happened
@@ -71,6 +71,6 @@ $test_sbcl --lose-on-corruption --disable-ldb --noinform --core $tmpcore \
 (format t "~&I'm back!~%")
 EOF
 
-rm -f $tmpcore $test_sbcl
+rm -f $tmpcore $test_cl
 
 exit $EXIT_TEST_WIN

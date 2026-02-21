@@ -36,7 +36,6 @@
 ;;;; GF are specializers parameters, we can assign a permutation index
 ;;;; to each such (GF . ARGS) tuple inside a method body, and use this
 ;;;; to cache effective method functions.
-
 (declaim (inline make-pv-table))
 (defstruct (pv-table (:predicate pv-tablep)
                      (:copier nil))
@@ -76,7 +75,6 @@
                            :pv-size (* 2 (reduce #'+ snl :key #'length))))))
     (with-system-mutex (*pv-lock*)
       (%intern-pv-table (mapcar #'intern-slot-names slot-name-lists)))))
-
 (defun use-standard-slot-access-p (class slot-name type)
   (or (not (eq **boot-state** 'complete))
       (and (std-class-p class)
@@ -134,7 +132,6 @@
             (unless (eq new-cache cache)
               (setf (pv-table-cache pv-table) new-cache))
             pv)))))
-
 ;;; Sometimes we want to finalize if we can, but it's OK if
 ;;; we can't.
 (defun try-finalize-inheritance (class)
@@ -599,7 +596,6 @@
                                       :key #'car))))
           slots))
 
-
 ;;;; This needs to work in terms of metatypes and also needs to work
 ;;;; for automatically generated reader and writer functions.
 ;;;; Automatically generated reader and writer functions use this

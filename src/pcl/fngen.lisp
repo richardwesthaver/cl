@@ -65,7 +65,6 @@
               nil nil nil
               '((:declare sb-c::tlab :system)))))
        (sb-c:compile-in-lexenv (maybe-copy-expr) lexenv nil nil nil nil nil)))))
-
 ;;; GET-FUN is the main user interface to this code. It is like
 ;;; COMPILE, only more efficient. It achieves this efficiency by
 ;;; reducing the number of times that the compiler needs to be called.
@@ -113,7 +112,6 @@
   (if (default-constantp form)
       (list (constant-form-value form))
       nil))
-
 (defstruct (fgen (:constructor make-fgen (gensyms generator generator-lambda system))
                  (:copier nil))
   gensyms
@@ -146,7 +144,6 @@
                (setf (gethash test table)
                      (make-fgen gensyms generator generator-lambda system))))))))
 
-
 (defun get-fun-generator (lambda test-converter code-converter)
   (let* ((test (compute-test lambda test-converter))
          (table *fgens*)
@@ -207,7 +204,6 @@
                            (dolist (x consts (values f t)) (res x))
                            f)))))
     (res))))
-
 (defmacro precompile-function-generators (&optional system)
   (let (collect)
     ;; In single threaded code, only at system build time, and not used after.

@@ -49,7 +49,6 @@
   (error (apply #'coerce-to-condition datum
                 'simple-program-error '%program-error arguments)))
 
-
 ;;;; HANDLER-BIND
 
 (sb-xc:defmacro %handler-bind (bindings form &environment env)

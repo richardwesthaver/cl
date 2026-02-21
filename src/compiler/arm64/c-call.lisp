@@ -404,7 +404,6 @@
                 (invoke-alien-type-method :result-tn result-type (make-result-state))
                 ;; 5th value: T if large struct return (sret pointer passed as first arg)
                 large-struct-return-p)))))
-
 ;;; VOP to set up for return of large structs (>16 bytes) via a
 ;;; hidden pointer: caller allocates memory and passes the address in
 ;;; x8.
@@ -552,7 +551,6 @@
       (let ((delta (logandc2 (+ amount +number-stack-alignment-mask+)
                              +number-stack-alignment-mask+)))
         (inst add nsp-tn nsp-tn (add-sub-immediate delta))))))
-
 ;;; Callback
 #-sb-xc-host
 (defun alien-callback-accessor-form (type sap offset)

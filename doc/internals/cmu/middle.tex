@@ -1,9 +1,7 @@
 % -*- Dictionary: design -*-
 
-
 \chapter{Virtual Machine Representation Introduction}
 
-
 \chapter{Global TN assignment}
 
 % Rename this phase so as not to be confused with the local/global TN
@@ -90,7 +88,6 @@ we aren't required to do so by a tail-recursive full call, as long as there are
 no non-tail-recursive local calls in the set.  This prevents us from
 gratuitously using a non-standard convention when there is no reason to.
 
-
 \chapter{Local TN assignment}
 
 [Want a different name for this so as not to be confused with the different
@@ -242,7 +239,6 @@ that less code will take less time to generate and assemble.  [\#\#\# This could
 lose if the smallest case is out-of-line, and must allocate many linkage
 registers.]
 
-
 \chapter{Control optimization}
 
 In this phase we annotate blocks with drop-throughs.  This controls how code
@@ -319,7 +315,6 @@ non-tail-recursive calls will use some sort of call instruction.  In this case,
 the call actually wants to drop through to the return point, rather than
 dropping through to the beginning of the called function.
 
-
 \chapter{VMR conversion}
 
 \#|
@@ -461,7 +456,6 @@ deferred reference.  We use the leaf's TN instead.  We may have to do any of
 the above use-time actions also.  Alternatively, we could avoid hair by not
 deferring references that must be type-checked or may need to be boxed.
 
-
 \section{Stack analysis}
 
 Think of this as a lifetime problem: a values generator is a write and a values
@@ -617,7 +611,6 @@ Note that there is only doubt about how much stuff is on the control stack,
 since only it is used for unknown values.  Any special stacks such as number
 stacks will always have a fixed allocation.
 
-
 \section{Non-local exit}
 
 

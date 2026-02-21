@@ -68,7 +68,6 @@
       '(lambda (n) (coerce n 'single-float))
     (((expt 10 1000)) #+no-float-traps sb-ext:single-float-positive-infinity
                       #-no-float-traps (condition 'floating-point-overflow))))
-
 (defun are-we-getting-ash-right (x y)
   (declare (optimize speed)
            (type (unsigned-byte 32) x)
@@ -144,7 +143,6 @@
     (loop for x in neg-values do
          (test x 'nc-ash 'c-ash))))
 
-
 (declaim (inline ppc-ldb-2))
 
 (defun ppc-ldb-2 (fun value)

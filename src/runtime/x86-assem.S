@@ -12,7 +12,6 @@
  * provided with absolutely no warranty. See the COPYING and CREDITS
  * files for more information.
  */
-
 #ifdef __ELF__
 // Mark the object as not requiring an executable stack.
 .section .note.GNU-stack,"",%progbits
@@ -153,7 +152,6 @@
 
 	.text
 	.globl	GNAME(all_threads)
-
 /*
  * A call to call_into_c preserves esi, edi, and ebp.
  * (The C function will preserve ebx, esi, edi, and ebp across its
@@ -305,7 +303,6 @@ Lfp_rtn_value:
 
 	SIZE(GNAME(call_into_c))
 
-
 #ifdef LISP_FEATURE_OS_THREAD_STACK
         .text
 	.globl  GNAME(funcall1_switching_stack)
@@ -442,7 +439,6 @@ LsingleValue:
 	movl	%edx,%eax	# c-val
 	ret
 	SIZE(GNAME(call_into_lisp))
-
 /* support for saving and restoring the NPX state from C */
 	.text
 	.globl	GNAME(fpu_save)
@@ -462,7 +458,6 @@ GNAME(fpu_restore):
 	frstor	(%eax)		# Restore the NPX state.
 	ret
 	SIZE(GNAME(fpu_restore))
-
 /*
  * fun-end breakpoint magic
  */
@@ -497,7 +492,6 @@ GNAME(fun_end_breakpoint_trap):
 	.globl GNAME(fun_end_breakpoint_end)
 GNAME(fun_end_breakpoint_end):
 
-
 	.globl	GNAME(do_pending_interrupt)
 	TYPE(GNAME(do_pending_interrupt))
 	.align	align_16byte,0x90
@@ -506,7 +500,6 @@ GNAME(do_pending_interrupt):
 	.byte 	trap_PendingInterrupt
 	ret
 	SIZE(GNAME(do_pending_interrupt))
-
 #ifdef LISP_FEATURE_SB_SAFEPOINT
 	.globl 	GNAME(handle_global_safepoint_violation)
 	TYPE(GNAME(handle_global_safepoint_violation))
@@ -526,7 +519,6 @@ GNAME(handle_csp_safepoint_violation):
 	ret
 	SIZE(GNAME(handle_csp_safepoint_violation))
 #endif /* SB-SAFEPOINT */
-
 	.globl 	GNAME(memory_fault_emulation_trap)
 	TYPE(GNAME(memory_fault_emulation_trap))
 	.align	align_16byte,0x90
@@ -603,7 +595,6 @@ GNAME(post_signal_tramp):
 	ret
 	SIZE(GNAME(post_signal_tramp))
 
-
 /* When LISP_FEATURE_C_STACK_IS_CONTROL_STACK, we cannot safely scrub
  * the control stack from C, largely due to not knowing where the
  * active stack frame ends.  On such platforms, we reimplement the

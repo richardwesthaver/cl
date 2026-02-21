@@ -27,7 +27,7 @@ set -e
 tracelog=`mktemp ${TMPDIR:-/tmp}/$TEST_FILESTEM.XXXXXX`
 
 strace -f -e futex -e signal=\!sigsegv -o $tracelog \
-  $SBCL_RUNTIME --core "$SBCL_CORE" $SBCL_ARGS <<EOF
+  $CL_RUNTIME --core "$CL_CORE" $CL_ARGS <<EOF
 (defvar *m* (sb-thread:make-mutex :name "stupid"))
 (defvar *thr*)
 

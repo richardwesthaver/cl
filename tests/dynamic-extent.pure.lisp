@@ -136,7 +136,6 @@
       (declare (dynamic-extent z))
       (opaque-identity :bar)
       z)))
-
 ;;; alignment
 
 (defvar *x*)
@@ -808,7 +807,6 @@
 
 (with-test (:name (:no-consing :mutex) :skipped-on (not :sb-thread))
   (assert-no-consing (test-mutex)))
-
 
 ;;; Bugs found by Paul F. Dietz
 
@@ -1125,7 +1123,6 @@
              (assert (eql x (car (aref vec3 0))))
              (assert (eql x (elt (aref vec4 0) 0))))))
     (assert-no-consing (test 42))))
-
 (defun bug-681092 ()
   (declare (optimize speed))
   (let ((c 0))
@@ -1136,7 +1133,6 @@
         (return (bar))))))
 (with-test (:name :bug-681092)
   (assert (= 10 (bug-681092))))
-
 ;;;; Including a loop in the flow graph between a DX-allocation and
 ;;;; the start of its environment would, for a while, cause executing
 ;;;; any of the code in the loop to discard the value.  Found via
@@ -1157,7 +1153,6 @@
     (eq y w)))
 (with-test (:name :bug-1472785)
   (assert (null (bug-1472785 1))))
-
 ;;;; &REST lists should stop DX propagation -- not required by ANSI,
 ;;;; but required by sanity.
 

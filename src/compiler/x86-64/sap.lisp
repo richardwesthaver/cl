@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; moves and coercions
 
 ;;; Move a tagged SAP to an untagged representation.
@@ -70,7 +69,6 @@
 ;;; descriptor passing location.
 (define-move-vop move-arg :move-arg
   (sap-reg) (descriptor-reg))
-
 ;;;; SAP-INT and INT-SAP
 
 ;;; The function SAP-INT is used to generate an integer corresponding
@@ -97,7 +95,6 @@
   (:policy :fast-safe)
   (:generator 1
     (move sap int)))
-
 ;;;; SAP+ and SAP-
 
 (define-vop ()
@@ -124,7 +121,6 @@
   (:generator 1
     (move res ptr1)
     (inst sub res ptr2)))
-
 ;;;; mumble-SYSTEM-REF and mumble-SYSTEM-SET
 
 ;; from 'llvm/projects/compiler-rt/lib/msan/msan.h':
@@ -348,7 +344,6 @@ https://llvm.org/doxygen/MemorySanitizer_8cpp.html
                                                   (null (tn-value value))))
                val-temp)
    (:generator 5 (emit-sap-set :qword sap offset value temp val-temp)))
-
 ;;;; SAP-REF-SINGLE and SAP-REF-DOUBLE
 
 (macrolet ((def-system-ref-and-set (ref-fun res-sc res-type insn cas
@@ -396,7 +391,6 @@ https://llvm.org/doxygen/MemorySanitizer_8cpp.html
      (inst movq newval-temp newval)
      (inst cmpxchg :lock (sap+offset-to-ea sap offset nil) newval-temp)
      (inst movq result rax))))
-
 ;;; noise to convert normal lisp data objects into SAPs
 
 (define-vop (vector-sap)

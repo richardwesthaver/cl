@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; unary operations.
 
 (define-vop (fast-safe-arith-op)
@@ -66,7 +65,6 @@
   (:generator 2
     (inst mvn res x)))
 
-
 ;;;; Binary fixnum operations.
 
 ;;; Assume that any constant operand is the second arg...
@@ -257,7 +255,6 @@
   `(logior (lognot ,x) ,y))
 (define-source-transform logorc2 (x y)
   `(logior ,x (lognot ,y)))
-
 ;;; Shifting
 
 (define-vop (fast-ash-left-c/fixnum=>fixnum)

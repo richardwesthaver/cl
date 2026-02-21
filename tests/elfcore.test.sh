@@ -28,10 +28,10 @@ if [ $status != 0 ]; then # test can't be executed
     exit $EXIT_TEST_WIN
 fi
 # Ensure that we're not running a stale embedcore-sbcl
-(cd $SBCL_PWD/../src/runtime ; rm -f embedcore-sbcl ; make embedcore-sbcl)
+(cd $CL_PWD/../src/runtime ; rm -f embedcore-sbcl ; make embedcore-sbcl)
 
 set -e # exit on error
-$SBCL_PWD/../src/runtime/embedcore-sbcl --disable-debugger --no-sysinit --no-userinit --noprint <<EOF
+$CL_PWD/../src/runtime/embedcore-sbcl --disable-debugger --no-sysinit --no-userinit --noprint <<EOF
 (format t "~&ELF-embedded core starts OK~%")
 (exit :code 0)
 EOF
@@ -52,7 +52,7 @@ fi
 set -e # exit on error
 
 # Ensure that we're not running a stale shrinkwrap-sbcl
-(cd $SBCL_PWD/../src/runtime ; rm -f shrinkwrap-sbcl* ; make shrinkwrap-sbcl)
+(cd $CL_PWD/../src/runtime ; rm -f shrinkwrap-sbcl* ; make shrinkwrap-sbcl)
 
 # Prevent style-warnings in the editcore script, but don't assume that it
 # can be compiled in the first place unless actually doing the ELFcore tests.
@@ -66,7 +66,7 @@ run_sbcl <<EOF
                                 :output-file fasl :print nil)))))
 EOF
 
-$SBCL_PWD/../src/runtime/shrinkwrap-sbcl --disable-debugger --no-sysinit --no-userinit --noprint <<EOF
+$CL_PWD/../src/runtime/shrinkwrap-sbcl --disable-debugger --no-sysinit --no-userinit --noprint <<EOF
 #+x86-64 (sb-vm::%alloc-immobile-symbol "junk") ; crashed 'cause I forgot to use rip-relative-EA
 
 ;; Test that the link step did not use --export-dynamic
@@ -98,7 +98,7 @@ $SBCL_PWD/../src/runtime/shrinkwrap-sbcl --disable-debugger --no-sysinit --no-us
 (assert (eq (let ((*query-io* (make-broadcast-stream))) (y-or-n-p)) t))
 (format t "~&Function redef OK~%")
 EOF
-(cd $SBCL_PWD/../src/runtime ; rm -f shrinkwrap-sbcl shrinkwrap-sbcl.s shrinkwrap-sbcl-core.o shrinkwrap-sbcl.core)
+(cd $CL_PWD/../src/runtime ; rm -f shrinkwrap-sbcl shrinkwrap-sbcl.s shrinkwrap-sbcl-core.o shrinkwrap-sbcl.core)
 
 # reaching here means no crash happened in the allocator
 # and that the fixups were rewritten into C data space
@@ -169,7 +169,7 @@ EOF
 
 m_arg=`run_sbcl --eval '(progn #+sb-core-compression (princ " -lzstd") #+x86 (princ " -m32"))' --quit`
 
-(cd $SBCL_PWD/../src/runtime ; rm -f libsbcl.a; make libsbcl.a)
+(cd $CL_PWD/../src/runtime ; rm -f libsbcl.a; make libsbcl.a)
 run_sbcl --script ../tools-for-build/elftool.lisp split \
   ${tmpcore} $TEST_DIRECTORY/elfcore-test.s
 # I guess we're going to have to hardwire the system libraries
@@ -178,26 +178,26 @@ run_sbcl --script ../tools-for-build/elftool.lisp split \
 ./run-compiler.sh -no-pie -g -o $TEST_DIRECTORY/elfcore-test \
   $TEST_DIRECTORY/elfcore-test.s \
   $TEST_DIRECTORY/elfcore-test-core.o \
-  $SBCL_PWD/../src/runtime/libsbcl.a -lm -lpthread ${m_arg}
+  $CL_PWD/../src/runtime/libsbcl.a -lm -lpthread ${m_arg}
 
-$TEST_DIRECTORY/elfcore-test $SBCL_ARGS --eval '(assert (zerop (f 1 2 3)))' --quit
+$TEST_DIRECTORY/elfcore-test $CL_ARGS --eval '(assert (zerop (f 1 2 3)))' --quit
 echo Custom core: PASS
 
 ./run-compiler.sh -no-pie -g -o $TEST_DIRECTORY/relocating-elfcore-test \
   $TEST_DIRECTORY/elfcore-test.s \
   $TEST_DIRECTORY/elfcore-test-core.o \
-  $SBCL_PWD/../tests/heap-reloc/fake-mman.c \
-  $SBCL_PWD/../src/runtime/libsbcl.a -lm -lpthread ${m_arg}
+  $CL_PWD/../tests/heap-reloc/fake-mman.c \
+  $CL_PWD/../src/runtime/libsbcl.a -lm -lpthread ${m_arg}
 
-(cd $SBCL_PWD/../src/runtime ; rm -f libsbcl.a)
+(cd $CL_PWD/../src/runtime ; rm -f libsbcl.a)
 
-export SBCL_FAKE_MMAP_INSTRUCTION_FILE=heap-reloc/fakemap_64
+export CL_FAKE_MMAP_INSTRUCTION_FILE=heap-reloc/fakemap_64
 i=1
 while [ $i -le 6 ]
 do
   echo Trial $i
   i=`expr $i + 1`
-  $TEST_DIRECTORY/relocating-elfcore-test $SBCL_ARGS --eval '(assert (zerop (f 1 2 3)))' --quit
+  $TEST_DIRECTORY/relocating-elfcore-test $CL_ARGS --eval '(assert (zerop (f 1 2 3)))' --quit
 done
 
 exit $EXIT_TEST_WIN

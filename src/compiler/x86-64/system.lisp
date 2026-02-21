@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; type frobbing VOPs
 
 (define-vop (descriptor-hash32)
@@ -226,7 +225,6 @@
   (:generator 1
     (multiple-value-bind (imm8 shift) (header-byte-imm8 mask)
       (inst test :byte (ea (- (1+ shift) other-pointer-lowtag) array) imm8))))
-
 ;;;; allocation
 
 (define-vop (binding-stack-pointer-sap)
@@ -244,7 +242,6 @@
   (:policy :fast-safe)
   (:generator 1
     (move int rsp-tn)))
-
 ;;;; code object frobbing
 
 (define-vop (code-instructions)
@@ -302,7 +299,6 @@
     (loadw result function closure-fun-slot fun-pointer-lowtag)
     (inst sub result (- (* simple-fun-insts-offset n-word-bytes) fun-pointer-lowtag))))
 
-
 ;;;; other miscellaneous VOPs
 
 (defknown sb-unix::receive-pending-interrupt () (values))
@@ -331,7 +327,6 @@
 (define-vop (halt)
   (:generator 1
     (inst break halt-trap)))
-
 ;;;; Miscellany
 
 ;;; the RDTSC instruction (present on Pentium processors and
@@ -403,7 +398,6 @@ number of CPU cycles elapsed as secondary value. EXPERIMENTAL."
     (inst inc (ea (- (* (+ vector-data-offset index) n-word-bytes)
                      other-pointer-lowtag)
                   count-vector))))
-
 ;;;; Memory barrier support
 
 ;;; Some of these might not really have to inhibit 'instcombine'

@@ -37,10 +37,10 @@ make -C tools-for-build perfecthash || true
 build_started=`date`
 echo "//Starting build: $build_started"
 # Apparently option parsing succeeded. Print out the results.
-echo "//Options: --prefix='$SBCL_PREFIX' --xc-host='$SBCL_XC_HOST'"
+echo "//Options: --prefix='$CL_PREFIX' --xc-host='$CL_XC_HOST'"
 
 # Enforce the source policy for no bogus whitespace
-$SBCL_XC_HOST < tools-for-build/canonicalize-whitespace.lisp || exit 1
+$CL_XC_HOST < tools-for-build/canonicalize-whitespace.lisp || exit 1
 
 # The make-host-*.sh scripts are run on the cross-compilation host,
 # and the make-target-*.sh scripts are run on the target machine. In
@@ -53,7 +53,7 @@ $SBCL_XC_HOST < tools-for-build/canonicalize-whitespace.lisp || exit 1
 #     on both machines (e.g. creating "target"-named symlinks to
 #     identify the target architecture).
 #   On the host system:
-#     SBCL_XC_HOST=<whatever> sh make-host-1.sh
+#     CL_XC_HOST=<whatever> sh make-host-1.sh
 #   Copy src/runtime/genesis/*.h from the host system to the target
 #     system.
 #   On the target system:
@@ -61,8 +61,8 @@ $SBCL_XC_HOST < tools-for-build/canonicalize-whitespace.lisp || exit 1
 #   Copy output/stuff-groveled-from-headers.lisp
 #     from the target system to the host system.
 #   On the host system:
-#     SBCL_XC_HOST=<whatever> sh make-host-2.sh
-#   Copy output/cold-sbcl.core from the host system to the target system.
+#     CL_XC_HOST=<whatever> sh make-host-2.sh
+#   Copy output/cold-cl.core from the host system to the target system.
 #   On the target system:
 #     sh make-target-2.sh
 #     sh make-target-contrib.sh
@@ -71,15 +71,15 @@ $SBCL_XC_HOST < tools-for-build/canonicalize-whitespace.lisp || exit 1
 # procedure above should still work, but you can skip the "copy" steps.
 # If you can use rsync on the host machine, you can call make-config.sh
 # with:
-# --host-location=user@host-machine:<rsync path to host sbcl directory>
+# --host-location=user@host-machine:<rsync path to host cl directory>
 # and the make-target-*.sh scripts will take care of transferring the
 # necessary files.
 maybetime() {
-    if command -v time > /dev/null ; then
-        time $@
-    else
-        $@
-    fi
+  if command -v time > /dev/null ; then
+    time $@
+  else
+    $@
+  fi
 }
 maybetime sh make-host-1.sh
 maybetime sh make-target-1.sh
@@ -88,13 +88,13 @@ maybetime sh make-target-2.sh
 maybetime sh make-target-contrib.sh
 
 # Confirm that default evaluation strategy is :INTERPRET if sb-fasteval was built
-src/runtime/sbcl --core output/sbcl.core --lose-on-corruption --noinform \
-  --no-sysinit --no-userinit --disable-debugger \
-  --eval '(when (find-package "SB-INTERPRETER") (assert (eq *evaluator-mode* :interpret)))' \
-  --quit
+src/runtime/cl --core output/cl.core --lose-on-corruption --noinform \
+                 --no-sysinit --no-userinit --disable-debugger \
+                 --eval '(when (find-package "SB-INTERPRETER") (assert (eq *evaluator-mode* :interpret)))' \
+                 --quit
 
-./src/runtime/sbcl --core output/sbcl.core \
- --lose-on-corruption --noinform $SBCL_MAKE_TARGET_2_OPTIONS --no-sysinit --no-userinit --eval '
+./src/runtime/cl --core output/cl.core \
+                   --lose-on-corruption --noinform $CL_MAKE_TARGET_2_OPTIONS --no-sysinit --no-userinit --eval '
     (progn
       #-sb-devel
       (restart-case
@@ -130,17 +130,17 @@ src/runtime/sbcl --core output/sbcl.core --lose-on-corruption --noinform \
             (when l2
               (format t "Found ~D fdefns named by uninterned symbols:~%~S~%" (length l2) l2)))
         (abort-build ()
-          :report "Abort building SBCL."
+          :report "Abort building CL."
           (sb-ext:exit :code 1))))' --quit
 
 # contrib/Makefile shouldn't be counted in NCONTRIBS nor should asdf and uiop.
 # The asdf directory produces 2 fasls, so is unlike all our other contribs
 # and would therefore mess up the accounting here if included.
-NPASSED=`ls obj/sbcl-home/contrib/sb-*.fasl | wc -l`
+NPASSED=`ls obj/cl-home/contrib/sb-*.fasl | wc -l`
 echo
 echo "The build seems to have finished successfully, including $NPASSED"
 echo "contributed modules. If you would like to run more extensive tests on"
-echo "the new SBCL, you can try:"
+echo "the new CL, you can try:"
 echo
 echo "  cd ./tests && sh ./run-tests.sh"
 echo
@@ -148,7 +148,7 @@ echo "To build documentation:"
 echo
 echo "  cd ./doc/manual && make"
 echo
-echo "To install SBCL (more information in INSTALL):"
+echo "To install CL (more information in INSTALL):"
 echo
 echo "  sh install.sh"
 

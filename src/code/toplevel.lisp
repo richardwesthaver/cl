@@ -42,7 +42,6 @@ pathname designator or a stream for the default userinit file, or NIL.
 If the function returns NIL, no userinit file is used unless one has
 been specified on the command-line.")
 
-
 ;;;; miscellaneous utilities for working with with TOPLEVEL
 
 ;;; Execute BODY in a context where any %END-OF-THE-WORLD (thrown e.g.
@@ -162,7 +161,6 @@ means to wait indefinitely.")
                        (sb-thread:grab-mutex sb-thread::*make-thread-lock*)))
                  (setf ok t))
             (os-exit code :abort (not ok)))))))
-
 ;;;; miscellaneous external functions
 
 (declaim (inline split-ratio-for-sleep))
@@ -274,7 +272,6 @@ any non-negative real number."
           (sleep-for-a-bit timeout)))
       (%sleep seconds))
   nil)
-
 ;;;; the default toplevel function
 
 (defvar / nil
@@ -733,7 +730,6 @@ that provides the REPL for the system. Assumes that *STANDARD-INPUT* and
                 (prin1 result)))))
      ;; If we started stepping in the debugger we want to stop now.
      (disable-stepping))))
-
 ;;; a convenient way to get into the assembly-level debugger
 (defun %halt ()
   (%primitive sb-c:halt))

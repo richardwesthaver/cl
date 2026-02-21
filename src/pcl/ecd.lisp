@@ -23,7 +23,6 @@
 
 (in-package "SB-PCL")
 
-
 ;;; This is the early definition of LOAD-DEFCLASS. It just collects up
 ;;; all the class definitions in a list. Later, in braid1.lisp, these
 ;;; are actually defined.

@@ -1,7 +1,6 @@
 (in-package "SB-VM")
 
 
-
 ;;;; Addition and subtraction.
 
 ;;; static-fun-offset returns the address of the raw_addr slot of
@@ -101,7 +100,6 @@
   (move res temp))
 
 
-
 ;;;; Multiplication
 
 
@@ -177,7 +175,6 @@
   (frob signed-* "signed *" 41 signed-num signed-reg)
   (frob fixnum-* "fixnum *" 30 tagged-num any-reg))
 
-
 ;;;; Comparison
 
 (macrolet

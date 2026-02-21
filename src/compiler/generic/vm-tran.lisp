@@ -187,7 +187,6 @@
     `(truly-the layout (%instance-ref ,x 0)))
   (define-source-transform %set-instance-layout (instance layout)
     `(%instance-set ,instance 0 (the layout ,layout))))
-
 ;;;; simplifying HAIRY-DATA-VECTOR-REF and HAIRY-DATA-VECTOR-SET
 
 
@@ -507,7 +506,6 @@
            `(values array index))
           (t
            `(%data-vector-and-index array index)))))
-
 ;;;; BIT-VECTOR hackery
 
 ;;; SIMPLE-BIT-VECTOR bit-array operations are transformed to a word
@@ -612,7 +610,6 @@
           (if (zerop (lvar-value item)) '(- length count) 'count)
           '(if (zerop item) (- length count) count))))
 
-
 ;;;; %BYTE-BLT
 
 ;;; FIXME: The old CMU CL code used various COPY-TO/FROM-SYSTEM-AREA
@@ -658,7 +655,6 @@
                (sap+ (sapify src) src-start)
                nbytes))
      (values)))
-
 ;;;; transforms for EQL of floating point values
 (unless (vop-existsp :named sb-vm::eql/single-float)
 (deftransform eql ((x y) (single-float single-float) * :node node)
@@ -672,7 +668,6 @@
              (eql (double-float-high-bits x) (double-float-high-bits y)))
   #+64-bit '(eql (double-float-bits x) (double-float-bits y))))
 
-
 ;;;; modular functions
 ;;;
 ;;; FIXME: I think that the :GOODness of a modular function boils down
@@ -696,7 +691,6 @@
   (define-good-signed-modular-funs
       logand logandc2 logeqv logior lognand lognor lognot
       logorc1 logorc2 logxor))
-
 ;;;; word-wise logical operations
 
 ;;; These transforms assume the presence of modular arithmetic to
@@ -735,7 +729,6 @@
 (deftransform word-logical-andc2 ((x y))
   `(logand (logandc2 x y) ,most-positive-word))
 
-
 ;;; There are two different ways the multiplier can be recoded. The
 ;;; more obvious is to shift X by the correct amount for each bit set
 ;;; in Y and to sum the results. But if there is a string of bits that
@@ -787,7 +780,6 @@
             adds
             shifts)))
 
-
 ;;; Transform GET-LISP-OBJ-ADDRESS for constant immediates, since the normal
 ;;; VOP can't handle them.
 

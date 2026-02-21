@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Data object ref/set stuff.
 
 (define-vop (slot)
@@ -62,7 +61,6 @@
              EXIT
              (inst clrex)
              (inst dmb))))))
-
 ;;;; Symbol hacking VOPs:
 
 ;;; Do a cell ref with an error check for being unbound.
@@ -333,7 +331,6 @@
     (inst cmp result unbound-marker-widetag)
     (inst b :eq (generate-error-code vop 'unbound-symbol-error symbol))))
 
-
 ;;;; Fdefinition (fdefn) objects.
 
 (define-vop (safe-fdefn-fun)
@@ -379,7 +376,6 @@
     (load-asm-routine temp 'undefined-tramp)
     (storew temp fdefn fdefn-raw-addr-slot other-pointer-lowtag)))
 
-
 ;;;; Binding and Unbinding.
 
 ;;; BIND -- Establish VAL as a binding for SYMBOL.  Save the old value and
@@ -568,7 +564,6 @@
                                           n-word-bytes)
                                        :pre-index))
      (store-symbol-value bsp-temp *binding-stack-pointer*))))
-
 ;;;; Closure indexing.
 
 (define-full-reffer closure-index-ref *
@@ -603,12 +598,10 @@
   (:info offset)
   (:generator 4
     (storew cfp-tn object (+ closure-info-offset offset) fun-pointer-lowtag)))
-
 ;;;; Value Cell hackery.
 
 (define-vop (value-cell-set cell-set)
   (:variant value-cell-value-slot other-pointer-lowtag))
-
 ;;;; Instance hackery:
 
 (define-vop ()
@@ -677,7 +670,6 @@
   (:results (result :scs (signed-reg) :from (:argument 2)))
   (:result-types signed-num)
   (:translate %raw-instance-cas/signed-word))
-
 ;;;; Code object frobbing.
 
 (define-full-reffer code-header-ref * 0 other-pointer-lowtag

@@ -5,7 +5,7 @@ contribs = sb-posix sb-bsd-sockets sb-introspect sb-cltl2 sb-aclrepl \
      sb-queue sb-rotate-byte sb-rt sb-simple-streams sb-concurrency sb-cover \
      sb-simd sb-grovel sb-perf asdf
 
-active_contribs = $(filter-out $(SBCL_CONTRIB_BLOCKLIST),$(contribs))
+active_contribs = $(filter-out $(CL_CONTRIB_BLOCKLIST),$(contribs))
 
 fasls = $(active_contribs:=.fasl)
 
@@ -32,7 +32,7 @@ sb-grovel.fasl: asdf.fasl # for building the module, not for our build
 #    I tried all kinds of variations on "%/*.lisp" and nothing worked easily.
 #    I suspect the right solution involves eliminating the other level of Makefile.
 #    Also: a motivated person might be able to figure out how to express a dependence
-#    on src/runtime/sbcl or src/runtime/sbcl.exe depending on the OS.
+#    on src/runtime/cl.
 #    I'm going to assume that the depending on the core is enough.
-%.fasl: */*.lisp */*/*.lisp ../output/sbcl.core
+%.fasl: */*.lisp */*/*.lisp ../output/cl.core
 	$(MAKE) MODULE_REQUIRES="$(filter %.fasl, $^)" -C $*

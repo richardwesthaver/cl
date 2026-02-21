@@ -31,7 +31,6 @@
   (declare (fixnum count))
   (shift-towards-end most-positive-word (- count)))
 
-
 ;;; the actual bashers and common uses of same
 
 (defconstant min-bytes-c-call-threshold
@@ -680,7 +679,6 @@
                    (single-float-bits (realpart item)))))
     complex-single-float)
 
-
 ;;;; Bashing-Style search for bits
 ;;;;
 ;;;; Similar search would work well for base-strings as well.

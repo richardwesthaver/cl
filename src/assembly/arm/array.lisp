@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 (define-assembly-routine (allocate-vector-on-heap
                           (:policy :fast-safe)
                           (:arg-types positive-fixnum

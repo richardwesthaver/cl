@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-KERNEL")
-
 ;;;; miscellaneous constants, utility functions, and macros
 
 (defconstant pi #.pi)
@@ -73,7 +72,6 @@
     `(progn
        ,(make-fun name)
        ,(make-fun name t))))
-
 #+(or x86 x86-64 arm-vfp arm64 riscv loongarch64) ;; for constant folding
 (macrolet ((def (name ll)
              `(defun ,name ,ll (,name ,@ll))))
@@ -110,7 +108,6 @@
 (def-math-rtn "log1p" 1)
 (def-math-rtn "log2" 1)
 
-
 ;;;; power functions
 
 (defun exp (number)
@@ -535,7 +532,6 @@
           (sqrt number)))
     ((complex)
      (complex-sqrt number))))
-
 ;;;; trigonometic and related functions
 
 (defun abs (number)
@@ -762,7 +758,6 @@
          (complex-atanh (complex number))))
     ((complex)
      (complex-atanh number))))
-
 ;;;; not-OLD-SPECFUN stuff
 ;;;;
 ;;;; (This was conditional on #-OLD-SPECFUN in the CMU CL sources,

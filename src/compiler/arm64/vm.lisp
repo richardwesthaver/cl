@@ -15,7 +15,6 @@
                                  :pc-relative :pc-relative-ldr-str :ldr-str :move-wide)
   #'equalp)
 
-
 ;;;; register specs
 
 (defvar *register-names* (make-array 32 :initial-element nil))
@@ -90,7 +89,6 @@
   (defregset *non-descriptor-args* nl0 nl1 nl2 nl3 nl4 nl5 nl6 nl7 nl8)
   (defglobal *float-regs* (loop for i below 32 collect i)))
 
-
 ;;;; SB and SC definition:
 
 (!define-storage-bases
@@ -214,7 +212,6 @@
   (catch-block control-stack :element-size catch-block-size)
   (unwind-block control-stack :element-size unwind-block-size)
   (zero immediate-constant))
-
 ;;;; Make some random tns for important registers.
 
 (macrolet ((defregtn (name sc)
@@ -240,7 +237,6 @@
 
 (defglobal wzr-tn (make-random-tn (sc-or-lose '32-bit-reg) zr-offset))
 
-
 ;;; If VALUE can be represented as an immediate constant, then return the
 ;;; appropriate SC number, otherwise return NIL.
 (defun immediate-constant-sc (value)
@@ -268,7 +264,6 @@
 
 (defun boxed-immediate-sc-p (sc)
   (eql sc immediate-sc-number))
-
 ;;;; function call parameters
 
 ;;; the SC numbers for register and stack arguments/return values
@@ -291,7 +286,6 @@
   (mapcar #'(lambda (n)
               (make-random-tn (sc-or-lose 'descriptor-reg) n))
           *register-arg-offsets*))
-
 ;;; This function is called by debug output routines that want a pretty name
 ;;; for a TN's location.  It returns a thing that can be printed with PRINC.
 (defun location-print-name (tn)

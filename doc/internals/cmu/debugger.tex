@@ -112,7 +112,6 @@ Full debug information has a substantial space penalty, so we allow different
 levels of debug information to be specified.  In the extreme case, we can
 totally omit debug information.
 
-
 \section{The Debug-Info Structure}
 \index{debug-info structure}
 
@@ -132,7 +131,6 @@ of the debug-info even when the compiler dumps it in crunched form.
 debug-info...]
 
 
-
 Compiled source map representation:
 
 [\#\#\# store in debug-function PC at which env is properly initialized, i.e.
@@ -240,7 +238,6 @@ We can then represent a compiled location like this:
 \end{verbatim}
 
 
-
 
 But for a whizzy breakpoint facility, we would need a good \verb+source=>code+ map.
 Dumping a complete \verb+code=>source map+ might be as good a way as any to represent
@@ -328,7 +325,6 @@ Practically, in some cases the run-time errors will have less information.  But
 the error should look the same to the debugger (or at least similar).
 
 
-
 \subsection{Debugger Interface}
 
 How does the debugger interface to the ``evaluator'' (where the evaluator means
@@ -390,7 +386,6 @@ Block:
             all forms (and form fragments) in the block.
 \end{verbatim}
 
-
 
 \subsection{Variable maps}
 

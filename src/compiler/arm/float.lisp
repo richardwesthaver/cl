@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Move functions:
 
 (define-move-fun (load-single 1) (vop x y)
@@ -32,7 +31,6 @@
   (let ((nfp (current-nfp-tn vop))
         (offset (tn-byte-offset y)))
     (inst fstd x (@ nfp offset))))
-
 ;;;; Move VOPs:
 
 (macrolet ((frob (vop sc move-macro)
@@ -110,7 +108,6 @@
                   (,sc descriptor-reg) (,sc)))))
   (frob move-single-float-arg single-reg single-stack nil)
   (frob move-double-float-arg double-reg double-stack t))
-
 ;;;; Complex float move functions
 
 (defun complex-single-reg-real-tn (x)
@@ -151,7 +148,6 @@
         (offset (tn-byte-offset y)))
     (inst add lr-tn nfp offset)
     (inst store-complex-double x (@ lr-tn))))
-
 ;;;
 ;;; Complex float register to register moves.
 ;;;
@@ -278,7 +274,6 @@
          (inst store-complex-double x (@ lip)))))))
 (define-move-vop move-complex-double-float-arg :move-arg
   (complex-double-reg descriptor-reg) (complex-double-reg))
-
 ;;;; Unboxed-to-boxed MOVE-ARG handling:
 
 ;; This little gem here says to use the VOP MOVE-ARG to move any float
@@ -288,7 +283,6 @@
 (define-move-vop move-arg :move-arg
   (single-reg double-reg complex-single-reg complex-double-reg)
   (descriptor-reg))
-
 ;;;; Arithmetic VOPs:
 
 (define-vop (float-op)
@@ -366,7 +360,6 @@
   (:save-p :compute-only)
   (:generator 1
     (inst fsqrts y x)))
-
 ;;;; Comparison:
 
 (define-vop (float-compare)
@@ -455,7 +448,6 @@
   (frob < :mi </single-float-zero </double-float-zero nil)
   (frob > :gt >/single-float-zero >/double-float-zero nil)
   (frob = :eq eql/single-float-zero eql/double-float-zero t))
-
 ;;;; Conversion:
 
 (macrolet ((frob (name translate inst from-sc from-type to-sc to-type)
@@ -654,7 +646,6 @@
                                 (if (eq *backend-byte-order* :big-endian)
                                     1 0))
                other-pointer-lowtag)))))
-
 ;;;; Float mode hackery:
 
 (sb-xc:deftype float-modes () '(unsigned-byte 32))
@@ -680,7 +671,6 @@
   (:generator 3
     (inst fmxr :fpscr new)
     (move res new)))
-
 ;;;; Complex float VOPs
 
 (define-vop (make-complex-single-float)

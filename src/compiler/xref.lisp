@@ -170,7 +170,6 @@
                                           (lambda (functional)
                                             (record-xref kind what functional node nil)))))
 
-
 ;;;; Packing of xref tables
 ;;;;
 ;;;; xref information can be transformed into the following "packed"

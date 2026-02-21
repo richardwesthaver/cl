@@ -10,7 +10,6 @@
 (defun return-machine-address (scp)
   (sap-int (context-lr scp)))
 
-
 
 ;;;; "Sigcontext" access functions, cut & pasted from x86-vm.lisp then
 ;;;; hacked for types.
@@ -61,7 +60,6 @@
     (unsigned 32)
   (context (* os-context-t)))
 
-
 ;;;; INTERNAL-ERROR-ARGS.
 
 ;;; GIVEN a (POSIX) signal context, extract the internal error

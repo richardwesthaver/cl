@@ -198,7 +198,6 @@
     (try '(lambda `(,x ,y) :forms) "(LAMBDA `(,X ,Y) :FORMS)")
     (try '(defun f `(,x ,y) :forms) "(DEFUN F `(,X ,Y) :FORMS)")))
 
-
 ;;; SET-PPRINT-DISPATCH should accept function name arguments, and not
 ;;; rush to coerce them to functions.
 (set-pprint-dispatch '(cons (eql frob)) 'ppd-function-name)
@@ -209,7 +208,6 @@
 (let ((s (with-output-to-string (s)
            (pprint '(frob a b) s))))
   (assert (position #\3 s)))
-
 ;; Test that circularity detection works with pprint-logical-block
 ;; (including when called through pprint-dispatch).
 (with-test (:name :pprint-circular-detection)
@@ -399,7 +397,6 @@
   (defun thing (x) x)
   (assert (string= (write-to-string (make-weasel) :pretty t)
                    "hi WEASEL!")))
-
 (deftype known-cons ()
   '(cons (member known-cons other-known-cons other-other)))
 (with-test (:name (:pprint-dispatch :known-cons-type))

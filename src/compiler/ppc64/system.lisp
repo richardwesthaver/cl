@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Type frobbing VOPs
 
 (define-vop (descriptor-hash32)
@@ -150,7 +149,6 @@
     ;; Compute tagged pointer to simple-fun underlying this closure
     (loadw result function closure-fun-slot fun-pointer-lowtag)
     (inst subi result result (- (* simple-fun-insts-offset n-word-bytes) fun-pointer-lowtag))))
-
 ;;;; Allocation
 
 (define-vop (binding-stack-pointer-sap)
@@ -169,7 +167,6 @@
   (:generator 1
     (move int csp-tn)))
 
-
 ;;;; Code object frobbing.
 
 (define-vop (code-instructions)
@@ -201,7 +198,6 @@
     (inst add func code ndescr)))
 
 
-
 ;;;; Other random VOPs.
 
 
@@ -226,7 +222,6 @@
 (define-vop (halt)
   (:generator 1
     (inst unimp halt-trap)))
-
 ;;;; Dynamic vop count collection support
 
 (define-vop (count-me)
@@ -240,7 +235,6 @@
       (inst lwz count count-vector offset)
       (inst addi count count 1)
       (inst stw count count-vector offset))))
-
 ;;;; Memory barrier support
 
 (define-vop (%compiler-barrier)

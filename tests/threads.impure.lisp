@@ -11,7 +11,6 @@
 ;;;; absoluely no warranty. See the COPYING and CREDITS files for
 ;;;; more information.
 
-
 ;;;; STRUCTURAL TESTS
 
 (shadowing-import 'assertoid:assert-error)

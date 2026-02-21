@@ -25,7 +25,6 @@
 ;;; the alloc granularity, it will, once we are smarter about finding
 ;;; the start of objects.
 (defconstant gencgc-alloc-granularity 0)
-
 ;;;; Machine Architecture parameters:
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -75,7 +74,6 @@
 
 ); eval-when
 
-
 ;;;; Description of the target address space.
 
 (gc-space-setup #x0f800000 :dynamic-space-start #x30000000)
@@ -85,7 +83,6 @@
 (defconstant alien-linkage-table-entry-size 16)
 (defconstant alien-linkage-table-growth-direction :up)
 
-
 (defenum (:start 8)
   halt-trap
   pending-interrupt-trap
@@ -97,7 +94,6 @@
   single-step-before-trap
   allocation-trap
   error-trap)
-
 ;;;; static symbols.
 
 ;;; These symbols are loaded into static space directly after NIL so
@@ -115,7 +111,6 @@
 (defconstant-eqx +static-fdefns+
     `#(two-arg-<= two-arg->= two-arg-/= ,@common-static-fdefns)
   #'equalp)
-
 ;;;; Pseudo-atomic trap number
 
 ;;; KLUDGE: Linux on the SPARC doesn't seem to conform to any kind of

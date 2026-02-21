@@ -143,7 +143,6 @@
                           `((defconstant-eqx +character-unicode-cases+ ,unicode-table #'equalp)
                             (defconstant-eqx +character-cases+ ,table #'equalp))))))))
   (frob))
-
 ;;;; UCD accessor functions
 
 ;;; The character database is made of several arrays.
@@ -270,7 +269,6 @@ strings and symbols of length 1."
                   (do-error
                    "Symbol name is not of length one: ~S" (list object))))
       (t (do-error "~S cannot be coerced to a character." (list object))))))
-
 ;;;; predicates
 
 (defun standard-char-p (char)
@@ -515,7 +513,6 @@ Case is ignored." t)
     "Return T if the arguments are in strictly non-increasing alphabetic order.
 Case is ignored." t))
 
-
 (defun digit-char-p (char &optional (radix 10.))
   "If char is a digit in the specified radix, returns the fixnum for which
 that digit stands, else returns NIL."

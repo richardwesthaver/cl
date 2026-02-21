@@ -27,7 +27,6 @@
 ;;;;     and that when :REST-P T is present in the slot definition,
 ;;;;     it begins an arbitrary-length sequence of trailing slots.
 ;;;; -- WHN 2001-12-29
-
 ;;;; the primitive objects themselves
 
 (define-primitive-object (cons :type cons :lowtag list-pointer-lowtag)
@@ -340,7 +339,6 @@ during backtrace.
   #+unbind-in-unwind bsp
   (previous-catch :c-type "struct catch_block *")
   tag)
-
 ;;;; symbols
 
 (define-primitive-object (symbol :lowtag other-pointer-lowtag

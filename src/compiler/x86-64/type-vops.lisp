@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; test generation utilities
 
 (defun generate-fixnum-test (value)
@@ -280,7 +279,6 @@
                           (inst jmp less-or-equal target)))))))))))))
 
       (emit-label drop-through))))
-
 ;;;; other integer ranges
 
 (define-vop (simple-type-predicate)
@@ -783,7 +781,6 @@
     (define vectorp +vector-widetags+)
     (define simple-array-p +simple-array-widetags+)
     #+sb-unicode (define stringp +string-widetags+)))
-
 ;;;; list/symbol types
 ;;;
 ;;; symbolp (or symbol (eq nil))
@@ -875,7 +872,6 @@
       (inst jmp :e is-not-cons-label)
       (test-type value temp target not-p (list-pointer-lowtag)))
     DROP-THRU))
-
 (define-vop (widetag=)
   (:translate widetag=)
   (:policy :fast-safe)

@@ -234,7 +234,6 @@ set_csp_from_context(struct thread *self, os_context_t *ctx)
     csp_around_foreign_call(self) = (lispobj) sp;
 }
 
-
 static inline gc_phase_t gc_phase_next(gc_phase_t old) {
     return (old+1) % GC_NPHASES;
 }
@@ -579,7 +578,6 @@ int check_pending_gc(__attribute__((unused)) os_context_t *context)
     return done;
 }
 
-
 void thread_in_lisp_raised(os_context_t *ctxptr)
 {
     struct thread *self = get_sb_vm_thread();
@@ -769,7 +767,6 @@ gc_stop_the_world()
     SET_THREAD_STOP_PENDING(self,NIL);
 }
 
-
 void gc_start_the_world()
 {
     odxprint(safepoints,"%s","start the world");
@@ -779,7 +776,6 @@ void gc_start_the_world()
     }
 }
 
-
 /* wake_thread(thread) -- ensure a thruption delivery to
  * `thread'. */
 

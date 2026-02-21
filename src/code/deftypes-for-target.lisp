@@ -12,7 +12,6 @@
 (in-package "SB-KERNEL")
 
 (/show0 "deftypes-for-target.lisp 14")
-
 ;;;; Now that DEFTYPE is set up, any pending requests for it can
 ;;;; be honored.
 
@@ -22,7 +21,6 @@
   (do-delayed-def!types)
   (makunbound '*delayed-def!types*))
 
-
 ;;;; standard types
 
 (sb-xc:deftype boolean () '(member t nil))
@@ -153,7 +151,6 @@
 (sb-xc:deftype simple-fun () '(satisfies simple-fun-p))
 
 (sb-xc:deftype closure () '(satisfies closurep))
-
 ;;;; some private types that we use in defining the standard functions,
 ;;;; or implementing declarations in standard compiler transforms
 

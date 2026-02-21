@@ -198,7 +198,6 @@
               ,@(generate-number-dispatch var-specs (error-tags)
                                           (cdr res)))
             ,@(errors))))))
-
 ;;;; binary operation dispatching utilities
 
 ;;; Return NUMBER-DISPATCH forms for rational X float.

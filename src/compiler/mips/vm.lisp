@@ -13,7 +13,6 @@
 
 (defconstant-eqx +fixup-kinds+ #(:absolute :jmp :lui :addi :sll-sa) #'equalp)
 
-
 ;;;; Registers
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -88,7 +87,6 @@
   (defregset reserve-non-descriptor-regs
       nl4 cfunc))
 
-
 ;;;; SB and SC definition:
 
 (!define-storage-bases
@@ -247,7 +245,6 @@
 
 
 
-
 ;;;; Random TNs for interesting registers
 
 (macrolet ((defregtn (name sc)
@@ -274,7 +271,6 @@
 
   (defregtn code descriptor-reg)
   (defregtn lip interior-reg))
-
 ;;; If VALUE can be represented as an immediate constant, then return the
 ;;; appropriate SC number, otherwise return NIL.
 (defun immediate-constant-sc (value)
@@ -302,7 +298,6 @@
   (or (eql sc zero-sc-number)
       (eql sc null-sc-number)
       (eql sc immediate-sc-number)))
-
 ;;;; Function Call Parameters
 
 ;;; The SC numbers for register and stack arguments/return values.
@@ -341,7 +336,6 @@
 
 ;;; This is used by the debugger.
 (defconstant single-value-return-byte-offset 8)
-
 ;;; This function is called by debug output routines that want a pretty name
 ;;; for a TN's location.  It returns a thing that can be printed with PRINC.
 (defun location-print-name (tn)

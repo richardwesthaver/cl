@@ -14,7 +14,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; exported specials
 
 (defvar *modules* ()
@@ -23,7 +22,6 @@
 
 (defvar *module-provider-functions* (list 'module-provide-contrib)
   "See function documentation for REQUIRE.")
-
 ;;;; PROVIDE and REQUIRE
 
 (defun provide (module-name)
@@ -70,12 +68,11 @@
                                 'require module-name)))))
       (set-difference *modules* saved-modules))))
 
-
 ;;;; miscellany
 
 (defun module-provide-contrib (name)
   "Stringify and downcase NAME, then attempt to load the file
-   $SBCL_HOME/name/name"
+   $CL_HOME/name/name"
   (let* ((filesys-name (string-downcase name))
          (unadorned-path
           (merge-pathnames
@@ -97,7 +94,7 @@
     ;; Prefer the untruename as the argument to give to LOAD,
     ;; because users need to see (in backtraces and similar) the pathnames
     ;; actually handed off to the filesystem calls, like:
-    ;;    ... #P"blaze-out/k8-fastbuild/bin/third_party/lisp/sbcl/binary-distribution/k8/sbcl/bin/../lib/sbcl/contrib/sb-md5.fasl"
+    ;;    ... #P"blaze-out/k8-fastbuild/bin/third_party/lisp/cl/binary-distribution/k8/cl/bin/../lib/cl/contrib/sb-md5.fasl"
     ;; and not names that have been obtained through readlink like
     ;;    ... #P"/build/cas/081/081f9f05e4af917b63b6ccf7453e4565fc66587a093a45fb1c6dbe64e8c8ad58_0100b65b"
     ;; as the latter can not be reverse-engineered to a source file

@@ -36,7 +36,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 
 (declaim (inline defstruct-classoid-p))
 (defun defstruct-classoid-p (classoid)
@@ -72,7 +71,6 @@
   (and (symbolp type)
        (condition-classoid-p (find-classoid type nil))))
 
-
 (defun set-funcallable-instance-function (fin new-value)
   (declare (type function new-value))
   ;; It's not worth bothering to teach the compiler to efficiently transform
@@ -95,7 +93,6 @@
 (declaim (inline fsc-instance-p))
 (defun fsc-instance-p (fin)
   (funcallable-instance-p fin))
-
 (declaim (inline clos-slots-ref (setf clos-slots-ref)))
 (declaim (ftype (function (simple-vector t) t) clos-slots-ref))
 (defun clos-slots-ref (slots index)
@@ -118,7 +115,6 @@
 (declaim (inline std-instance-p))
 (defun std-instance-p (x)
   (%instancep x))
-
 ;;; When given a funcallable instance, SET-FUN-NAME *must* side-effect
 ;;; that FIN to give it the name. When given any other kind of
 ;;; function SET-FUN-NAME is allowed to return a new function which is
@@ -157,7 +153,6 @@
                       (every #'symbolp (car (last new-name))))))
     (setf (fdefinition new-name) fun))
   fun)
-
 ;;; This definition is for interpreted code.
 ;;; FIXME: (1) is EXPLICIT-CHECK really doing anything here?
 ;;;        (2) why isn't this named STANDARD-OBJECT-P?

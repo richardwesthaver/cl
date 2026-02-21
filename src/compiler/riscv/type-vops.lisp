@@ -120,7 +120,6 @@
                  :value-tn-ref value-tn-ref
                  :immediate-tested immediate-tested))
 
-
 ;;;; Other integer ranges.
 
 ;;; A (SIGNED-BYTE N-WORD-BITS) can be represented with either fixnum or a

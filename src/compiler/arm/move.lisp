@@ -117,7 +117,6 @@
    (unsigned-reg) (unsigned-stack))
   (store-stack-offset x (current-nfp-tn vop) y))
 
-
 ;;;; The Move VOP:
 (define-vop (move)
   (:args (x :target y
@@ -154,7 +153,6 @@
 (define-move-vop move-arg :move-arg
   (any-reg descriptor-reg)
   (any-reg descriptor-reg))
-
 ;;;; Moves and coercions:
 
 ;;; These MOVE-TO-WORD VOPs move a tagged integer to a raw full-word

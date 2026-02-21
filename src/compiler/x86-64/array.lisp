@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 
 ;; For use in constant indexing; we can't use INDEX since the displacement
 ;; field of an EA can't contain 64 bit values.
@@ -87,7 +86,6 @@
      (allocation type bytes 0 result temp)
      (storew header result 0 0)
      (inst or :byte result other-pointer-lowtag))))
-
 ;;;; additional accessors and setters for the array header
 (define-full-reffer %array-dimension *
   array-dimensions-offset other-pointer-lowtag
@@ -135,7 +133,6 @@
              (inst jmp :ne OUT)
              (inst cmp :word (ea temp) c))))
     OUT))
-
 
 (defun power-of-two-limit-p (x)
   (and (fixnump x)
@@ -290,7 +287,6 @@
         (lambda (vop) (try-absorb-load vop 'check-vector-bound/fast))
         (sb-c::vop-info-optimizer (template-or-lose 'check-bound/fixnum))
         (lambda (vop) (try-absorb-load vop 'check-vector-bound/fixnum))))
-
 ;;;; accessors/setters
 
 ;;; Ancestors
@@ -443,7 +439,6 @@
   vector-data-offset other-pointer-lowtag
   (descriptor-reg any-reg) *
   %compare-and-swap-svref)
-
 ;;; SIMPLE-BIT-VECTOR
 (defun bit-base (dword-index)
   (+ (* dword-index 4)
@@ -950,7 +945,6 @@
     (unpoison-element object (+ index addend))
     (inst movapd (float-ref-ea object index addend 16) value)))
 
-
 
 ;;; {un,}signed-byte-{8,16,32} and characters
 (macrolet ((define-data-vector-frobs (ptype mov-inst operand-size
@@ -1038,7 +1032,6 @@
   (define-data-vector-frobs simple-character-string mov :dword
     character character-reg))
 
-
 ;;; These vops are useful for accessing the bits of a vector
 ;;; irrespective of what type of vector it is.
 (define-full-reffer vector-raw-bits * vector-data-offset other-pointer-lowtag
@@ -1051,7 +1044,6 @@
   (any-reg descriptor-reg) * %weakvec-ref)
 (define-full-setter %weakvec-set * vector-data-offset other-pointer-lowtag
   (any-reg descriptor-reg) * %weakvec-set)
-
 ;;;; ATOMIC-INCF for arrays
 
 (define-vop (array-atomic-incf/word)

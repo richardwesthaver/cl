@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 (defun ea-for-avx-stack (tn &optional (base rbp-tn))
   (ea (frame-byte-offset (+ (tn-offset tn) 3)) base))
 
@@ -19,7 +18,6 @@
             double-avx2-reg double-avx2-stack double-avx2-immediate))
 (defun int-avx2-p (tn)
   (sc-is tn int-avx2-reg int-avx2-stack int-avx2-immediate))
-
 #+sb-xc-host
 (progn ; the host compiler will complain about absence of these
   (defun %simd-pack-256-0 (x) (error "Called %SIMD-PACK-256-0 ~S" x))
@@ -157,7 +155,6 @@
   (int-avx2-reg double-avx2-reg single-avx2-reg)
   (descriptor-reg))
 
-
 (define-vop (%simd-pack-256-0)
   (:translate %simd-pack-256-0)
   (:args (x :scs (descriptor-reg)))

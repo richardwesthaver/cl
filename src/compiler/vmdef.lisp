@@ -33,12 +33,10 @@
 
 (defun sc-number-or-lose (x)
   (the sc-number (sc-number (sc-or-lose x))))
-
 ;;;; side effect classes
 
 (!def-boolean-attribute vop
   any)
-
 ;;;; move/coerce definition
 
 ;;; Compute at compiler load time the costs for moving between all SCs that
@@ -60,7 +58,6 @@
                  (old (svref vec scn)))
             (unless (and old (< old total))
               (setf (svref vec scn) total))))))))
-
 ;;;; primitive type definition
 
 ;;; Return the primitive type corresponding to the specified name, or
@@ -82,7 +79,6 @@
         (when (or (member sc (sc-alternate-scs allowed-sc))
                   (member sc (sc-constant-scs allowed-sc)))
           (return t))))))
-
 ;;;; generation of emit functions
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -183,7 +179,6 @@
                     (aref refs (ldb (byte 8 8) target))
                     (aref refs (ldb (byte 8 0) target)))))))
     vop))
-
 ;;;; function translation stuff
 
 ;;; Add Template into List, removing any old template with the same name.
@@ -197,7 +192,6 @@
                      :key #'template-name)
                #'<=
                :key #'template-cost))
-
 ;;; Return a function type specifier describing TEMPLATE's type computed
 ;;; from the operand type restrictions.
 (declaim (inline template-conditional-p))

@@ -16,7 +16,6 @@
 
 (in-package "SB-FASL")
 
-
 ;;;; various constants and essentially-constants
 
 ;;; a string which appears at the start of a fasl file header
@@ -105,7 +104,6 @@
 (declaim (type simple-string *fasl-file-type*))
 (defglobal *fasl-file-type* "fasl")
 
-
 ;;;; internal state variables
 
 (defvar *load-depth* 0
@@ -168,7 +166,6 @@
       (if name
           (format t "loading ~S~%" name)
           (format t "loading stuff from ~S~%" stream-we-are-loading-from)))))
-
 ;;;; utilities for reading from fasl files
 
 ;;; This expands into code to read an N-byte unsigned integer using
@@ -288,7 +285,6 @@
               (code-char (read-varint))))))
   string)
 
-
 ;;;; the fop table
 
 ;;; The table is implemented as a simple-vector indexed by the table
@@ -333,7 +329,6 @@
   ;; if the the deletion barrier is enabled.
   (fill vector 0))
 
-
 ;;;; the fop stack
 
 (declaim (inline fop-stack-empty-p))
@@ -378,7 +373,6 @@
             (,ptr-var (truly-the index (fop-stack-pop-n ,stack-var ,count))))
        ,@body)))
 
-
 ;;;; the FOP database
 
 ;; The bottom 5 bits of the opcodes above 128 encode an implicit operand.
@@ -400,7 +394,6 @@
 (defglobal **fop-signatures**
     (cons (make-array n-ordinary-fops :element-type '(mod 4) :initial-element 0)
           (make-array n-ordinary-fops :element-type 'bit :initial-element 0)))
-
 
 ;;; Define NAME as a fasl operation, with op-code FOP-CODE.
 ;;; PUSHP describes what the body does to the fop stack:
@@ -463,7 +456,6 @@
           (sbit (cdr **fop-signatures**) opcode) pushp))
   name)
 
-
 ;;;; Conditions signalled on invalid fasls (wrong fasl version, etc),
 ;;;; so that user code (esp. ASDF) can reasonably handle attempts to
 ;;;; load such fasls by recompiling them, etc. For simplicity's sake
@@ -680,7 +672,6 @@
       (error "attempt to load an empty FASL file:~%  ~S" (namestring stream))))
   t)
 
-
 ;;; Compatibity macros that allow some fops to share the identical
 ;;; body between genesis and the target code.
 #-sb-xc-host
@@ -751,7 +742,6 @@
   (unless (fop-stack-empty-p (operand-stack))
     (bug "fasl stack not empty when it should be"))
   (throw 'fasl-group-end t))
-
 ;;;; fops for loading symbols
 
 ;;; Cold load has its own implementation of all symbol fops,
@@ -810,7 +800,6 @@
     (read-char-string-as-varints (fasl-input-stream) package-name)
     (push-fop-table (find-or-maybe-make-deferred-package package-name)
                     (fasl-input))))
-
 ;;;; fops for loading numbers
 
 ;;; Load a signed integer LENGTH bytes long from FASL-INPUT-STREAM.
@@ -898,7 +887,6 @@
              (%make-simd-pack tag
                               (fast-read-u-integer 8)
                               (fast-read-u-integer 8)))))))
-
 ;;;; loading lists
 
 (defun fop-list (fasl-input n &aux (stack (%fasl-input-stack fasl-input)))
@@ -918,7 +906,6 @@
                (cold-cons (fop-stack-ref i) res)))
          ((= i ptr) res)
       (declare (type index i)))))
-
 ;;;; fops for loading arrays
 
 (define-fop 100 :not-host (fop-base-string ((:operands length)))
@@ -977,7 +964,6 @@
   (fop-funcall* n (operand-stack)))
 (define-fop 56 (fop-funcall-for-effect ((:operands n)) nil)
   (fop-funcall* n (operand-stack)))
-
 ;;;; fops for fixing up circularities
 
 (define-fop 11 (fop-rplaca ((:operands tbl-slot index) value) nil)
@@ -1000,7 +986,6 @@
 
 (define-fop 16 (fop-nthcdr ((:operands n) obj))
   (nthcdr n obj))
-
 ;;;; fops for loading functions
 
 ;;; (In CMU CL there was a FOP-CODE-FORMAT (47) which was
@@ -1204,7 +1189,6 @@
       (load-fresh-line)
       (format t "~S loaded" fun))
     fun))
-
 ;;;; assemblerish fops
 
 (define-fop 22 (fop-assembler-code)
@@ -1377,7 +1361,6 @@
                  (fop-word-integer (format *trace-output* " ~V,'0X" (* 2 sb-vm:n-word-bytes) result))
                  (fop-byte-integer (format *trace-output* " ~2,'0X" result))
                  (fop-integer (format *trace-output* " ~X" result))))))))))))
-
 ;;;; stuff for debugging/tuning by collecting statistics on FOPs (?)
 
 #|

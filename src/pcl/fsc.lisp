@@ -32,7 +32,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (inline ensure-class-finalized))
   (allocate-standard-funcallable-instance

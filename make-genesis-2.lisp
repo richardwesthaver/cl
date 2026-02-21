@@ -22,10 +22,10 @@
            :defstruct-descriptions (find-bootstrap-file "output/defstructs.lisp-expr" t)
            :tls-init (read-from-file "output/tls-init.lisp-expr" :build-dependent t)
            :c-header-dir-name "output/genesis-2"
-           :core-file-name "output/cold-sbcl.core"
+           :core-file-name "output/cold-cl.core"
            ;; The map file is not needed by the system, but can be
            ;; very handy when debugging cold init problems.
-           :map-file-name "output/cold-sbcl.map"))
+           :map-file-name "output/cold-cl.map"))
 
 #+cmu (ext:quit)
 #+clisp (ext:quit)

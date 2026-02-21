@@ -27,7 +27,6 @@
 ;;;             instantiated once per component, INLINE - for all
 ;;;             references (even under #'without FUNCALL)."
 (deftype inlinep () '(member inline maybe-inline notinline nil))
-
 
 ;;;; source-hacking defining forms
 
@@ -156,7 +155,6 @@
   (when (info :function :source-transform fun-name)
     (warn "Redefining source-transform for ~S" fun-name))
   (setf (info :function :source-transform fun-name) lambda))
-
 ;;;; lambda-list parsing utilities
 ;;;;
 ;;;; IR1 transforms, optimizers and type inferencers need to be able
@@ -237,7 +235,6 @@
                                (mapcar #'car keys))
                       #'string<))))))
 ) ; EVAL-WHEN
-
 ;;;; DEFTRANSFORM
 
 ;;; Define an IR1 transformation for NAME. An IR1 transformation
@@ -384,7 +381,6 @@
                      `(%deftransform ',name ,(if policy '#'policy-test) ',type
                                      #',transform-name ,important))
                    names)))))
-
 
 (defun make-optimizer-name (name)
   (flet ((function-name (name)
@@ -493,7 +489,6 @@
                collect `(setf (,(package-symbolicate #.(find-package "SB-C") "FUN-INFO-" kind)
                                (fun-info-or-lose ',name))
                               #',optimizer-name)))))
-
 ;;;; IR groveling macros
 
 ;;; Iterate over the blocks in a component, binding BLOCK-VAR to each
@@ -706,7 +701,6 @@
            (setf (component-last-block ,component)
                  ,old-last-block))))))
 
-
 ;;;; boolean attribute utilities
 ;;;;
 ;;;; We need to maintain various sets of boolean attributes for known
@@ -800,7 +794,6 @@
 (defun attributes= (attr1 attr2)
   (eql attr1 attr2))
 
-
 ;;;; the EVENT statistics/trace utility
 
 ;;; FIXME: This seems to be useful for troubleshooting and
@@ -918,7 +911,6 @@
              (setf (event-info-count v) 0))
            *event-info*)
   (values))
-
 ;;;; functions on directly-linked lists (linked through specialized
 ;;;; NEXT operations)
 

@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; fasl dumper state
 
 ;;; The FASL-OUTPUT structure represents everything we need to
@@ -370,7 +369,6 @@
     (aver (not (gethash x circ)))
     (setf (gethash x circ) x))
   (values))
-
 ;;;; opening and closing fasl files
 
 ;;; Open a fasl file, write its header, and return a FASL-OUTPUT
@@ -447,7 +445,6 @@
   ;; That's all, folks.
   (close (fasl-output-stream fasl-output) :abort abort-p)
   (values))
-
 ;;;; main entries to object dumping
 
 ;;; This function deals with dumping objects that are complex enough
@@ -610,7 +607,6 @@
           (dump-circularities *circularities-detected* file)
           (clrhash circ)))
       (sub-dump-object x file)))
-
 ;;;; LOAD-TIME-VALUE and MAKE-LOAD-FORM support
 
 ;;; Emit a funcall of the function and return the handle for the
@@ -654,7 +650,6 @@
 (defun fasl-note-instance-saves-slots (instance slot-names file)
   (setf (gethash instance (fasl-output-saved-slot-names file)) slot-names)
   (values))
-
 ;;;; number dumping
 
 (defun dump-ratio (x file)
@@ -748,7 +743,6 @@
       (sub-dump-object re file)
       (sub-dump-object im file)
       (dump-fop 'fop-complex file)))))
-
 ;;;; symbol dumping
 
 ;;; Return the table index of PKG, adding the package to the table if
@@ -773,7 +767,6 @@
            (incf (fasl-output-table-free file))
            (push (cons pkg entry) (fasl-output-packages file))
            entry))))
-
 ;;; dumper for lists
 
 ;;; Dump a list, setting up patching information when there are
@@ -890,7 +883,6 @@
         (t
          (dump-byte (logior fop-list-base-opcode) file)
          (dump-varint (- n 16) file))))
-
 ;;;; array dumping
 
 ;;; Dump the array thing.
@@ -1001,7 +993,6 @@
     (dump-fop 'fop-array file rank)
     (eq-save-object array file)))
 
-
 ;;; Dump string-ish things.
 
 ;;; Dump a SIMPLE-STRING.
@@ -1059,7 +1050,6 @@
     (incf (fasl-output-table-free file)))
 
   (values))
-
 ;;;; component (function) dumping
 
 (defun dump-segment (segment code-length fasl-output)
@@ -1395,7 +1385,6 @@
 
   (setf (fasl-output-debug-info file) nil)
   (values))
-
 ;;;; dumping structures
 
 (defun dump-structure (struct file)

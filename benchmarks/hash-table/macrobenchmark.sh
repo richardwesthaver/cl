@@ -133,7 +133,7 @@ bench_run_tests () {
         for sbcl in ${sbcls[@]}; do
             dir=`dirname "${sbcl}"`
             echo "sh -c 'cd \"${dir}/tests/\" &&"\
-                 "env \"TEST_SBCL_ARGS=${sbcl_test_args[@]}\""\
+                 "env \"TEST_CL_ARGS=${sbcl_test_args[@]}\""\
                  "sh run-tests.sh $1'"
         done
         echo

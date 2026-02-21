@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 
 (defun %test-fixnum (value temp target not-p)
   (declare (ignore temp))
@@ -127,7 +126,6 @@
                           (inst b :le when-true))))))))))
         (inst nop)
         (emit-label drop-through)))))
-
 ;;;; Other integer ranges.
 
 ;;; A (signed-byte 32) can be represented with either fixnum or a
@@ -208,7 +206,6 @@
         (inst nop)
 
         (emit-label not-target)))))
-
 ;;;; List/symbol types:
 
   ;; symbolp (or symbol (eq nil))

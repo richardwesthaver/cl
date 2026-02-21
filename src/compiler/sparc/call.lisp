@@ -58,7 +58,6 @@
 ;;; passed when we are using non-standard conventions.
 (defun make-arg-count-location ()
   (make-wired-tn *fixnum-primitive-type* immediate-arg-scn nargs-offset))
-
 ;;;; Frame hackery:
 
 ;;; Return the number of bytes needed for the current non-descriptor
@@ -159,7 +158,6 @@
 
 
 
-
 ;;; Emit code needed at the return-point from an unknown-values call
 ;;; for a fixed number of values.  Values is the head of the TN-REF
 ;;; list for the locations that the values are to be received into.
@@ -293,7 +291,6 @@ default-value-8
         (inst compute-code-from-lra code-tn code-tn lra-label temp)))
   (values))
 
-
 ;;; Emit code needed at the return point for an unknown-values call
 ;;; for an arbitrary number of values.
 ;;;
@@ -354,7 +351,6 @@ default-value-8
                :from :eval :to (:result 1))
               nvals))
 
-
 ;;; This hook in the codegen pass lets us insert code before fall-thru entry
 ;;; points, local-call entry points, and tail-call entry points.  The default
 ;;; does nothing.
@@ -364,7 +360,6 @@ default-value-8
     (emit-label trampoline-label))
   (emit-label start-label))
 
-
 ;;;; Local call with unknown values convention return:
 
 ;;; Non-TR local call for a fixed number of values passed according to the
@@ -456,7 +451,6 @@ default-value-8
       (when cur-nfp
         (load-stack-tn cur-nfp nfp-save)))))
 
-
 ;;;; Local call with known values return:
 
 ;;; Non-TR local call with known return locations.  Known-value return works
@@ -525,7 +519,6 @@ default-value-8
     (inst j return-pc-temp (- n-word-bytes other-pointer-lowtag))
     (move cfp-tn old-fp-temp)))
 
-
 ;;;; Full call:
 ;;;
 ;;; There is something of a cross-product effect with full calls.
@@ -849,7 +842,6 @@ default-value-8
     (inst ji temp (make-fixup 'tail-call-variable :assembly-routine))
     (inst nop)))
 
-
 ;;;; Unknown values return:
 
 
@@ -979,7 +971,6 @@ default-value-8
       (inst nop))))
 
 
-
 ;;;; XEP hackery:
 
 ;;; Get the lexical environment from it's passing location.

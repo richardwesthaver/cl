@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 
 ;;; For data collection so we can decide what to store in +POPULAR-RAW-CONSTANTS+.
 (defvar *raw-const-histogram* nil)
@@ -113,7 +112,6 @@
   (:translate lognot)
   (:vop-var vop)
   (:generator 2 (emit-inline-neg 'not x res temp vop nil)))
-
 ;;;; binary fixnum operations
 
 ;;; Assume that any constant operand is the second arg...
@@ -568,7 +566,6 @@
                                (location= x r))))
          (y :scs (signed-reg signed-stack)))
   (:arg-types unsigned-num signed-num))
-
 ;;;; multiplication and division
 
 (define-vop (fast-*/unsigned=>unsigned fast-safe-arith-op)
@@ -991,7 +988,6 @@
     (inst sbb high high)
     (wordpair-to-bignum r twodigit low high node)
     DONE))
-
 (define-vop (overflow*-fixnum)
   (:translate overflow*)
   (:args (x :scs (any-reg))
@@ -1995,7 +1991,6 @@
       (inst imul r y)
       (inst jmp :o error))))
 
-
 (define-vop (fast-truncate/fixnum=>fixnum fast-safe-arith-op)
   (:translate truncate)
   (:args (x :scs (any-reg) :target eax)
@@ -2322,7 +2317,6 @@
              (inst sar quo shift)
              (when (minusp y)
                (inst neg quo)))))))
-
 ;;;; Shifting
 (macrolet ((encodable-as-lea ()
              `(and (gpr-tn-p number) (gpr-tn-p result)
@@ -2829,7 +2823,6 @@
     (inst shl result :cl)
 
     DONE))
-
 (define-vop (signed-byte-64-len)
   (:translate integer-length)
   (:note "inline (signed-byte 64) integer-length")
@@ -2916,7 +2909,6 @@
   (:generator 5
     (inst mov res 64)
     (inst tzcnt res arg)))
-
 ;;;; binary conditional VOPs
 
 (define-vop (fast-conditional)
@@ -3478,7 +3470,6 @@
 (define-vop (fast-if-eql-c/unsigned fast-conditional-c/unsigned)
   (:translate eql)
   (:generator 5 (emit-optimized-cmp x y temp)))
-
 ;;;; 64-bit logical operations
 
 ;;; Only the lower 6 bits of the shift amount are significant.
@@ -3499,7 +3490,6 @@
                  (inst ,operation r :cl)))))
   (define shift-towards-start shr)
   (define shift-towards-end   shl))
-
 ;;;; Modular functions
 
 (defmacro define-mod-binop ((name prototype) function)
@@ -3686,7 +3676,6 @@
   `(lognot (logior ,x ,y)))
 (define-source-transform lognand (x y)
   `(lognot (logand ,x ,y)))
-
 ;;;; bignum stuff
 
 (define-vop (bignum-length get-header-data)
@@ -4502,7 +4491,6 @@
          (x :scs (descriptor-reg) :to :save))
   (:arg-refs nil x-ref)
   (:arg-types unsigned-num t))
-
 (in-package "SB-C")
 
 (defun *-transformer (y node fun)

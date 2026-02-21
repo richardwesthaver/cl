@@ -102,7 +102,7 @@ fi;
 #
 # We succeeded, life is good. Now we don't need the test directory
 # any more; and come back home.
-cd "$SBCL_PWD"
+cd "$CL_PWD"
 rm -r "$testdir"
 
 exit $EXIT_TEST_WIN

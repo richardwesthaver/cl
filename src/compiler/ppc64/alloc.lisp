@@ -111,7 +111,6 @@
   (storew null-tn csp-tn 0 0) ; store a known-good value (don't want wild pointers below CSP)
   (inst addi temp csp-tn lowtag-mask)
   (inst clrrdi csp-tn temp n-lowtag-bits))
-
 ;;;; LIST and LIST*
 (define-vop (list)
   (:args (things :more t :scs (any-reg descriptor-reg null control-stack)))
@@ -161,7 +160,6 @@
                              null-tn)
                          ptr cons-cdr-slot list-pointer-lowtag))
         (move result res)))))
-
 ;;;; Special purpose inline allocators.
 
 (define-vop (make-fdefn)
@@ -212,7 +210,6 @@
       (storew value result value-cell-value-slot other-pointer-lowtag))))
 
 
-
 ;;;; Automatic allocators for primitive objects.
 
 (define-vop (make-unbound-marker)

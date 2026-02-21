@@ -19,7 +19,6 @@
 (declaim (type (vector t) *contexts*))
 (defvar *local-call-context*)
 (defvar *location-context* nil)
-
 ;;;; debug blocks
 
 (deftype location-kind ()
@@ -409,7 +408,6 @@
           (dump-location-from-info loc tlf-num var-locs))))
 
     (values (coerce byte-buffer '(simple-array (unsigned-byte 8) (*))) tlf-num)))
-
 ;;; Return DEBUG-SOURCE structure containing information derived from
 ;;; INFO.
 (defun debug-source-for-info (info &key function)
@@ -529,7 +527,6 @@
          (elt sequence 0))
         (t
          (coerce-to-smallest-eltype sequence))))
-
 ;;;; variables
 
 ;;; Return a SC+OFFSET describing TN's location.
@@ -690,7 +687,6 @@
            (aver (or (null (leaf-refs var))
                      (not (tn-offset (leaf-info var)))))
            'deleted))))
-
 ;;;; arguments/returns
 
 ;;; Return a vector to be used as the COMPILED-DEBUG-FUN-ARGS for FUN.
@@ -748,7 +744,6 @@
   (coerce-to-smallest-eltype
    (mapcar #'tn-sc+offset
            (return-info-locations (tail-set-info (lambda-tail-set fun))))))
-
 ;;;; debug functions
 
 ;;; Return a C-D-F structure with all the mandatory slots filled in.
@@ -849,7 +844,6 @@
                          (compute-debug-returns fun)))))))
     dfun))
 
-
 ;;;; Packed debug functions:
 
 ;;; Dump a packed binary representation of a DFUN into *BYTE-BUFFER*.
@@ -1009,7 +1003,6 @@
         (setq prev-start start prev-elsewhere elsewhere))))
   (logically-readonlyize (compress *byte-buffer*)))
 
-
 ;;;; full component dumping
 
 (defun empty-fun-p (fun)
@@ -1088,7 +1081,6 @@
            (dovector (x simple-fun-headers di)
              (setf (%instance-ref di i) x)
              (incf i))))))))
-
 ;;; Write BITS out to BYTE-BUFFER in backend byte order. The length of
 ;;; BITS must be evenly divisible by eight.
 (defun write-packed-bit-vector (bits byte-buffer)

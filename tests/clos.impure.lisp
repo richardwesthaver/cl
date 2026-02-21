@@ -17,7 +17,6 @@
 (defpackage "CLOS-IMPURE"
   (:use "CL" "SB-EXT" "ASSERTOID" "TEST-UTIL" "COMPILER-TEST-UTIL"))
 (in-package "CLOS-IMPURE")
-
 ;;; It should be possible to do DEFGENERIC and DEFMETHOD referring to
 ;;; structure types defined earlier in the file.
 (defstruct struct-a x y)
@@ -202,7 +201,6 @@
        (((pi t))
         t nil "COMMON-LISP:PI names a defined constant")))))
 
-
 ;;; Explicit :metaclass option with structure-class and
 ;;; standard-class.
 
@@ -246,7 +244,6 @@
 (assert (eq (born-to-be-redefined 1) 'int))
 (defgeneric born-to-be-redefined (x))
 (assert (eq (born-to-be-redefined 1) 'int))
-
 ;;; In the removal of ITERATE from SB-PCL, a bug was introduced
 ;;; preventing forward-references and also CHANGE-CLASS (which
 ;;; forward-references used interally) from working properly.
@@ -506,7 +503,6 @@
 (defmethod bug180 list ((x fixnum))
   'fixnum)
 (assert (equal (bug180 14) '(number fixnum)))
-
 ;;; printing a structure class should not loop indefinitely (or cause
 ;;; a stack overflow):
 (defclass test-printing-structure-class ()
@@ -531,7 +527,6 @@
   (c-writer 5 foo)
   (assert (= (a-accessor foo) 4))
   (assert (= (c-accessor foo) 5)))
-
 ;;; At least as of sbcl-0.7.4, PCL has code to support a special
 ;;; encoding of effective method functions for slot accessors as
 ;;; FIXNUMs. Given this special casing, it'd be easy for slot accessor
@@ -560,7 +555,6 @@
 (ffin! 'almost-triang-fin *cod*)
 (assert (eq (ffin *cod*) 'almost-triang-fin))
 (assert (equalp #((:before cod) (cod)) *clos-dispatch-side-fx*))
-
 ;;; Until sbcl-0.7.6.21, the long form of DEFINE-METHOD-COMBINATION
 ;;; ignored its options; Gerd Moellmann found and fixed the problem
 ;;; for cmucl (cmucl-imp 2002-06-18).
@@ -575,7 +569,6 @@
 
 (defmethod gf (obj)
   obj)
-
 ;;; Until sbcl-0.7.7.20, some conditions weren't being signalled, and
 ;;; some others were of the wrong type:
 (macrolet ((assert-program-error (form)
@@ -635,7 +628,6 @@
   (assert-program-error (defmethod foo019 ((foo t) &rest x &optional y) nil))
   (assert-program-error (defmethod foo020 ((foo t) &key x &optional y) nil))
   (assert-program-error (defmethod foo021 ((foo t) &key x &rest y) nil)))
-
 ;;; DOCUMENTATION's argument-precedence-order wasn't being faithfully
 ;;; preserved through the bootstrap process until sbcl-0.7.8.39.
 ;;; (thanks to Gerd Moellmann)
@@ -647,7 +639,6 @@
     (assert (stringp answer))
     (defmethod documentation ((x (eql 'foo022)) y) "WRONG")
     (assert (string= (documentation 'foo022 'function) answer))))
-
 ;;; only certain declarations are permitted in DEFGENERIC
 (macrolet ((assert-program-error (form)
              `(multiple-value-bind (value error)
@@ -668,7 +659,6 @@
   'success)
 (assert (eq (no-next-method-test 1) 'success))
 (assert-error (no-next-method-test 'foo) sb-pcl::no-applicable-method-error)
-
 ;;; regression test for bug 176, following a fix that seems
 ;;; simultaneously to fix 140 while not exposing 176 (by Gerd
 ;;; Moellmann, merged in sbcl-0.7.9.12).
@@ -683,7 +673,6 @@
 (defclass b176 () (aslot-176))
 (defclass c176-0 (b176) ())
 (assert (= 1 (setf (slot-value (make-instance 'c176-9) 'aslot-176) 1)))
-
 ;;; DEFINE-METHOD-COMBINATION was over-eager at checking for duplicate
 ;;; primary methods:
 (define-method-combination dmc-test-mc (&optional (order :most-specific-first))
@@ -728,7 +717,6 @@
                        (make-method ,form)))
                     form)))
             'dmc-test-return))
-
 ;;; DEFINE-METHOD-COMBINATION should, according to the description in 7.7,
 ;;; allow you to do everything in the body forms yourself if you specify
 ;;; exactly one method group whose qualifier-pattern is *
@@ -876,7 +864,6 @@
                             (list (find-class 'integer))))
 (assert-error (defmethod incompatible-ll-test-3 (x y) (list x y)))
 
-
 ;;; Attempting to instantiate classes with forward references in their
 ;;; CPL should signal errors (FIXME: of what type?)
 (defclass never-finished-class (this-one-unfinished-too) ())
@@ -888,14 +875,12 @@
     (ignore-errors (make-instance 'this-one-unfinished-too))
   (assert (null result))
   (assert (typep error 'error)))
-
 ;;; Classes with :ALLOCATION :CLASS slots should be subclassable (and
 ;;; weren't for a while in sbcl-0.7.9.xx)
 (defclass superclass-with-slot ()
   ((a :allocation :class)))
 (defclass subclass-for-class-allocation (superclass-with-slot) ())
 (make-instance 'subclass-for-class-allocation)
-
 ;;; bug #136: CALL-NEXT-METHOD was being a little too lexical,
 ;;; resulting in failure in the following:
 (defmethod call-next-method-lexical-args ((x integer))
@@ -905,7 +890,6 @@
     (declare (ignorable x))
     (call-next-method)))
 (assert (= (call-next-method-lexical-args 3) 3))
-
 ;;; DEFINE-METHOD-COMBINATION with arguments was hopelessly broken
 ;;; until 0.7.9.5x
 (defvar *d-m-c-args-test* nil)
@@ -940,7 +924,6 @@
 (ignore-errors (d-m-c-args-test 1))
 (assert (equal *d-m-c-args-test*
                '("unlock" "object-lock" "lock" "object-lock")))
-
 ;;; The walker (on which DEFMETHOD depended) didn't know how to handle
 ;;; SYMBOL-MACROLET properly.  In fact, as of sbcl-0.7.10.20 it still
 ;;; doesn't, but it does well enough to compile the following without
@@ -977,7 +960,6 @@
     (assert (= value 3)))
   ;; specified.
   (assert (char= (char (get-output-stream-string x) 0) #\1)))
-
 ;;; REINITIALIZE-INSTANCE, in the ctor optimization, wasn't checking
 ;;; for invalid initargs where it should:
 (defclass class234 () ())
@@ -1011,10 +993,8 @@
   (incf *bug234-b*))
 (bug234-b)
 (assert (= *bug234-b* 1))
-
 ;;; we should be able to make classes with uninterned names:
 (defclass #:class-with-uninterned-name () ())
-
 ;;; SLOT-MISSING should be called when there are missing slots.
 (defclass class-with-all-slots-missing () ())
 (defmethod slot-missing (class (o class-with-all-slots-missing)
@@ -1088,7 +1068,6 @@
                           'baz))))
   (try inline)
   (try notinline))
-
 ;;; we should be able to specialize on anything that names a class.
 (defclass name-for-class () ())
 (defmethod something-that-specializes ((x name-for-class)) 1)
@@ -1097,7 +1076,6 @@
 (assert (= (something-that-specializes (make-instance 'name-for-class)) 2))
 (assert (= (something-that-specializes (make-instance 'other-name-for-class))
            2))
-
 ;;; more forward referenced classes stuff
 (defclass frc-1 (frc-2) ())
 (assert (subtypep 'frc-1 (find-class 'frc-2)))
@@ -1108,7 +1086,6 @@
 (defclass frc-3 () ())
 (assert (typep (make-instance 'frc-1 :a 2) (find-class 'frc-1)))
 (assert (typep (make-instance 'frc-2 :a 3) (find-class 'frc-2)))
-
 ;;; check that we can define classes with two slots of different names
 ;;; (even if it STYLE-WARNs).
 (defclass odd-name-class ()
@@ -1118,13 +1095,11 @@
 (let ((x (make-instance 'odd-name-class :name 1 :name2 2)))
   (assert (= (slot-value x 'name) 1))
   (assert (= (slot-value x 'cl-user::name) 2))))
-
 ;;; ALLOCATE-INSTANCE should work on structures, even if defined by
 ;;; DEFSTRUCT (and not DEFCLASS :METACLASS STRUCTURE-CLASS).
 (defstruct allocatable-structure a)
 (assert (typep (allocate-instance (find-class 'allocatable-structure))
                'allocatable-structure))
-
 ;;; Bug found by Paul Dietz when devising CPL tests: somewhat
 ;;; amazingly, calls to CPL would work a couple of times, and then
 ;;; start returning NIL.  A fix was found (relating to the
@@ -1147,7 +1122,6 @@
                '(broadcast-stream stream structure-object)))
 (assert (equal (cpl (make-broadcast-stream))
                '(broadcast-stream stream structure-object)))
-
 ;;; Bug in CALL-NEXT-METHOD: assignment to the method's formal
 ;;; parameters shouldn't affect the arguments to the next method for a
 ;;; no-argument call to CALL-NEXT-METHOD
@@ -1192,7 +1166,6 @@
   (assert (equal (bug-1734771-2 2 0) '(2 0 t))))
 (with-test (:name (:cnm-assignment :bug-1734771 6))
   (assert (equal (bug-1734771-2 t) '(t nil nil))))
-
 ;;; Bug reported by Istvan Marko 2003-07-09
 (let ((class-name (gentemp)))
   (loop for i from 1 to 9
@@ -1392,7 +1365,6 @@
              (+ most-positive-fixnum 2))))
 (with-test (:name (:check-keyword-args :no-applicable-invalid-qualifier :bad-keyword :error))
   (assert-error (gf-with-keys-and-invalid-qualifier (1+ most-positive-fixnum) :c 3)))
-
 ;;; class redefinition shouldn't give any warnings, in the usual case
 (defclass about-to-be-redefined () ((some-slot :accessor some-slot)))
 (handler-bind ((warning #'error))
@@ -1615,7 +1587,6 @@
                    "3")))
 
 
-
 ;;; When class definition does not complete due to a bad accessor
 ;;; name, do not cause an error when a new accessor name is provided
 ;;; during class redefinition
@@ -1629,7 +1600,6 @@
 (defclass redefinition-of-accessor-class ()
   ((slot :accessor new-name)))
 
-
 
 (load "package-ctor-bug.lisp")
 (assert (= (package-ctor-bug:test) 3))
@@ -1665,7 +1635,6 @@
   (multiple-value-bind (val err) (ignore-errors (funcall 'bug-281 'symbol))
     (assert (not val))
     (assert (typep err 'error))))
-
 ;;; RESTART-CASE and CALL-METHOD
 
 ;;; from Bruno Haible
@@ -1779,7 +1748,6 @@
           (assert (equal (list (slot-value c1 'class-slot)
                                (slot-value c2 'class-slot))
                    (list 1 1))))))
-
 ;;; tests of ctors on anonymous classes
 (defparameter *unnamed* (defclass ctor-unnamed-literal-class () ()))
 (setf (class-name *unnamed*) nil)
@@ -1802,7 +1770,6 @@
   (assert (typep (ctor-unnamed-literal-class2) *unnamed2*)))
 (with-test (:name (:ctor :unnamed-after/symbol))
   (assert-error (ctor-unnamed-literal-class2/symbol)))
-
 ;;; classes with slot types shouldn't break if the types don't name
 ;;; classes (bug #391)
 (defclass slot-type-superclass () ((slot :type fixnum)))
@@ -1810,7 +1777,6 @@
   ((slot :type (integer 1 5))))
 (let ((instance (make-instance 'slot-type-subclass)))
   (setf (slot-value instance 'slot) 3))
-
 ;;; ctors where there's a non-standard SHARED-INITIALIZE method and an
 ;;; initarg which isn't self-evaluating (kpreid on #lisp 2006-01-29)
 (defclass kpreid-enode ()
@@ -1823,7 +1789,6 @@
   (let ((x (make-kpreid-enode))
         (y (make-kpreid-enode)))
     (= (slot-value x 'slot) (slot-value y 'slot))))
-
 ;;; defining a class hierarchy shouldn't lead to spurious classoid
 ;;; errors on TYPEP questions (reported by Tim Moore on #lisp
 ;;; 2006-03-10)
@@ -1835,7 +1800,6 @@
 (assert (not (typep-backwards-3 1)))
 (assert (not (typep-backwards-3 (make-instance 'backwards-2))))
 (assert (typep-backwards-3 (make-instance 'backwards-3)))
-
 (defgeneric remove-method-1 (x)
   (:method ((x integer)) (1+ x)))
 (defgeneric remove-method-2 (x)
@@ -1869,7 +1833,6 @@
                              (defmethod class-as-specializer-test2 ((x ,(find-class 'class-as-specializer-test)))
                                'bar))))
 (assert (eq 'bar (class-as-specializer-test2 (make-instance 'class-as-specializer-test))))
-
 ;;; CHANGE-CLASS and tricky allocation.
 (defclass foo-to-be-changed ()
   ((a :allocation :class :initform 1)))
@@ -1879,7 +1842,6 @@
   ((a :allocation :instance :initform 2)))
 (change-class *bar-to-be-changed* 'baz-to-be-changed)
 (assert (= (slot-value *bar-to-be-changed* 'a) 1))
-
 ;;; proper name and class redefinition
 (defvar *to-be-renamed1* (defclass to-be-renamed1 () ()))
 (defvar *to-be-renamed2* (defclass to-be-renamed2 () ()))
@@ -1888,13 +1850,11 @@
 (assert (not (eq *to-be-renamed1* *to-be-renamed2*)))
 (assert (not (eq *to-be-renamed1* *renamed1*)))
 (assert (not (eq *to-be-renamed2* *renamed1*)))
-
 ;;; CLASS-NAME (and various other standardized generic functions) have
 ;;; their effective methods precomputed; in the process of rearranging
 ;;; (SETF FIND-CLASS) and FINALIZE-INHERITANCE, this broke.
 (defclass class-with-odd-class-name-method ()
   ((a :accessor class-name)))
-
 ;;; another case where precomputing (this time on PRINT-OBJECT) and
 ;;; lazily-finalized classes caused problems.  (report from James Y
 ;;; Knight sbcl-devel 20-07-2006)
@@ -1921,7 +1881,6 @@
 ;;; SUBSUB-PRINT-OBJECT wrapper; if an invalid wrapper gets into a
 ;;; cache with more than one key, then failure ensues.
 (reinitialize-instance #'print-object)
-
 ;;; bug in long-form method combination: if there's an applicable
 ;;; method not part of any method group, we need to call
 ;;; INVALID-METHOD-ERROR.  (MC27 test case from Bruno Haible)
@@ -1946,7 +1905,6 @@
 (handler-bind ((style-warning #'muffle-warning))
 (assert (equal '(result) (test-mc27prime 3))))
 (assert-error (test-mc27 t) sb-pcl::no-applicable-method-error) ; still no-applicable-method
-
 ;;; more invalid wrappers.  This time for a long-standing bug in the
 ;;; compiler's expansion for TYPEP on various class-like things, with
 ;;; user-visible consequences.
@@ -1960,7 +1918,6 @@
 (compile (defun is-a-structure-object-p (x) (typep x 'structure-object)))
 (make-instances-obsolete (find-class 'obsolete-again))
 (assert (not (is-a-structure-object-p *obsolete-again*)))
-
 ;;; overeager optimization of slot-valuish things
 (defclass listoid ()
   ((caroid :initarg :caroid)
@@ -1978,7 +1935,6 @@
                                             (make-instance 'listoid))))
              3)))
 
-
 
 ;;;; Tests for argument parsing in fast-method-functions.
 
@@ -2326,7 +2282,6 @@
 (with-test (:name :remove-default-initargs)
   (assert (= 42 (slot-value (make-instance 'remove-default-initargs-test)
                             'x))))
-
 ;; putting this inside WITH-TEST interferes with recognition of the class name
 ;; as a specializer
 (defclass bug-485019 ()
@@ -2387,7 +2342,6 @@
                                                 "ok!"))
                                        (invoke-restart r))))))
                    (no-primary-method/retry (cons t t))))))
-
 ;;; test that a cacheing strategy for make-instance initargs checking
 ;;; can handle class redefinitions
 
@@ -2427,7 +2381,6 @@
   (let ((thing (cacheing-initargs-redefinitions-make-instances :slot)))
     (assert (not (slot-boundp thing 'slot)))))
 
-
 ;;; defmethod tests
 
 (with-test (:name (defmethod :specializer-builtin-class-alias :bug-618387))
@@ -2705,7 +2658,6 @@
     (declare (ignore foo bar))
     (assert (= count0 count1 count2))))
 
-
 ;;; Classes shouldn't be their own direct or indirect superclasses or
 ;;; metaclasses.
 

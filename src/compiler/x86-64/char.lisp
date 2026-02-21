@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;; Space optimization: As the upper 32 bits of (tagged or untagged)
 ;;; characters are always zero many operations can be done on 32-bit
 ;;; registers. This often leads to smaller encodings as the REX prefix
@@ -118,7 +117,6 @@
 ;;; to a descriptor passing location.
 (define-move-vop move-arg :move-arg
   (character-reg) (any-reg descriptor-reg))
-
 ;;;; other operations
 
 (define-vop (char-code)
@@ -140,7 +138,6 @@
   (:result-types character)
   (:temporary (:sc unsigned-reg) temp)
   (:generator 1 (move-raw-char-code res code temp)))
-
 ;;; comparison of CHARACTERs
 (define-vop (character-compare)
   (:args (x :scs (character-reg character-stack))

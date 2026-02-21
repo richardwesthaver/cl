@@ -31,4 +31,4 @@ export LANG LC_ALL
 # header files which will be needed to create the C runtime
 # environment.
 echo //building cross-compiler, and doing first genesis
-echo '(load "loader.lisp") (load-sbcl-file "make-host-1.lisp")' | $SBCL_XC_HOST
+echo '(load "loader.lisp") (load-sbcl-file "make-host-1.lisp")' | $CL_XC_HOST

@@ -12,7 +12,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; internal predicates
 
 ;;; These type predicates are used to implement simple cases of TYPEP.
@@ -126,7 +125,6 @@
 (define-type-predicate non-null-symbol-p (and symbol (not null)))
 (define-type-predicate string-designator-p string-designator)
 
-
 (defglobal *backend-type-predicates-grouped*
   (let ((classes (make-array (count-if #'identity sb-kernel::*type-classes*)
                              :initial-element nil)))

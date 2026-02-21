@@ -55,7 +55,6 @@
     (assert (null (find-unfound-translations translations source-paths)))
     (assert (= (length translations) (1+ (reduce #'max source-paths :key #'car))))
     (assert (null (find-untranslated-paths translations source-paths)))))
-
 (with-test (:name (:static macrolet :check-consistency))
   (check-consistency '(macrolet ((def (x y) `(defun ,x (1+ ,y)))) (def ffloor) (def fceiling))))
 

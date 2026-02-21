@@ -40,18 +40,18 @@ export CC LANG LC_ALL
 ## contrib/<contrib_name>/. Keeping this a relative pathname to the
 ## toplevel source directory makes the shell and make portions of the
 ## build system robust against funny stuff in PWD.
-SBCL_TOP="../../"
+CL_TOP="../../"
 
-SBCL_HOME="$SBCL_TOP/obj/sbcl-home"
-export SBCL_HOME SBCL_TOP
+CL_HOME="$CL_TOP/obj/cl-home"
+export CL_HOME CL_TOP
 
-SBCL="$SBCL_TOP/src/runtime/sbcl --noinform --core $SBCL_TOP/output/sbcl.core \
+CL="$CL_TOP/src/runtime/cl --noinform --core $CL_TOP/output/cl.core \
 --lose-on-corruption --disable-debugger --no-sysinit --no-userinit"
-export SBCL
+export CL
 
 set -e # exit with failure if any make command fails
 if [ -z "$*" ]; then
-    make $SBCL_MAKE_JOBS -k -C contrib
+    make $CL_MAKE_JOBS -k -C contrib
 else
     for x in "$@"; do
         make -C contrib $x.fasl

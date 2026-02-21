@@ -1,5 +1,4 @@
 (in-package "SB-VM")
-
 ;;;; Return-multiple with other than one value
 
 #+sb-assembling ;; we don't want a vop for this one.
@@ -165,7 +164,6 @@
       FOUR-VALUES
       (inst add csp-tn ocfp-tn (lsl count (- word-shift n-fixnum-tag-bits)))
       (lisp-return lr :multiple-values))))
-
 ;;;; tail-call-variable.
 (defun prepare-for-tail-call-variable (nargs args count dest temp r0 r1 r2 r3)
   (assemble ()
@@ -299,7 +297,6 @@
   (inst add lr-tn lr-tn 4)
   (inst br lr-tn))
 
-
 ;;;; Non-local exit noise.
 
 (define-assembly-routine (throw

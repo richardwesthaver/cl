@@ -51,14 +51,14 @@ if [ $# -gt 0 ]
 then
     files=\'\(\"$1\"\) # FIXME: create string-quoted list of each arg individually
     echo //compiling $files
-    echo '(defvar *compile-files* '${files}')(load "make-host-2.lisp")' | $SBCL_XC_HOST
+    echo '(defvar *compile-files* '${files}')(load "make-host-2.lisp")' | $CL_XC_HOST
     exit
 fi
 
 echo //running cross-compiler to create target object files
-echo '(load "loader.lisp") (load-sbcl-file "make-host-2.lisp")' | $SBCL_XC_HOST
+echo '(load "loader.lisp") (load-sbcl-file "make-host-2.lisp")' | $CL_XC_HOST
 
-# Run GENESIS (again) in order to create cold-sbcl.core. (The first
+# Run GENESIS (again) in order to create cold-cl.core. (The first
 # time was before we ran the cross-compiler, in order to create the
 # header file which was needed in order to run gcc on the runtime
 # code.)

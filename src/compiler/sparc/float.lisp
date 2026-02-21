@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; float move functions
 
 (define-move-fun (load-single 1) (vop x y)
@@ -90,7 +89,6 @@
         (offset (tn-byte-offset y)))
     (store-long-reg x nfp offset)))
 
-
 ;;;; Move VOPs:
 
 ;;; Exploit the V9 double-float move instruction. This is conditional
@@ -247,7 +245,6 @@
 (define-move-vop move-long-float-arg :move-arg
   (long-reg descriptor-reg) (long-reg))
 
-
 ;;;; Complex float move functions
 
 (defun complex-single-reg-real-tn (x)
@@ -584,7 +581,6 @@
    complex-single-reg complex-double-reg #+long-float complex-long-reg)
   (descriptor-reg))
 
-
 ;;;; Arithmetic VOPs:
 
 (define-vop (float-op)
@@ -633,7 +629,6 @@
   (frob * fmulq */long-float 6)
   (frob / fdivq //long-float 20))
 
-
 (macrolet ((frob (name inst translate sc type)
              `(define-vop (,name)
                 (:args (x :scs (,sc)))
@@ -749,7 +744,6 @@
                (x-odd (make-random-tn (sc-or-lose 'single-reg) (+ i 1 (tn-offset x)))))
            (inst fmovs y-odd x-odd)))))))
 
-
 ;;;; Comparison:
 
 (define-vop (float-compare)
@@ -807,7 +801,6 @@
         (= (long-float-high-bits x) (long-float-high-bits y))
         (= (long-float-exp-bits x) (long-float-exp-bits y))))
 
-
 ;;;; Conversion:
 
 (macrolet ((frob (name translate inst to-sc to-type)
@@ -1195,7 +1188,6 @@
        (loadw lo-bits float (+ 3 long-float-value-slot)
               other-pointer-lowtag)))))
 
-
 ;;;; Float mode hackery:
 
 (sb-xc:deftype float-modes () '(unsigned-byte 32))
@@ -1300,7 +1292,6 @@
       (inst ldxfsr nfp offset)
       (move res new))))
 
-
 ;;;; Special functions.
 
 #-long-float
@@ -1336,7 +1327,6 @@
     (note-this-location vop :internal-error)
     (inst fsqrtq y x)))
 
-
 ;;;; Complex float VOPs
 
 (define-vop (make-complex-single-float)
@@ -1523,7 +1513,6 @@
   (:note "complex long float imagpart")
   (:variant :imag))
 
-
 
 ;;;; Complex float arithmetic
 

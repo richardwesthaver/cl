@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-KERNEL")
-
 ;;;; internal errors
 
 (macrolet ((def-it ()
@@ -646,7 +645,6 @@
       (if size
           (format t "~7a = ~v,'0,'|,32:x ~a~%" tn-name (* size 2) value context)
           (format t "~7a = ~a ~a~%" tn-name value context)))))
-
 ;;;; INTERNAL-ERROR signal handler
 
 ;;; This is needed for restarting XEPs, which do not bind anything but

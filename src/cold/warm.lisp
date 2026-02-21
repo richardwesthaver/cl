@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "COMMON-LISP-USER")
-
 ;;;; general warm init compilation policy
 
 (defvar *objfile-prefix* "obj/from-self/")
@@ -95,7 +94,6 @@ sb-kernel::
               (let ((count (read-from-string line))
                     (name (read-from-string line t nil :start 8)))
                 (setf (gethash name sb-c::*static-vop-usage-counts*) count)))))))
-
 ;;;; compiling and loading more of the system
 
 ;;; FIXME: CMU CL's pclcom.lisp had extra optional stuff wrapped around

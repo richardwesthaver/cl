@@ -80,7 +80,6 @@ There are basically three levels of target dependence:
     assembly code of all the supported VOPs.
 
 
-
 \chapter{Storage bases and classes}
 New interface: instead of CURRENT-FRAME-SIZE, have CURRENT-SB-SIZE \verb+<name>+ which
 returns the current element size of the named SB.
@@ -216,7 +215,6 @@ Non-packed SCs:
 	XXX-Float
 	Magic values: T, NIL, 0.
 \end{verbatim}
-
 \chapter{Type system parameterization}
 
 The main aspect of the VM that is likely to vary for good reason is the type
@@ -254,7 +252,6 @@ assumption]
 |\#
 
 
-
 \chapter{VOP Definition}
 
 Before the operand TN-refs are passed to the emit function, the following
@@ -271,7 +268,6 @@ The template emit function fills in the Vop, Costs, Cost-Function,
 SC-Restriction and Preference slots, and links together the Next-Ref chain as
 appropriate.
 
-
 \section{Lifetime model}
 
 \#|
@@ -346,7 +342,6 @@ extended forward/backward.  This would in many cases eliminate the need for
 temporaries when operands are read/written out of order.
 ]
 
-
 \section{VOP Cost model}
 
 Note that in this model, if an operand has no restrictions, it has no cost.
@@ -357,7 +352,6 @@ The SC restriction mechanism can be used even when doing a move into the SC is
 too complex to be generated automatically (perhaps requiring temporary
 registers), since Define-VOP allows operand loading to be done explicitly.
 
-
 \section{Efficiency notes}
 
   In addition to
@@ -390,10 +384,8 @@ the arg/result types and the corresponding arg/result restrictions, i.e. the
 template is not clearly impossible: more declarations might allow it to be
 emitted.
 
-
 \chapter{Assembler Retargeting}
 
-
 \chapter{Writing Assembly Code}
 
 VOP writers expect:
@@ -435,7 +427,6 @@ VOP writers expect:
    control stack to a register.  They take care of checking the TN types,
    modifying offsets according to the address units per word, etc.
 \end{Lentry}
-
 \chapter{Required VOPS}
 
 
@@ -501,7 +492,6 @@ the case, we should flush it.
 \section{Function Call}
 
 
-
 \subsection{Registers and frame format}
 
 These registers are used in function call and return:
@@ -533,7 +523,6 @@ NARGS
     In full call, the number of arguments passed.  In unknown-values return of
     other than one value, the number of values returned.
 
-
 \subsection{Full call}
 
 What is our usage of CFP, OCFP and CSP?  
@@ -554,7 +543,6 @@ end of the frame, keeping the stack arguments from being trashed.
 In a normal call, CFP is set to CSP, causing the callee's frame to be allocated
 after the current frame.
 
-
 \subsection{Unknown values return}
 
 The unknown values return convention is always used in full call, and is used
@@ -591,7 +579,6 @@ In variable value return, more information is passed back:
     allocated for all returned values, even if they are all actually passed in
     registers.
 
-
 \subsection{External Entry Points}
 
 Things that need to be done on XEP entry:
@@ -625,7 +612,6 @@ Things that need to be done on all function entry:
 \item Move environment values to the local home
 \item Move old-cont and return-pc to the save locations
 \end{itemize}
-
 \section{Calls}
 
 Calling VOP's are a cross product of the following sets (with some members
@@ -986,10 +972,8 @@ jump and run off LIP
 
 \end{verbatim}
 
-
 \chapter{Standard Primitives}
 
-
 \chapter{Customizing VMR Conversion}
 
 Another way in which different implementations differ is in the relative cost
@@ -1007,7 +991,6 @@ using a transform instead of a VMR translator unless it cannot be implemented
 as a transform due to being totally evil or it is just as easy to implement as
 a translator because it is so simple.
 
-
 \section{Constant Operands}
 
 If the code emitted for a VOP when an argument is constant is very different
@@ -1018,7 +1001,6 @@ call otherwise.  We wouldn't want constant references to spuriously allocate
 all the miscop linkage registers on the off chance that the offset might not be
 constant.  See the :constant feature of VOP primitive type restrictions.
 
-
 \section{Supporting Multiple Hardware Configurations}
 
 
@@ -1076,7 +1058,6 @@ increased complexity due to bogus SCs.  If there are different storage
 resources, then we would conditionalize Primitive-Type as well.
 
 
-
 \section{Special-case VMR convert methods}
 
     (defun continuation-tn (cont \&optional (check-p t))

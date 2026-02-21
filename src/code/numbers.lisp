@@ -56,7 +56,6 @@
   (if (eql y 1)
       x
       (truncate x y)))
-
 ;;;; COMPLEXes
 
 (defun complex (realpart &optional (imagpart 0))
@@ -134,7 +133,6 @@
              (coerce -1 '(dispatch-type number))))
         ((complex)
          (/ number (abs number))))))
-
 ;;;; ratios
 
 (defun numerator (number)
@@ -144,7 +142,6 @@
 (defun denominator (number)
   "Return the denominator of NUMBER, which must be rational."
   (denominator number))
-
 ;;;; arithmetic operations
 ;;;;
 ;;;; IMPORTANT NOTE: Accessing &REST arguments with NTH is actually extremely
@@ -387,7 +384,6 @@
                         high1 high2)
                        t))))))))
 
-
 ;;;; TRUNCATE and friends
 
 (declaim (maybe-inline truncate floor ceiling round fround))
@@ -858,7 +854,6 @@ The second returned value is the remainder."
 
   (def round-single)
   (def round-double))
-
 ;;;; comparisons
 
 (defun = (number &rest more-numbers)
@@ -1356,7 +1351,6 @@ the first."
     (when (typep x 'fixnum)
       (range<= low x high))))
 
-
 ;;;; logicals
 
 (macrolet ((def (op init doc)
@@ -1512,7 +1506,6 @@ and the number of 0 bits if INTEGER is negative."
      (integer-length (truly-the fixnum integer)))
     (bignum
      (bignum-integer-length integer))))
-
 ;;;; BYTE, bytespecs, and related operations
 
 (defun byte (size position)
@@ -1601,7 +1594,6 @@ and the number of 0 bits if INTEGER is negative."
                          word
                          (msf size word))))))
       ((unsigned-byte) (msf size integer)))))
-
 ;;;; BOOLE
 
 (defun boole (op integer1 integer2)
@@ -1640,7 +1632,6 @@ and the number of 0 bits if INTEGER is negative."
     (14 (boole 14 integer1 integer2))
     (15 (boole 15 integer1 integer2))
     (t (error 'type-error :datum op :expected-type '(mod 16)))))
-
 ;;;; GCD and LCM
 
 (defun gcd (&rest integers)
@@ -1856,7 +1847,6 @@ and the number of 0 bits if INTEGER is negative."
             (gcd (gcd nx y)))
        (build-ratio (maybe-truncate nx gcd)
                     (* (maybe-truncate y gcd) (denominator x)))))))
-
 ;;; This uses the algorithm employed by python in
 ;;; https://github.com/python/cpython/blob/3.13/Modules/mathmodule.c#L1494
 (defun isqrt (n)
@@ -1913,7 +1903,6 @@ and the number of 0 bits if INTEGER is negative."
            (when (< n (* a a))
              (decf a))
            a))))))
-
 ;;;; miscellaneous number predicates
 
 (macrolet ((def (name var doc)
@@ -1925,7 +1914,6 @@ and the number of 0 bits if INTEGER is negative."
   (def minusp number "Is this real number strictly negative?")
   (def oddp integer "Is this integer odd?")
   (def evenp integer "Is this integer even?"))
-
 ;;;; modular functions
 #.
 (collect ((forms))

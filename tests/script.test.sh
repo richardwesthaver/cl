@@ -112,13 +112,13 @@ fi
 
 # automatically executing fasls
 #
-# this test is fragile, with its SBCL_HOME hack to get the shebang
+# this test is fragile, with its CL_HOME hack to get the shebang
 # line in the fasl to find the right core, and also is unlikely to
 # work with that mechanism on Windows.
 echo '(format t "Hello, Fasl~%")' > $tmpscript
 run_sbcl --eval "(compile-file \"$tmpscript\" :output-file \"$tmpfasl\")"  </dev/null >/dev/null
 chmod +x $tmpfasl
-SBCL_HOME=`dirname $SBCL_CORE` ./$tmpfasl >$tmpout 2>$tmperr
+CL_HOME=`dirname $CL_CORE` ./$tmpfasl >$tmpout 2>$tmperr
 check_status_maybe_lose "--script exit status from fasl" $? 0 "(ok)"
 if [ -s $tmperr ] || [ "Hello, Fasl" != "`cat $tmpout`" ]
 then

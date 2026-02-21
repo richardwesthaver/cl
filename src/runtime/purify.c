@@ -48,7 +48,6 @@
 
 static lispobj *dynamic_space_purify_pointer;
 
-
 /* These hold the original end of the read_only and static spaces so
  * we can tell what are forwarding pointers. */
 
@@ -71,7 +70,6 @@ later {
 } *later_blocks = NULL;
 static long later_count = 0;
 
-
 static boolean forwarded_p(lispobj obj)
 {
     lispobj *ptr = native_pointer(obj);
@@ -109,7 +107,6 @@ newspace_alloc(long nwords, int constantp)
     return ret;
 }
 
-
 /* Enqueue <where,count> into later_blocks */
 static void
 pscav_later(lispobj *where, long count)

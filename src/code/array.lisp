@@ -13,7 +13,6 @@
 
 (declaim (inline adjustable-array-p
                  array-displacement))
-
 ;;;; miscellaneous accessor functions
 
 ;;; These functions are only needed by the interpreter, 'cause the
@@ -61,7 +60,6 @@
 (defun sb-c::%data-vector-and-index/check-bound (array index)
   (%check-bound array (array-dimension array 0) index)
   (%data-vector-and-index array index))
-
 
 ;;;; MAKE-ARRAY
 (declaim (inline %integer-vector-widetag-and-n-bits-shift))
@@ -788,7 +786,6 @@ of specialized arrays is supported."
   (let ((v (make-array (length objects))))
     (do-rest-arg ((x i) objects 0 v)
       (setf (aref v i) x))))
-
 
 ;;;; accessor/setter functions
 
@@ -1204,7 +1201,6 @@ of specialized arrays is supported."
   (setf (row-major-aref bit-array
                         (apply #'%array-row-major-index bit-array subscripts))
         new-value))
-
 ;;;; miscellaneous array properties
 
 (define-load-time-global *saetp-widetag-ctype* (make-array 32 :initial-element (make-unbound-marker)))
@@ -1300,7 +1296,6 @@ of specialized arrays is supported."
   ;; but in practice we test using ADJUSTABLE-ARRAY-P in ADJUST-ARRAY.
   ;; -- CSR, 2004-03-01.
   (not (typep array 'simple-array)))
-
 ;;;; fill pointer frobbing stuff
 
 (setf (info :function :predicate-truth-constraint 'array-has-fill-pointer-p)
@@ -1454,7 +1449,6 @@ of specialized arrays is supported."
            (setf (%array-fill-pointer array) (1+ fill-pointer))
            fill-pointer))))
 
-
 ;;;; ADJUST-ARRAY
 
 (defun adjust-array (array dimensions &key
@@ -1755,7 +1749,6 @@ function to be removed without further warning."
                            'array-storage-vector 'array-displacement))
                    (t
                     (%array-data array)))))
-
 
 ;;;; ZAP-ARRAY-DATA for ADJUST-ARRAY
 
@@ -1837,7 +1830,6 @@ function to be removed without further warning."
                     (the fixnum (* (the fixnum (car rev-subscripts))
                                    chunk-size))))
     (setq chunk-size (* chunk-size (the fixnum (car rev-dim-list))))))
-
 ;;;; some bit stuff
 
 (defun bit-array-same-dimensions-p (array1 array2)

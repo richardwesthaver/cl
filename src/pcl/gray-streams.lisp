@@ -24,7 +24,6 @@
     (if (streamp stream)
         (call-next-method)
         (error 'type-error :datum stream :expected-type 'stream))))
-
 (!def-stream-generic stream-element-type (stream)
   (:documentation
    "Return a type specifier for the kind of object returned by the
@@ -33,7 +32,6 @@
 
 (defmethod stream-element-type ((stream fundamental-character-stream))
   'character)
-
 (!def-stream-generic open-stream-p (stream)
   (:documentation
    "Return true if STREAM is not closed. A default method is provided
@@ -42,7 +40,6 @@
 
 (defmethod open-stream-p ((stream fundamental-stream))
   (stream-open-p stream))
-
 (!def-stream-generic close (stream &key abort)
   (:documentation
    "Close the given STREAM. No more I/O may be performed, but
@@ -53,7 +50,6 @@
   (declare (ignore abort))
   (setf (stream-open-p stream) nil)
   t)
-
 (progn
   (!def-stream-generic input-stream-p (stream)
     (:documentation "Can STREAM perform input operations?"))
@@ -63,14 +59,12 @@
 
   (defmethod input-stream-p ((stream fundamental-input-stream))
     t))
-
 (progn
   (!def-stream-generic interactive-stream-p (stream)
     (:documentation "Is STREAM an interactive stream?"))
 
   (defmethod interactive-stream-p ((stream fundamental-stream))
     nil))
-
 (progn
   (!def-stream-generic output-stream-p (stream)
     (:documentation "Can STREAM perform output operations?"))
@@ -80,7 +74,6 @@
 
   (defmethod output-stream-p ((stream fundamental-output-stream))
     t))
-
 ;;; character input streams
 ;;;
 ;;; A character input stream can be created by defining a class that
@@ -198,7 +191,6 @@
        (aver (not recursive-p))
        (stream-read-byte stream)))))
 
-
 ;;; character output streams
 ;;;
 ;;; A character output stream can be created by defining a class that
@@ -353,7 +345,6 @@
      seq stream start end stream-element-mode
      #'sb-kernel:ill-out #'stream-write-byte)))
 
-
 ;;; binary streams
 ;;;
 ;;; Binary streams can be created by defining a class that includes
@@ -380,7 +371,6 @@
 (defmethod stream-file-position ((stream fundamental-stream) &optional position-spec)
   (declare (ignore stream position-spec))
   nil)
-
 ;;; This is not in the Gray stream proposal, so it is left here
 ;;; as example code.
 #|
@@ -418,7 +408,6 @@
 
 (defmethod stream-clear-output ((stream character-output-stream))
   (clear-output (character-output-stream-lisp-stream stream)))
-
 ;;; example character input stream encapsulating a lisp-stream
 
 (defun make-character-input-stream (lisp-stream)

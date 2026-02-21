@@ -175,7 +175,6 @@ destination of the result isn't an IF.  It isn't critical that this never be
 done for predicates that we ultimately discover to deliver their value to an
 IF, since IF optimizations will flush unnecessary IFs in a predicate.
 
-
 \section{Inline functions}
 
 [\#\#\# Inline expansion is especially powerful in the presence of good lisp-level
@@ -217,7 +216,6 @@ large amounts of the function could be optimized away by constant folding or
 other optimizations that depend on the exact arguments to the call.
 
 
-
 \section{Compilation policy}
 
 We want more sophisticated control of compilation safety than is offered in CL,
@@ -225,7 +223,6 @@ so that we can emit only those type checks that are likely to discover
 something (i.e. external interfaces.)
 
 
-
 \section{Notes}
 
 Generalized back-end notion provides dynamic retargeting?  (for byte code)
@@ -246,7 +243,6 @@ possibly in a less informative way).  Of course, there is an efficiency hit for
 losing type information, but if it only happens in strange cases, then this
 isn't a big deal.
 
-
 \chapter{Local call analysis}
 
 All calls to local functions (known named functions and LETs) are resolved to
@@ -296,7 +292,6 @@ back.
 A function's return node may also be deleted if it is unreachable, which can
 happen if the function never returns normally.  Such functions are not lets.
 
-
 \chapter{Find components}
 
 This is a post-pass to ICR conversion that massages the flow graph into the
@@ -332,7 +327,6 @@ After initial DFO determination, components are neither split nor joined.  The
 standard DFO computation doesn't attempt to split components that have been
 disconnected.
 
-
 \chapter{ICR optimize}
 
 {\bf Somewhere describe basic ICR utilities: continuation-type,
@@ -432,7 +426,6 @@ delete a ref, then we check to see if it is a lambda-var with no refs.  When we
 flush an argument, we mark the blocks for all uses of the CONT as needing to be
 reoptimized.
 
-
 \section{Goals for ICR optimizations}
 
 \#|
@@ -492,7 +485,6 @@ long to discover not much.  For this reason, ICR optimization is terminated
 after three consecutive passes that don't add or delete code.  This premature
 termination only happens 2\% of the time.
 
-
 \section{Flow graph simplification}
 
 Things done:
@@ -530,7 +522,6 @@ each use, leaving the consequent and alternative the same.  If you look at the
 flow graph representation, you will see that this is really the same thing as
 the above source to source transformation.
 
-
 \section{Forward ICR optimizations}
 
 In the forward pass, we scan the code in forward depth-first order.  We
@@ -622,7 +613,6 @@ The format args for the message are arguments to Give-Up.  If a transform can't
 be done, we just record the message where ICR finalize can find it.  note.  We
 can't complain immediately, since it might get transformed later on.
 
-
 \section{Backward ICR optimizations}
 
 In the backward pass, we scan each block in reverse order, and
@@ -736,7 +726,6 @@ correct type.  This happens without any special effort on the part of type
 check, since the XEP is represented as a local call with unknown type
 arguments.  These arguments will be marked as needing to be checked.
 
-
 \chapter{Constraint propagation}
 
 New lambda-var-slot:

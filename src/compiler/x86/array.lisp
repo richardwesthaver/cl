@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; allocator for the array header
 
 (define-vop (make-array-header)
@@ -38,7 +37,6 @@
     (pseudo-atomic ()
      (allocation nil bytes other-pointer-lowtag node nil result)
      (storew header result 0 other-pointer-lowtag))))
-
 ;;;; additional accessors and setters for the array header
 (define-full-reffer %array-dimension *
   array-dimensions-offset other-pointer-lowtag
@@ -72,7 +70,6 @@
   (:conditional :e)
   (:generator 2
     (inst cmp (make-ea :byte :disp rank-disp :base array) (encode-array-rank rank)))))
-
 
 (defun power-of-two-limit-p (x)
   (and (fixnump x)
@@ -155,7 +152,6 @@
                 (:or unsigned-num signed-num))
   (:variant nil)
   (:variant-cost 5))
-
 ;;;; accessors/setters
 
 ;;; Ancestors
@@ -214,7 +210,6 @@
   vector-data-offset other-pointer-lowtag
   (descriptor-reg any-reg) *
   %compare-and-swap-svref)
-
 ;;;; integer vectors whose elements are smaller than a byte, i.e.,
 ;;;; bit, 2-bit, and 4-bit vectors
 
@@ -545,7 +540,6 @@
                                         :scale 4 :complex-offset 8))
       (inst fxch value-imag))))
 
-
 ;;; {un,}signed-byte-8, simple-base-string
 
 (macrolet ((define-data-vector-frobs (ptype element-type ref-inst
@@ -662,7 +656,6 @@
   (define-data-vector-frobs simple-array-signed-byte-16 tagged-num
     movsx signed-reg))
 
-
 ;;; These vops are useful for accessing the bits of a vector
 ;;; irrespective of what type of vector it is.
 (define-full-reffer vector-raw-bits * vector-data-offset other-pointer-lowtag
@@ -675,7 +668,6 @@
   (any-reg descriptor-reg) * %weakvec-ref)
 (define-full-setter %weakvec-set * vector-data-offset other-pointer-lowtag
   (any-reg descriptor-reg) * %weakvec-set)
-
 ;;;; ATOMIC-INCF for arrays
 
 (define-vop (array-atomic-incf/word)

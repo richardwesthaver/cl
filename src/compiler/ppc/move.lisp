@@ -72,7 +72,6 @@
   (let ((nfp (current-nfp-tn vop)))
     (storew x nfp (tn-offset y))))
 
-
 ;;;; The Move VOP:
 (define-vop (move)
   (:args (x :target y
@@ -109,7 +108,6 @@
 (define-move-vop move-arg :move-arg
   (any-reg descriptor-reg)
   (any-reg descriptor-reg))
-
 ;;;; Moves and coercions:
 
 ;;; These MOVE-TO-WORD VOPs move a tagged integer to a raw full-word

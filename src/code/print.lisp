@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; exported printer control variables
 
 (defvar *print-readably* nil
@@ -94,7 +93,6 @@ variable: an unreadable object representing the error is printed instead.")
         (*print-vector-length* nil)
         (*print-circle-not-shared* nil))
     (funcall function)))
-
 ;;;; routines to print objects
 
 (macrolet ((def (fn doc &rest forms)
@@ -240,7 +238,6 @@ variable: an unreadable object representing the error is printed instead.")
                     sb-vm:n-positive-fixnum-bits
                     (* (%bignum-length object) sb-bignum::digit-size))
                 bits-per-char))))
-
 ;;;; support for the PRINT-UNREADABLE-OBJECT macro
 
 (defun print-not-readable-error (object stream)
@@ -294,7 +291,6 @@ variable: an unreadable object representing the error is printed instead.")
                (write-char #\> stream)))))
   nil)
 
-
 ;;;; circularity detection stuff
 
 ;;; When *PRINT-CIRCLE* is T, this gets bound to a hash table that
@@ -477,7 +473,6 @@ variable: an unreadable object representing the error is printed instead.")
                     (when ,marker
                       (handle-circularity ,marker ,stream)))
                   (,body-name stream ,state))))))))
-
 ;;;; level and length abbreviations
 
 ;;; The current level we are printing at, to be compared against
@@ -510,7 +505,6 @@ variable: an unreadable object representing the error is printed instead.")
      (write-string "..." ,stream)
      (return)))
 
-
 ;;;; OUTPUT-OBJECT -- the main entry point
 
 ;;; Objects whose print representation identifies them EQLly don't
@@ -695,7 +689,6 @@ variable: an unreadable object representing the error is printed instead.")
               (write-string (if (symbol-externalp symbol package) ":" "::")
                             stream)))))
         (output-token name)))))
-
 ;;;; escaping symbols
 
 ;;; When we print symbols we have to figure out if they need to be
@@ -947,7 +940,6 @@ variable: an unreadable object representing the error is printed instead.")
       ;; See ANSI 2.3.1.1 "Potential Numbers as Tokens".)
       (when (test letter) (advance OTHER nil))
       (go DIGIT))))
-
 ;;;; case hackery: One of these functions is chosen to output symbol
 ;;;; names according to the values of *PRINT-CASE* and READTABLE-CASE.
 
@@ -1035,7 +1027,6 @@ variable: an unreadable object representing the error is printed instead.")
     (:invert (output-invert-symbol name stream readtable))))
 
 (declaim (end-block))
-
 ;;;; recursive objects
 
 (defmethod print-object ((list cons) stream)
@@ -1229,7 +1220,6 @@ variable: an unreadable object representing the error is printed instead.")
                (incf index count)))
            (write-char #\) stream)))))
 
-
 ;;;; integer, ratio, and complex printing (i.e. everything but floats)
 
 (defun %output-radix (base stream)
@@ -1480,7 +1470,6 @@ variable: an unreadable object representing the error is printed instead.")
   (write-char #\space stream)
   (output-object (imagpart complex) stream)
   (write-char #\) stream))
-
 ;;;; float printing
 
 ;;; FLONUM-TO-STRING (and its subsidiary function FLOAT-STRING) does
@@ -1823,7 +1812,6 @@ variable: an unreadable object representing the error is printed instead.")
        (lambda (k) k)
        (lambda (k) (values k))
        float)))
-
 ;;;; entry point for the float printer
 
 ;;; the float printer as called by PRINT, PRIN1, PRINC, etc. The
@@ -1902,7 +1890,6 @@ variable: an unreadable object representing the error is printed instead.")
         (print-float-exponent x 0 stream))
        (t
         (print-float x stream))))))
-
 ;;;; other leaf objects
 
 ;;; If *PRINT-ESCAPE* is false, just do a WRITE-CHAR, otherwise output
@@ -2078,7 +2065,6 @@ variable: an unreadable object representing the error is printed instead.")
              ((simd-pack-256 (signed-byte 64))
               (multiple-value-call #'format stream "~S~@{ ~20@D~}" 'simd-pack-256
                 (%simd-pack-256-sb64s pack))))))))
-
 ;;;; functions
 
 (defmethod print-object ((object function) stream)
@@ -2105,7 +2091,6 @@ variable: an unreadable object representing the error is printed instead.")
               ;; but anything else prints as its exact type.
               (if (funcallable-instance-p object) (type-of object) 'function)
               name))))
-
 ;;;; catch-all for unknown things
 
 (defmethod print-object ((object t) stream)

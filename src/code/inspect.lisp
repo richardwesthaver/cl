@@ -130,7 +130,6 @@ evaluated expressions.
             (when (unbound-marker-p value)
               (setf value unbound))
             (format stream "~W. ~@[~A: ~]~W~%" index name value)))))
-
 ;;;; INSPECTED-PARTS
 
 ;;; Destructure an object for inspection, returning

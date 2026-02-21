@@ -291,7 +291,7 @@ test_start() {
     if [ -f $TEST_FILESTEM.$1.core ] ; then
         echo testing start $1
         run_sbcl_with_core $TEST_FILESTEM.$1.core $options \
-            --eval "(setf sb-ext:*evaluator-mode* :${TEST_SBCL_EVALUATOR_MODE:-compile})" \
+            --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
             --load $TEST_FILESTEM.test.lisp
         check_status_maybe_lose "start $1" $?
     else
@@ -307,7 +307,7 @@ if [ -f $TEST_FILESTEM.fast.core ] ; then
 # missing object file
     echo Building core for missing shared-object-file test
     run_sbcl_with_core $TEST_FILESTEM.fast.core $options --noprint \
-        --eval "(setf sb-ext:*evaluator-mode* :${TEST_SBCL_EVALUATOR_MODE:-compile})" \
+        --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
         <<EOF
   (setf *invoke-debugger-hook*
         (lambda (condition hook)
@@ -327,7 +327,7 @@ fi
 rm $TEST_FILESTEM-b.so $TEST_FILESTEM-b2.so
 if [ -f $TEST_FILESTEM.missing.core ] ; then
     run_sbcl_with_core $TEST_FILESTEM.missing.core $options --noprint \
-        --eval "(setf sb-ext:*evaluator-mode* :${TEST_SBCL_EVALUATOR_MODE:-compile})" \
+        --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
         <<EOF
   (assert (= 22 (summish 10 11)))
   (multiple-value-bind (val err) (ignore-errors (eval 'foo))

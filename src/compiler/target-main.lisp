@@ -12,7 +12,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; CL:COMPILE
 
 (defun ir1-toplevel-for-compile (form name)

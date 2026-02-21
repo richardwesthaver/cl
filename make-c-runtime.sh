@@ -7,7 +7,7 @@
 # Running with CCL it gets:
 #            > Error: Class is not yet defined or was undefined: CTYPE
 #            > While executing: COMPILER-LAYOUT-OR-LOSE, in process listener(1).
-time $SBCL_XC_HOST <<EOF
+time $CL_XC_HOST <<EOF
 (load "src/cold/shared.lisp")
 (load "src/cold/set-up-cold-packages.lisp")
 (load "tools-for-build/corefile.lisp")

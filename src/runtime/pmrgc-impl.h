@@ -727,7 +727,6 @@ static inline page_index_t contiguous_block_final_page(page_index_t first) {
 }
 
 int gencgc_handle_wp_violation(void*, void*);
-
 
 // The flags control the behavior of sync_close_regions()
 #define LOCK_PAGE_TABLE 1

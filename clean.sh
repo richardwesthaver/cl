@@ -7,7 +7,7 @@ set -e
 # Preserving the skeletons of some directories might or might not not be relevant.
 rm -rf obj/* src/runtime/genesis/ src/runtime/sbcl.mk src/runtime/*.dSYM
 
-if [ -z "$SBCL_LEAVE_OUTPUT" ]
+if [ -z "$CL_LEAVE_OUTPUT" ]
 then
     rm -fr output/*
 else

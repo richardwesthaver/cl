@@ -267,7 +267,6 @@ void arch_install_interrupt_handlers()
     ll_install_handler(SIGILL, sigill_handler);
 }
 
-
 
 /* This a naive port from CMUCL/sparc, which was mostly stolen from the
  * CMUCL/x86 version, with adjustments for sparc

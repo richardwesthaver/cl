@@ -1,9 +1,9 @@
 #!/bin/sh
 
-logdir=${SBCL_PAREXEC_TMP:-$HOME}/sbcl-test-logs-$$
+logdir=${CL_PAREXEC_TMP:-$HOME}/cl-test-logs-$$
 echo ==== Writing logs to $logdir ====
 # FIXME: junkdir isn't getting removed
-junkdir=${SBCL_PAREXEC_TMP:-/tmp}/junk
+junkdir=${CL_PAREXEC_TMP:-/tmp}/junk
 mkdir -p $junkdir $logdir
 
 case `uname` in
@@ -20,9 +20,9 @@ case `uname` in
         ;;
 esac
 
-export TEST_LOGDIR TEST_DIRECTORY SBCL_HOME
-TEST_LOGDIR=$logdir TEST_DIRECTORY=$junkdir SBCL_HOME=../obj/sbcl-home \
-  exec ../src/runtime/sbcl \
-  --noinform --core ../output/sbcl.core \
+export TEST_LOGDIR TEST_DIRECTORY CL_HOME
+TEST_LOGDIR=$logdir TEST_DIRECTORY=$junkdir CL_HOME=../obj/cl-home \
+  exec ../src/runtime/cl \
+  --noinform --core ../output/cl.core \
   --no-userinit --no-sysinit --noprint --disable-debugger $* < parallel-exec.lisp
 

@@ -23,7 +23,6 @@
 
 ;;; FIXME: There are an awful lot of package prefixes in this code.
 ;;; Couldn't we have SB-DI use the SB-C and SB-VM packages?
-
 ;;;; conditions
 
 ;;;; The interface to building debugging tools signals conditions that
@@ -105,7 +104,6 @@
              (format stream "~&~S names more than one valid variable in ~S."
                      (ambiguous-var-name-name condition)
                      (ambiguous-var-name-frame condition)))))
-
 ;;;; errors and DEBUG-SIGNAL
 
 ;;; The debug-internals code tries to signal all programmer errors as
@@ -171,7 +169,6 @@
   `(let ((condition (make-condition ,datum ,@arguments)))
      (signal condition)
      (error 'unhandled-debug-condition :condition condition)))
-
 ;;;; structures
 ;;;;
 ;;;; Most of these structures model information stored in internal
@@ -359,7 +356,6 @@
             "~S~:[~;, interrupted~]"
             (debug-fun-name (frame-debug-fun obj))
             (compiled-frame-escaped obj))))
-
 
 ;;;; breakpoints
 
@@ -483,7 +479,6 @@
         (setf (gethash compiler-debug-fun ht)
               (%make-compiled-debug-fun compiler-debug-fun component)))))
 
-
 ;;;; CODE-LOCATIONs
 
 (defmethod print-object ((obj code-location) str)
@@ -509,7 +504,6 @@
   (kind :unparsed :type (or (member :unparsed) sb-c::location-kind))
   (step-info :unparsed :type (or (member :unparsed) simple-string))
   (context :unparsed))
-
 ;;;; frames
 
 ;;; This is used in FIND-ESCAPED-FRAME and with the "breakpoint return" objects
@@ -707,7 +701,6 @@
         (values nil (int-sap 0) (int-sap 0)))))
 
 ) ; #+x86 PROGN
-
 ;;; Return the top frame of the control stack as it was before calling
 ;;; this function.
 (defun top-frame ()
@@ -1253,7 +1246,6 @@ register."
         (when (and (not (symbolp candidate)) ;; NIL or :UNDEFINED-FUNCTION
                    (nth-value 1 (context-code-pc-offset context candidate)))
           (return candidate))))))
-
 ;;;; frame utilities
 
 (defun compiled-debug-fun-from-pc (debug-info pc &optional escaped)
@@ -1410,7 +1402,6 @@ register."
                    (catch-ref catch-block-previous-catch-slot)))))))
 
 
-
 ;;;; operations on DEBUG-FUNs
 
 ;;; Execute the forms in a context with BLOCK-VAR bound to each
@@ -1796,7 +1787,6 @@ register."
 
 (defun compiled-debug-fun-debug-info (debug-fun)
   (%code-debug-info (compiled-debug-fun-component debug-fun)))
-
 ;;;; unpacking variable and basic block data
 
 ;;; The argument is a debug internals structure. This returns the
@@ -2036,7 +2026,6 @@ register."
        (values (parse-compiled-debug-fun-lambda-list/args-available
                 (debug-fun-debug-vars debug-fun) args)
                t)))))
-
 ;;;; unpacking packed debug functions
 
 ;;; sleazoid "macro" to keep our indentation sane in UNCOMPACT-FUN-MAP
@@ -2172,7 +2161,6 @@ register."
   (with-weak-cache (ht *uncompacted-fun-maps*)
     (or (gethash info ht)
         (setf (gethash info ht) (uncompact-fun-map info)))))
-
 ;;;; CODE-LOCATIONs
 
 ;;; If we're sure of whether code-location is known, return T or NIL.
@@ -2434,7 +2422,6 @@ register."
       (setf (compiled-code-location-context code-location)
             (compiled-code-location-context found))
       t)))
-
 ;;;; operations on DEBUG-BLOCKs
 
 ;;; Execute FORMS in a context with CODE-VAR bound to each
@@ -2471,7 +2458,6 @@ register."
     ;; (There used to be more cases back before sbcl-0.7.0, when we
     ;; did special tricks to debug the IR1 interpreter.)
     ))
-
 ;;;; operations on debug variables
 
 ;;; Return the symbol from interning DEBUG-VAR-NAME in the package DEBUG-VAR-PACKAGE.
@@ -3098,7 +3084,6 @@ register."
                             pos))
                :invalid
                :valid)))))
-
 ;;;; sources
 
 ;;; This code produces and uses what we call source-paths. A
@@ -3270,7 +3255,6 @@ register."
                    (loop repeat tlf-offset
                          do (read f)))))
           (read f))))))
-
 ;;;; PREPROCESS-FOR-EVAL
 
 ;;; Return a function of one argument that evaluates form in the
@@ -3360,7 +3344,6 @@ register."
   "Evaluate FORM in the lexical context of FRAME's current code location,
    returning the results of the evaluation."
   (funcall (preprocess-for-eval form (frame-code-location frame)) frame))
-
 ;;;; breakpoints
 
 ;;;; user-visible interface
@@ -3500,7 +3483,6 @@ register."
                   lra
                   (frame-saved-lra frame (frame-debug-fun frame))))
         (return t)))))
-
 ;;;; ACTIVATE-BREAKPOINT
 
 ;;; Cause the system to invoke the breakpoint's hook function until
@@ -3583,7 +3565,6 @@ register."
    (setf (breakpoint-data-breakpoints data)
          (append (breakpoint-data-breakpoints data) (list breakpoint)))
    (setf (breakpoint-internal-data breakpoint) data)))
-
 ;;;; DEACTIVATE-BREAKPOINT
 
 ;;; Stop the system from invoking the breakpoint's hook function.
@@ -3623,7 +3604,6 @@ register."
           (delete-breakpoint-data data))))
   (setf (breakpoint-status breakpoint) :inactive)
   breakpoint)
-
 ;;;; BREAKPOINT-INFO
 
 ;;; Return the user-maintained info associated with breakpoint. This
@@ -3636,7 +3616,6 @@ register."
     (when other
       (setf (breakpoint-%info other) value)))
   value)
-
 ;;;; BREAKPOINT-ACTIVE-P and DELETE-BREAKPOINT
 
 (defun breakpoint-active-p (breakpoint)
@@ -3667,7 +3646,6 @@ register."
                    (breakpoint-what breakpoint))
                   nil))))))
   breakpoint)
-
 ;;;; C call out stubs
 
 ;;; This actually installs the break instruction in the component. It
@@ -3871,7 +3849,6 @@ register."
          (push (sub-access-debug-var-slot ocfp sc+offset scp)
                results))))
     (nreverse results)))
-
 ;;;; MAKE-BPT-LRA (used for :FUN-END breakpoints)
 
 ;;; Make a breakpoint LRA object that signals a breakpoint trap when returned to.
@@ -3955,7 +3932,6 @@ register."
           (values (%make-lisp-obj (logior (sap-int lra-header) other-pointer-lowtag))
                   code-object
                   trap-offset))))))
-
 ;;;; miscellaneous
 
 ;;; This appears here because it cannot go with the DEBUG-FUN
@@ -3977,7 +3953,6 @@ register."
     ;; we did special tricks to debug the IR1 interpreter.)
     ))
 
-
 ;;;; Single-stepping
 
 ;;; The single-stepper works by inserting conditional trap instructions

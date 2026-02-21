@@ -8,7 +8,6 @@
 ;;;; files for more information.
 
 (in-package "SB-ALIEN")
-
 ;;;; C string support.
 
 (defun load-alien-c-string-type (element-type external-format not-null)

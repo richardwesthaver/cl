@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; data object ref/set stuff
 
 (defconstant vector-len-op-size #+ubsan :dword #-ubsan :qword)
@@ -83,7 +82,6 @@
      (move rax old)
      (inst cmpxchg :lock (ea (- (* offset n-word-bytes) lowtag) object) new)
      (move result rax)))
-
 ;;;; symbol hacking VOPs
 
 (define-vop (make-unbound-marker)
@@ -264,7 +262,6 @@
   (:policy :fast-safe)
   (:generator 2
    (inst movzx '(:word :dword) result (ea (- 1 other-pointer-lowtag) symbol))))
-
 ;;;; fdefinition (FDEFN) objects
 
 #+sb-xc-host ; not needed post-build
@@ -333,7 +330,6 @@
            (err-lab (generate-error-code vop 'undefined-fun-error object)))
       (inst jmp :e err-lab))
     RETRY))
-
 
 (defun unbind-to-here (where symbol value bsp
                        zero)
@@ -392,7 +388,6 @@
     ;; #+ultrafutex due to extra steps to unwind through a held mutex. On other other,
     ;; the vop is fairly rare, used only by PROGV (and the debugger)
     (unbind-to-here where symbol value bsp zero)))
-
 ;;;; closure indexing
 
 (define-full-reffer closure-index-ref *
@@ -459,12 +454,10 @@
   (:generator 4
     ;; RBP-TN looks like a fixnum (non-pointer) so no barrier
     (storew rbp-tn object (+ closure-info-offset offset) fun-pointer-lowtag)))
-
 ;;;; value cell hackery
 
 (define-vop (value-cell-set cell-set)
   (:variant value-cell-value-slot other-pointer-lowtag))
-
 ;;;; structure hackery
 
 (defun load-instance-length (result instance taggedp)
@@ -598,7 +591,6 @@
       (inst xchg (object-slot-ea instance slot instance-pointer-lowtag) source)
       (unless (eq source result)
         (move result temp)))))
-
 ;;;; code object frobbing
 
 (define-full-reffer code-header-ref * 0 other-pointer-lowtag
@@ -621,7 +613,6 @@
     (inst push index)
     (inst push object)
     (invoke-asm-routine 'call 'code-header-set vop)))
-
 ;;;; raw instance slot accessors
 
 (flet ((instance-slot-ea (object index)

@@ -24,7 +24,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 ;;;; MAKE-LOAD-FORM
 
 ;; Overwrite the old bootstrap non-generic MAKE-LOAD-FORM function with a

@@ -22,7 +22,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 (define-load-time-global *!temporary-ensure-accessor-functions* nil)
 (defun ensure-accessor (fun-name)
   (when (member fun-name *!temporary-ensure-accessor-functions* :test 'equal)
@@ -347,7 +346,6 @@
        (makunbound (lambda (instance)
                      (emf-funcall sdfun class instance slotd))))
      `(,name ,(class-name class) ,(slot-definition-name slotd)))))
-
 (defun maybe-class (class-or-name)
   (when (eq **boot-state** 'complete)
     (if (typep class-or-name 'class)

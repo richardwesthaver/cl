@@ -16,7 +16,7 @@ run_sbcl <<EOF
   (save-lisp-and-die "$tmpcore")
 EOF
 run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit --noprint \
-    --eval "(setf sb-ext:*evaluator-mode* :${TEST_SBCL_EVALUATOR_MODE:-compile})" \
+    --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
     <<EOF
   (bar)
 EOF

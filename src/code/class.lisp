@@ -51,7 +51,6 @@
 
 (in-package "SB-KERNEL")
 
-
 ;;;; the CLASSOID structure
 
 ;;; The CLASSOID structure is a supertype of all classoid types.
@@ -61,7 +60,6 @@
   (declare (ignore env))
   `(find-classoid ',(classoid-name self)))
 
-
 ;;;; basic LAYOUT stuff
 
 ;;; a vector of conses, initialized by genesis
@@ -147,7 +145,6 @@
 (eval-when (#-sb-xc :compile-toplevel :load-toplevel :execute)
   (defun layout-proper-name (layout)
     (classoid-proper-name (layout-classoid layout))))
-
 ;;; Return the layout currently installed in the classoid named NAME.
 ;;; If there is none, then make a layout referring for an undefined classoid.
 (declaim (ftype (sfunction (symbol) layout) find-layout))
@@ -520,7 +517,6 @@ between the ~A definition and the ~A definition"
         (when (eql (svref inherits i) 0)
           (setf (svref inherits i) (svref inherits (1+ i)))))
       inherits)))
-
 ;;;; class precedence lists
 
 ;;; Topologically sort the list of objects to meet a set of ordering
@@ -589,7 +585,6 @@ between the ~A definition and the ~A definition"
                      (return (first intersection)))))))
       (note-class class)
       (topological-sort classes constraints #'std-cpl-tie-breaker))))
-
 
 ;;; Return the layout for an object. This is the basic operation for
 ;;; finding out the "type" of an object, and is used for generic
@@ -626,7 +621,6 @@ between the ~A definition and the ~A definition"
    just a CLOS STANDARD-OBJECT."
   (layout-classoid (layout-of object))))
 
-
 ;;;; classoid namespace
 
 (eval-when (#-sb-xc :compile-toplevel :load-toplevel :execute)
@@ -781,7 +775,6 @@ between the ~A definition and the ~A definition"
     (if (and name (eq (find-classoid name nil) classoid))
         name
         classoid)))
-
 ;;;; CLASS type operations
 
 ;; CLASSOID-ENUMERABLE-P is referenced during compile by !DEFINE-TYPE-CLASS.
@@ -979,7 +972,6 @@ between the ~A definition and the ~A definition"
 
 (define-type-method (classoid :unparse) (flags type)
   (classoid-proper-name type))
-
 ;;;; built-in classes
 
 ;;; The BUILT-IN-CLASSES list is a data structure which configures the
@@ -1412,7 +1404,6 @@ between the ~A definition and the ~A definition"
   (dolist (x *builtin-classoids*)
     (destructuring-bind (name &key (state :sealed) &allow-other-keys) x
       (setf (classoid-state (find-classoid name)) state))))
-
 ;;;; class definition/redefinition
 
 ;;; This is to be called whenever we are altering a class.
@@ -1449,7 +1440,6 @@ between the ~A definition and the ~A definition"
       (dovector (super inherits)
         (remove-subclassoid classoid (layout-classoid super)))))
   (values))
-
 ;;;; cold loading initializations
 
 ;;; FIXME: It would be good to arrange for this to be called when the

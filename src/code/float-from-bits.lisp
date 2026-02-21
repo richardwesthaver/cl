@@ -8,7 +8,6 @@
 ;;;; files for more information.
 
 (in-package "SB-KERNEL")
-
 ;;;; utilities
 ;;; Don't need to define it in the host in both passes
 (eval-when (#-sb-xc :compile-toplevel :load-toplevel :execute)

@@ -390,7 +390,6 @@
                                                not-p
                                                (second value))
            in))))))
-
 (defun try-equality-constraint (call gen)
   (let ((constraint (fun-info-equality-constraint (basic-combination-fun-info call)))
         (lvar (node-lvar call)))

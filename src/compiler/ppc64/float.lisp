@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Move functions:
 
 (define-move-fun (load-single 1) (vop x y)
@@ -35,7 +34,6 @@
     (inst stfd x nfp offset)))
 
 
-
 ;;;; Move VOPs:
 
 (macrolet ((frob (vop sc)
@@ -148,7 +146,6 @@
   (frob move-double-float-arg double-reg double-stack t))
 
 
-
 ;;;; Complex float move functions
 
 (defun complex-single-reg-real-tn (x)
@@ -374,7 +371,6 @@
   (single-reg double-reg complex-single-reg complex-double-reg)
   (descriptor-reg))
 
-
 ;;;; Arithmetic VOPs:
 
 (define-vop (float-op)
@@ -435,7 +431,6 @@
   (memq :fsqrt *backend-subfeatures*))
 (deftransform %sqrtf ((x) * * :vop t)
   (memq :fsqrt *backend-subfeatures*))
-
 ;;;; Comparison:
 
 (define-vop (float-compare)
@@ -474,7 +469,6 @@
   (frob > :gt :le >/single-float >/double-float)
   (frob = :eq :ne =/single-float =/double-float))
 
-
 ;;;; Conversion:
 
 (macrolet ((frob (name translate to-sc to-type)
@@ -681,7 +675,6 @@
   `(ash (double-float-bits ,x) -32))
 (define-source-transform double-float-low-bits (x)
   `(ldb (byte 32 0) (double-float-bits ,x)))
-
 ;;;; Float mode hackery:
 
 (sb-xc:deftype float-modes () '(unsigned-byte 32))
@@ -720,7 +713,6 @@
       (inst mtfsf 255 fp-temp)
       (move res new))))
 
-
 ;;;; Complex float VOPs
 
 (define-vop (make-complex-single-float)

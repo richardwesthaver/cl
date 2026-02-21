@@ -22,9 +22,9 @@ tmpcore="init-test.core"
 run_sbcl <<EOF
   (require :sb-introspect)
   (defun custom-userinit-pathname ()
-     "$SBCL_PWD/custom-userinit.lisp")
+     "$CL_PWD/custom-userinit.lisp")
   (defun custom-sysinit-pathname ()
-     "$SBCL_PWD/custom-sysinit.lisp")
+     "$CL_PWD/custom-sysinit.lisp")
   (setf sb-impl::*userinit-pathname-function* 'custom-userinit-pathname
         sb-impl::*sysinit-pathname-function* 'custom-sysinit-pathname)
   (save-lisp-and-die "$tmpcore")
@@ -34,7 +34,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 run_sbcl_with_core "$tmpcore" --noinform --disable-debugger \
-    --eval "(setf sb-ext:*evaluator-mode* :${TEST_SBCL_EVALUATOR_MODE:-compile})" \
+    --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
     <<EOF
   (assert (string= (custom-sysinit-pathname)
                    (namestring

@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; RETURN-MULTIPLE
 
 ;;; For RETURN-MULTIPLE, we have to move the results from the end of
@@ -125,7 +124,6 @@
   (inst stc)
   (inst pop ebp-tn)
   (inst ret))
-
 ;;;; TAIL-CALL-VARIABLE
 
 ;;; For tail-call-variable, we have to copy the arguments from the end
@@ -217,7 +215,6 @@
 
   ;; And away we go.
   (inst jmp (object-slot-ea eax closure-fun-slot fun-pointer-lowtag)))
-
 (define-assembly-routine (throw
                           (:return-style :raw))
                          ((:arg target (descriptor-reg any-reg) edx-offset)

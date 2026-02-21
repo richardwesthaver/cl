@@ -22,7 +22,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 ;;; (These are left over from the days when PCL was an add-on package
 ;;; for a pre-CLOS Common Lisp. They shouldn't happen in a normal
 ;;; build, of course, but they might happen if someone is experimenting
@@ -37,7 +36,6 @@
           "Trying to load (or compile) PCL in an environment in which it~%~
            has already been partially loaded. This may not work, you may~%~
            need to get a fresh lisp (reboot) and then load PCL."))
-
 (declaim (inline gdefinition))
 (defun gdefinition (spec)
   ;; This is null layer right now, but once FDEFINITION stops bypasssing
@@ -50,7 +48,6 @@
   ;; that here.
   (sb-c::note-name-defined spec :function) ; FIXME: do we need this? Why?
   (setf (fdefinition spec) new-value))
-
 ;;;; type specifier hackery
 
 ;;; internal to this file
@@ -162,7 +159,6 @@
   (pcl-symbolicate "*THE-CLASS-" class-name "*"))
 
 (declaim (global *standard-method-combination* *or-method-combination*))
-
 (defun plist-value (object name)
   (getf (object-plist object) name))
 
@@ -176,7 +172,6 @@
       (progn
         (remf (object-plist object) name)
         nil)))
-
 ;;;; built-in classes
 
 ;;; Grovel over SB-KERNEL::*BUILTIN-CLASSOIDS* in order to set
@@ -226,7 +221,6 @@
                                          sb-kernel::*builtin-classoids*))))))
       (frob)))
 (/noshow "done setting up SB-PCL::*BUILT-IN-CLASSES*")
-
 ;;;; the classes that define the kernel of the metabraid
 
 (defclass t () ()

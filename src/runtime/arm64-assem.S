@@ -382,7 +382,6 @@ GNAME(call_into_c):
 
 	SIZE(call_into_c)
 #endif
-
         .global GNAME(fun_end_breakpoint_guts)
         TYPE(fun_end_breakpoint_guts)
 GNAME(fun_end_breakpoint_guts):

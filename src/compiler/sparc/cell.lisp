@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; data object ref/set stuff.
 (define-vop (slot)
   (:args (object :scs (descriptor-reg)))
@@ -29,7 +28,6 @@
   (:results)
   (:generator 1
     (storew value object offset lowtag)))
-
 ;;;; Symbol hacking VOPs:
 
 ;;; The compiler likes to be able to directly SET symbols.
@@ -103,7 +101,6 @@
   (:generator 2
     (loadw res symbol symbol-hash-slot other-pointer-lowtag)
     (inst srl res 3))) ; shift out the 3 pseudorandom bits
-
 ;;;; FDEFINITION (fdefn) objects.
 
 (define-vop (safe-fdefn-fun)
@@ -148,7 +145,6 @@
     (inst li temp (make-fixup 'undefined-tramp :assembly-routine))
     (storew temp fdefn fdefn-raw-addr-slot other-pointer-lowtag)))
 
-
 ;;;; Binding and Unbinding.
 
 ;;; Establish VAL as a binding for SYMBOL.  Save the old value and the
@@ -207,7 +203,6 @@
       (inst nop)
 
       (emit-label done))))
-
 ;;;; closure indexing.
 
 (define-vop (closure-index-ref word-index-ref)
@@ -242,12 +237,10 @@
   (:info offset)
   (:generator 4
     (storew cfp-tn object (+ closure-info-offset offset) fun-pointer-lowtag)))
-
 ;;;; value cell hackery.
 
 (define-vop (value-cell-set cell-set)
   (:variant value-cell-value-slot other-pointer-lowtag))
-
 ;;;; instance hackery:
 
 (define-vop ()
@@ -271,7 +264,6 @@
   (:translate %instance-set)
   (:variant instance-slots-offset instance-pointer-lowtag)
   (:arg-types * positive-fixnum *))
-
 ;;;; Code object frobbing.
 
 (define-vop (code-header-ref word-index-ref)
@@ -310,7 +302,6 @@
         (inst stb temp object byte))
       (inst add temp index (- other-pointer-lowtag))
       (inst st value object temp))))
-
 ;;;; raw instance slot accessors
 
 (macrolet ((def (signedp sc result-type)

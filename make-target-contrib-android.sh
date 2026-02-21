@@ -1,12 +1,12 @@
 #!/bin/sh
 set -e
 
-export SBCL_TOP="../.."
-export SBCL_HOME="$SBCL_TOP/obj/sbcl-home"
-export SBCL="$SBCL_TOP/src/runtime/sbcl --noinform --core $SBCL_TOP/output/sbcl.core \
+export CL_TOP="../.."
+export CL_HOME="$CL_TOP/obj/cl-home"
+export CL="$CL_TOP/src/runtime/cl --noinform --core $CL_TOP/output/cl.core \
     --lose-on-corruption --disable-debugger --no-sysinit --no-userinit"
 export UNAME=Linux
-export DEST=$SBCL_TOP/obj/sbcl-home/contrib
+export DEST=$CL_TOP/obj/cl-home/contrib
 
 build_asdf () {
     export ASDF_FASL=$DEST/asdf.fasl
@@ -17,15 +17,15 @@ build_asdf () {
     cd contrib/asdf
     mkdir -p $DEST
 
-    $SBCL --eval "$FROB_READTABLE" \
+    $CL --eval "$FROB_READTABLE" \
           --eval "(compile-file #p\"SYS:CONTRIB;ASDF;UIOP.LISP\" \
                     :print nil :output-file (merge-pathnames (parse-native-namestring \"$UIOP_FASL\")))" </dev/null
-    $SBCL --eval "$FROB_READTABLE" \
+    $CL --eval "$FROB_READTABLE" \
           --eval "(compile-file #p\"SYS:CONTRIB;ASDF;ASDF.LISP\" \
                     :print nil :output-file (merge-pathnames (parse-native-namestring \"$ASDF_FASL\")))" </dev/null
     # if [ -d asdf-upstream ] ; then rm -rf asdf-upstream ; fi FIXME
 
-    cd $SBCL_TOP
+    cd $CL_TOP
 }
 
 build_system () {
@@ -36,9 +36,9 @@ build_system () {
     export ASD=$DEST/$SYSTEM.asd
 
     cd contrib/$SYSTEM
-    $SBCL --load ../make-contrib.lisp "$SYSTEM" $MODULE_REQUIRES </dev/null
+    $CL --load ../make-contrib.lisp "$SYSTEM" $MODULE_REQUIRES </dev/null
 
-    cd $SBCL_TOP
+    cd $CL_TOP
 }
 
 build_asdf

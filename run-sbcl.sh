@@ -16,7 +16,7 @@ set -e
 this="$0"
 
 build_directory_p(){
-    [ -x "$1"/src/runtime/sbcl -a -f "$1"/output/sbcl.core ];
+    [ -x "$1"/src/runtime/cl -a -f "$1"/output/cl.core ];
 }
 
 # OSX 10.8 readlink doesn't have -f
@@ -54,11 +54,11 @@ for arg in "$@"; do
           CORE_DEFINED=yes
           ;;
         --help)
-          echo "usage: run-sbcl.sh sbcl-options*"
+          echo "usage: run-sbcl.sh cl-options*"
           echo
-          echo "Runs SBCL from the build directory or binary tarball without need for"
+          echo "Runs CL from the build directory or binary tarball without need for"
           echo "installation. Except for --help, accepts all the same command-line options"
-          echo "as SBCL does."
+          echo "as CL does."
           echo
           exit 1
           ;;
@@ -66,7 +66,7 @@ for arg in "$@"; do
 done
 
 if [ "$CORE_DEFINED" = "no" ]; then
-    CORE="$BASE"/output/sbcl.core
+    CORE="$BASE"/output/cl.core
 fi
 
 if [ -d "$BASE"/android-libs ]; then
@@ -74,13 +74,13 @@ if [ -d "$BASE"/android-libs ]; then
 fi
 
 if build_directory_p "$BASE"; then
-    export SBCL_HOME
+    export CL_HOME
     if [ "$CORE_DEFINED" = "no" ]; then
-	SBCL_HOME="$BASE"/obj/sbcl-home exec "$BASE"/src/runtime/sbcl --core "$CORE" "$@"
+	CL_HOME="$BASE"/obj/cl-home exec "$BASE"/src/runtime/cl --core "$CORE" "$@"
     else
-	SBCL_HOME="$BASE"/obj/sbcl-home exec "$BASE"/src/runtime/sbcl "$@"
+	CL_HOME="$BASE"/obj/cl-home exec "$BASE"/src/runtime/cl "$@"
     fi
 else
-    echo "No built SBCL here ($BASE): run 'sh make.sh' first!"
+    echo "No built CL here ($BASE): run 'sh make.sh' first!"
     exit 1
 fi

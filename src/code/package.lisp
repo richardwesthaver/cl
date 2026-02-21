@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; the SYMBOL-TABLE structure
 
 ;;; Packages are implemented using a special kind of hashtable -
@@ -86,7 +85,6 @@
   (bits -1 :type fixnum)
   (enable 0 :type (unsigned-byte 3) :read-only t) ; 1 bit per {external,internal,inherited}
   (pkglist nil :type list))
-
 ;;;; the PACKAGE structure
 
 (defconstant package-id-bits 16)

@@ -21,7 +21,6 @@
 (defconstant gencgc-page-bytes +backend-page-bytes+)
 (defconstant cards-per-page 8)
 (defconstant gencgc-alloc-granularity 0)
-
 ;;;; Machine Architecture parameters:
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -66,7 +65,6 @@
 
 ); eval-when
 
-
 ;;;; Other non-type constants.
 
 (defenum (:start 8)
@@ -81,7 +79,6 @@
   single-step-around-trap
   single-step-before-trap
   error-trap)
-
 ;;;; Static symbols.
 
 ;;; Static symbols are loaded into static space directly after NIL so

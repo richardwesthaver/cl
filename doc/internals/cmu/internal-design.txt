@@ -1,5 +1,4 @@
 
-
 ;;;; Terminology.
 
 OBJECT
@@ -26,7 +25,6 @@ WORD
    A word is a 32-bit quantity.
 
 
-
 ;;;; Tagging.
 
 The following is a key of the three bit low-tagging scheme:
@@ -56,7 +54,6 @@ this can be pretty negligible:
       so many words that one extra one doesn't matter.
 
 
-
 ;;;; GC Comments.
 
 Data-Blocks comprise only descriptors, or they contain immediate data and raw
@@ -91,7 +88,6 @@ bits are in the low end of the word, a range check on the start and end of old
 space tells you if you need to move the thing.  This is all GC overhead.
 
 
-
 ;;;; Structures.
 
 Structures comprise a word for each slot in the definition in addition to one
@@ -104,7 +100,6 @@ having a header-word since they are GC-scanable without any problem.  This
 saves two words for every structure instance.
 
 
-
 ;;;; Fixnums.
 
 A fixnum has one of the following formats in 32 bits:
@@ -134,7 +129,6 @@ Since the two bits are zeros, we avoid having to mask them off before using the
 words for arithmetic, but division and multiplication require special shifting.
 
 
-
 ;;;; Other-immediates.
 
 An other-immediate has the following format:
@@ -153,7 +147,6 @@ contiguous type codes which are distinct from the contiguous array type codes.
 See section "Data-Blocks and Other-immediates Typing" for details.
 
 
-
 ;;;; Data-Blocks and Header-Word Format.
 
 Pointers to data-blocks have the following format:
@@ -192,7 +185,6 @@ the system uses for the fill pointer, so computing the length of any array is
 the same code sequence.
 
 
-
 ;;;; Data-Blocks and Other-immediates Typing.
 
 These are the other-immediate types.  We specify them including all low eight
@@ -245,7 +237,6 @@ five bit constant.
 00000 010  weak-pointer-type					146
 
 
-
 ;;;; Strings.
 
 All strings in the system are C-null terminated.  This saves copying the bytes
@@ -263,7 +254,6 @@ Allocation and GC will have to know to handle the extra C-null byte, and GC
 already has to deal with rounding up various objects to dual-word alignment.
 
 
-
 ;;;; Symbols and NIL.
 
 Symbol data-block has the following format:
@@ -332,7 +322,6 @@ other-pointer type tags.  The list type tag is four less than the other-pointer
 type tag, but nil points four additional bytes into its symbol data-block.
 
 
-
 ;;;; Array Headers.
 
 The array-header data-block has the following format:
@@ -395,7 +384,6 @@ interpretations and types:
       array.  These are the same as the Range of First Index slot.
 
 
-
 ;;;; Bignums.
 
 Bignum data-blocks have the following format:
@@ -414,7 +402,6 @@ sign information is in the high end of the last element.
 
 
 
-
 ;;;; Code Data-Blocks.
 
 A code data-block is the run-time representation of a "component".  A component
@@ -605,7 +592,6 @@ The following are detailed slot descriptions:
       %Function-Header-Type-Slot, offset from the function header-word.
 
 
-
 ;;;; Closure Format.
 
 A closure data-block has the following format:
@@ -629,7 +615,6 @@ header.  Whenever you have a callable object, you just jump through the second
 word, offset some bytes, and go.
 
 
-
 ;;;; Function call.
 
 Due to alignment requirements and low-tag codes, it is not possible to use a
@@ -645,7 +630,6 @@ return-PC, a call need only save the return-PC, rather than saving both the
 return PC and the constant pool.
 
 
-
 ;;;; Memory Layout.
 
 CMU Common Lisp has four spaces, read-only, static, dynamic-0, and dynamic-1.
@@ -672,7 +656,6 @@ system uses it for non-Lisp objects such as raw system pointers, saving
 non-Lisp registers, parts of bignum computations, etc.
 
 
-
 ;;;; System Pointers.
 
 The system pointers reference raw allocated memory, data returned by foreign

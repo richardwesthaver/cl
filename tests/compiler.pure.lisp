@@ -1263,7 +1263,6 @@
          (logand a (* a 438810)))
     ((215067723) 13739018)))
 
-
 ;;;; Bugs in stack analysis
 ;;; bug 299 (reported by PFD)
 (with-test (:name (compile :stack-analysis :bug-299))
@@ -1483,7 +1482,6 @@
                    1 2 3))
                  '(0))))
 
-
 ;;; MISC.275
 (with-test (:name (compile :misc.275))
   (assert

@@ -22,7 +22,6 @@
             sb-vm::null-offset
             sb-vm::zero-offset
             sb-vm::lip-tn sb-vm::zero-tn)))
-
 ;;;; Constants, types, conversion functions, some disassembler stuff.
 
 (defun reg-tn-encoding (tn)
@@ -179,7 +178,6 @@
 (define-arg-type float-operation :printer float-operation-names)
 
 
-
 ;;;; Constants used by instruction emitters.
 
 (defconstant special-op #b000000)
@@ -190,7 +188,6 @@
 (defconstant cop3-op #b010011)
 
 
-
 ;;;; dissassem:define-instruction-formats
 
 (defconstant-eqx immed-printer
@@ -309,7 +306,6 @@
   (funct-filler :field (byte 4 2) :value 0)
   (ft           :value nil :type 'fp-reg))
 
-
 ;;;; Primitive emitters.
 
 (define-bitfield-emitter emit-word 32
@@ -332,7 +328,6 @@
   (byte 5 11) (byte 5 6) (byte 6 0))
 
 
-
 ;;;; Math instructions.
 
 (defun emit-math-inst (segment dst src1 src2 reg-opcode immed-opcode
@@ -568,7 +563,6 @@
   (:emitter
    (emit-shift-inst segment #b10 dst src1 src2)))
 
-
 ;;;; Floating point math.
 
 (define-instruction float-op (segment operation format dst src1 src2)
@@ -631,7 +625,6 @@
                     (fp-reg-tn-encoding ft) (fp-reg-tn-encoding fs) 0
                     (logior #b110000 (compare-kind operation)))))
 
-
 ;;;; Branch/Jump instructions.
 
 (defun emit-relative-branch (segment opcode r1 r2 target)
@@ -862,7 +855,6 @@
    (emit-relative-branch segment cop1-op #b01000 #b00001 target)))
 
 
-
 ;;;; Random movement instructions.
 
 (define-instruction lui (segment reg value)
@@ -1034,7 +1026,6 @@
                        cr 0 0)))
 
 
-
 ;;;; Random system hackery and other noise
 
 (define-instruction break (segment code &optional (subcode 0))
@@ -1206,7 +1197,6 @@
                           (+ (label-position label posn delta-if-after)
                              (component-header-length))))))
 
-
 ;;;; Loads and Stores
 
 (defun emit-load/store-inst (segment opcode reg base index

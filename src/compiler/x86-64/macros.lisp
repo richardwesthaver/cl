@@ -83,7 +83,6 @@
 (defmacro popw (ptr &optional (slot 0) (lowtag 0))
   `(inst pop (object-slot-ea ,ptr ,slot ,lowtag)))
 
-
 ;;;; macros to generate useful values
 
 (defmacro load-symbol (reg symbol)
@@ -138,7 +137,6 @@
 
 (defmacro store-binding-stack-pointer (reg)
   `(store-tl-symbol-value ,reg *binding-stack-pointer*))
-
 ;;;; error code
 (defun emit-error-break (vop kind code values)
   (assemble ()
@@ -168,7 +166,6 @@
                       values)
     (values start))) ; prevent START from being seen as a label defn
 
-
 ;;;; PSEUDO-ATOMIC
 
 ;;; This is used to wrap operations which leave untagged memory lying
@@ -263,7 +260,6 @@
 ;;; but a new approach to whatever the concept is demands a different name]
 (defmacro allocating (options &body body)
   `(pseudo-atomic ,options ,@body))
-
 ;;;; indexed references
 
 (defun index-scale (element-size index-tn)

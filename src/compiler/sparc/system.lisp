@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; type frobbing VOPs
 
 (define-vop (descriptor-hash32)
@@ -134,7 +133,6 @@
       (zero))
     (storew t1 x 0 other-pointer-lowtag)))
 
-
 ;;;; allocation
 
 (define-vop (binding-stack-pointer-sap)
@@ -153,7 +151,6 @@
   (:generator 1
     (move int csp-tn)))
 
-
 ;;;; code object frobbing.
 
 (define-vop (code-instructions)
@@ -181,7 +178,6 @@
     (inst add func code ndescr)))
 
 
-
 ;;;; other random VOPs.
 
 
@@ -200,7 +196,6 @@
     (inst unimp halt-trap)))
 
 
-
 ;;;; dynamic VOP count collection support
 
 (define-vop (count-me)

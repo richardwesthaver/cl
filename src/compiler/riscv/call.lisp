@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 
 (defconstant arg-count-sc (make-sc+offset immediate-arg-scn nargs-offset))
 (defconstant closure-sc (make-sc+offset descriptor-reg-sc-number lexenv-offset))
@@ -50,7 +49,6 @@
 ;;; passed when we are using non-standard conventions.
 (defun make-arg-count-location ()
   (make-wired-tn *fixnum-primitive-type* immediate-arg-scn nargs-offset))
-
 
 ;;;; Frame hackery:
 
@@ -258,7 +256,6 @@
         ;; Deallocate the callee stack frame.
         (move csp-tn ocfp-tn))))
   (values))
-
 ;;;; Unknown values receiving:
 
 ;;;    Emit code needed at the return point for an unknown-values call for an
@@ -308,7 +305,6 @@
   (:temporary (:sc any-reg :offset nargs-offset
                :from :eval :to (:result 1))
               nvals))
-
 ;;; This hook in the codegen pass lets us insert code before fall-thru
 ;;; entry points, local-call entry points, and tail-call entry points.
 ;;; The default does nothing.
@@ -317,7 +313,6 @@
   (when trampoline-label
     (emit-label trampoline-label))
   (emit-label start-label))
-
 ;;;; Local call with unknown values convention return:
 
 ;;; Non-TR local call for a fixed number of values passed according to the
@@ -403,7 +398,6 @@
       (when cur-nfp
         (load-stack-tn cur-nfp nfp-save)))))
 
-
 ;;;; Local call with known values return:
 
 ;;; Non-TR local call with known return locations.  Known-value return works
@@ -462,7 +456,6 @@
     (move cfp-tn old-fp-temp)
     (inst jalr zero-tn return-pc-temp 0)))
 
-
 ;;;; Full call:
 ;;;
 ;;; There is something of a cross-product effect with full calls.
@@ -759,7 +752,6 @@
     ;; And jump to the assembly routine.
     (inst jal zero-tn (make-fixup 'tail-call-variable :assembly-routine))))
 
-
 ;;;; Unknown values return:
 
 (defun clear-number-stack (vop)
@@ -879,7 +871,6 @@
 
     (inst jal zero-tn (make-fixup 'return-multiple :assembly-routine))))
 
-
 ;;;; XEP hackery:
 
 ;;; Get the lexical environment from its passing location.

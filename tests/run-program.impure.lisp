@@ -308,9 +308,9 @@
   (let ((had-error-p nil))
     (flet ((barf (&optional (format :default))
              (with-output-to-string (stream)
-               (run-program (sb-ext:posix-getenv "SBCL_RUNTIME")
+               (run-program (sb-ext:posix-getenv "CL_RUNTIME")
                             '("--core"
-                              (sb-ext:posix-getenv "SBCL_CORE")
+                              (sb-ext:posix-getenv "CL_CORE")
                               "--disable-ldb" "--noinform" "--no-sysinit" "--no-userinit" "--noprint" "--disable-debugger"
                               "--eval"
                               "(mapc (lambda (b) (write-byte b *standard-output*)) '(#x20 #xfe #xff #x0))"
@@ -497,7 +497,7 @@
         (assert (not (zerop (process-exit-code process))))))))
 
 ;; PROCESS-CLOSE's contract is "close the streams and stop updating
-;; the process", but SBCL should still internally watch the process:
+;; the process", but CL should still internally watch the process:
 ;; to do otherwise will cause an accumulation of zombies.
 (with-test (:name (run-program :minimizes-zombies)
             ;; 1. IDK whether Windows has the zombies, &
@@ -513,9 +513,9 @@
                                 :wait nil :search t)
                  collect (process-pid proc)
                  do (process-close proc)
-                    (process-kill proc #+unix sb-unix:sigterm #+win32 :ignore))))
+                    (process-kill proc #+unix sb-unix:sigterm))))
     (let ((pids (make-zombies 3 "sleep" "300")))
-      ;; Give a little time for signal delivery (to kids, and to SBCL).
+      ;; Give a little time for signal delivery
       (sleep 1/100)
       (let ((ps-output
              (gather-process-output
@@ -525,5 +525,5 @@
               "ps" "-opid" "-oppid" "-oargs" (format nil "-p~{~D~^,~}" pids))))
         ;; Should be just a header line.
         (assert (= 1 (count #\newline ps-output)) ()
-                "Zombies found in ps(1) output (SBCL pid ~D):~%~A"
+                "Zombies found in ps(1) output (CL pid ~D):~%~A"
                 (sb-unix:unix-getpid) ps-output)))))

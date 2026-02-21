@@ -75,7 +75,6 @@
    (unsigned-reg) (unsigned-stack))
   (store-frame-word x (current-nfp-tn vop) (tn-offset y) 'store-number-stack nil))
 
-
 ;;;; The Move VOP:
 ;;;
 (define-vop (move)
@@ -96,7 +95,6 @@
   (any-reg descriptor-reg zero)
   (any-reg descriptor-reg))
 
-
 ;;;    The Move-Argument VOP is used for moving descriptor values into another
 ;;; frame for argument or known value passing.
 ;;;
@@ -117,7 +115,6 @@
 (define-move-vop move-arg :move-arg
   (any-reg descriptor-reg zero)
   (any-reg descriptor-reg))
-
 ;;;; Moves and coercions:
 
 ;;; These MOVE-TO-WORD VOPs move a tagged integer to a raw full-word
@@ -186,7 +183,6 @@
 
 (define-move-vop move-from-word/fixnum :move
   (signed-reg unsigned-reg) (any-reg descriptor-reg))
-
 ;;; RESULT may be a bignum, so we have to check.  Use a worst-case
 ;;; cost to make sure people know they may be number consing.
 (define-vop (move-from-signed)

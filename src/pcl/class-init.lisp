@@ -43,7 +43,6 @@
                       'standard-generic-function
                       sb-kernel::funinstance-layout-bitmap))
 
-
 (defun allocate-standard-instance (wrapper)
   (let* ((instance (%new-instance wrapper (1+ sb-vm:instance-data-start)))
          (slots (make-array (layout-length wrapper) :initial-element +slot-unbound+)))
@@ -110,7 +109,6 @@
             class-slots
             custom-slots)))
 
-
 ;;;; BOOTSTRAP-META-BRAID
 ;;;;
 ;;;; This function builds the base metabraid from the early class definitions.
@@ -504,7 +502,6 @@
                  (eq slot-name 'slots) effective-p)
         (setq *the-eslotd-funcallable-standard-class-slots* slotd))
       slotd)))
-
 ;;;; from slots-boot.lisp
 
 (defun make-optimized-std-reader-method-function
@@ -798,7 +795,6 @@
                 (dolist (cell alist)
                   (setf (aref final-vector (incf data-index)) (cdr cell)))
                 (incf data-index))))))))
-
 
 ;;;; initialize the initial class hierarchy
 

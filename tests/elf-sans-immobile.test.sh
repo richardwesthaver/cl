@@ -15,7 +15,7 @@
 
 . ./subr.sh
 
-run_sbcl <<EOF
+run_cl <<EOF
 #+(and linux x86-64 sb-thread)
 (unless (member :immobile-space sb-impl:+internal-features+)
   (exit :code 0)) ; proceed with test
@@ -32,15 +32,15 @@ set -e # exit on error
 create_test_subdirectory
 temp=$TEST_DIRECTORY/$TEST_FILESTEM
 
-run_sbcl --load ../tools-for-build/elftool \
-  --eval '(sb-editcore:split-core "../output/sbcl.core" "'${temp}'-src.s")' --quit
+run_cl --load ../tools-for-build/elftool \
+  --eval '(sb-editcore:split-core "../output/cl.core" "'${temp}'-src.s")' --quit
 
-m_arg=`run_sbcl --eval '(progn #+sb-core-compression (princ " -lzstd") #+x86 (princ " -m32"))' --quit`
+m_arg=`run_cl --eval '(progn #+sb-core-compression (princ " -lzstd") #+x86 (princ " -m32"))' --quit`
 
-(cd ../src/runtime ; make libsbcl.a)
-exefile=$TEST_DIRECTORY/sbcl-new-elf
+(cd ../src/runtime ; make libcl.a)
+exefile=$TEST_DIRECTORY/cl-new-elf
 cc -no-pie -o ${exefile} -Wl,--export-dynamic -Wl,-no-as-needed \
-   ${temp}-src.s ${temp}-src-core.o ../src/runtime/libsbcl.a -lm -ldl ${m_arg}
+   ${temp}-src.s ${temp}-src-core.o ../src/runtime/libcl.a -lm -ldl ${m_arg}
 
 result=`${exefile} --eval '(princ "Success")' --quit`
 echo $result

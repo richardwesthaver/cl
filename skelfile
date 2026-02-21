@@ -7,7 +7,8 @@
 ((emacs-locals
   :dir-locals
   (nil . ((indent-tabs-mode . nil)))
-  (makefile-mode . ((indent-tabs-mode . t)))))
+  (makefile-mode . ((indent-tabs-mode . t))))
+ (cl-xc-host :env "sbcl --no-userinit --no-sysinit"))
 :vc (:hg "https://vc.compiler.company/cl"
      (cb (:git "ssh://git@codeberg.org/c-c/cl"))
      (gh (:git "ssh://git@github.com/richardwesthaver/cl")))

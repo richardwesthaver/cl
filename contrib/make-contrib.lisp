@@ -154,7 +154,7 @@
         ;; See also lp#1078460 - "unknown variable" is not really ever resolved.
         (when wcu-warnings (sb-sys:os-exit 1)))
       (let ((outputs (mapcar 'namestring (fasls)))
-            (joined (format nil "../../obj/sbcl-home/contrib/~A.fasl" *system*)))
+            (joined (format nil "../../obj/cl-home/contrib/~A.fasl" *system*)))
         (ensure-directories-exist joined)
         (with-open-file (asd (merge-pathnames (make-pathname :type "asd") joined)
                              :direction :output :if-exists :supersede

@@ -334,7 +334,6 @@
 ;;; That's an unfortunate side-effect; this macro is done being used now.
 #-sb-devel
 (fmakunbound 'typep-impl-macro)
-
 
 ;;;; Some functions for examining the type system
 ;;;; which are not needed during self-build.

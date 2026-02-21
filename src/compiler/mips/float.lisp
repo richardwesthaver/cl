@@ -11,7 +11,6 @@
 
 (in-package "SB-VM")
 
-
 ;;;; Move functions:
 (define-move-fun (load-single 1) (vop x y)
   ((single-stack) (single-reg))
@@ -52,7 +51,6 @@
   (let ((nfp (current-nfp-tn vop))
         (offset (tn-byte-offset y)))
     (str-double x nfp offset)))
-
 ;;;; Move VOPs:
 (macrolet ((frob (vop sc format)
              `(progn
@@ -157,7 +155,6 @@
                   (,sc descriptor-reg) (,sc)))))
   (frob move-single-float-arg single-reg single-stack :single nil)
   (frob move-double-float-arg double-reg double-stack :double t))
-
 ;;;; Complex float move functions
 
 (defun complex-single-reg-real-tn (x)
@@ -371,7 +368,6 @@
   (single-reg double-reg complex-single-reg complex-double-reg)
   (descriptor-reg))
 
-
 ;;;; stuff for c-call float-in-int-register arguments
 (define-vop (move-to-single-int-reg)
   (:args (x :scs (single-reg descriptor-reg)))
@@ -433,7 +429,6 @@
 (define-move-vop move-double-int-reg :move-arg
   (double-int-carg-reg) (double-int-carg-reg))
 
-
 ;;;; Arithmetic VOPs:
 
 (define-vop (float-op)
@@ -492,7 +487,6 @@
   (frob %negate/single-float fneg %negate :single single-reg single-float)
   (frob %negate/double-float fneg %negate :double double-reg double-float))
 
-
 ;;;; Comparison:
 
 (define-vop (float-compare)
@@ -533,7 +527,6 @@
   (frob > :ngt t >/single-float >/double-float)
   (frob = :seq nil =/single-float =/double-float))
 
-
 ;;;; Conversion:
 
 (macrolet ((frob (name translate
@@ -690,7 +683,6 @@
     (inst mfc1 lo-bits float)
     (inst nop)))
 
-
 ;;;; Complex float VOPs
 
 (define-vop (make-complex-single-float)

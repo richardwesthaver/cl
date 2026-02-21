@@ -160,7 +160,6 @@
                  (:word (typep imm '(integer #xFF80 #xFFFF)))
                  (:dword (typep imm '(integer #xFFFFFF80 #xFFFFFFFF))))
            (sb-c::mask-signed-field 8 imm)))))
-
 ;;;; disassembler argument types
 
 ;;; Used to capture the lower four bits of the REX prefix all at once ...
@@ -367,7 +366,6 @@
 
 (defun negate-condition (name)
   (aref +condition-name-vec+ (logxor 1 (encoded-condition name))))
-
 ;;;; disassembler instruction formats
 
 (defun swap-if (direction field1 separator field2)
@@ -570,7 +568,6 @@
                                         :default-printer
                                         '(:name :tab reg/mem ", " imm))
   (imm :type 'imm-byte))
-
 ;;;; XMM instructions
 
 ;;; All XMM instructions use an extended opcode (#x0F as the first
@@ -820,7 +817,6 @@
   (op :field (byte 16 0))
   (code :field (byte 8 16) :reader word-imm-code))
 
-
 ;;;; primitive emitters
 
 (define-bitfield-emitter emit-word 16 (byte 16 0))
@@ -849,7 +845,6 @@
   (emit-byte segment (logior (ash (logior (ash high 3) middle) 3) low)))
 (defmacro emit-sib-byte (&rest args) `(emit-mod-reg-r/m-byte ,@args))
 
-
 ;;;; fixup emitters
 
 (defun emit-absolute-fixup (segment fixup &optional quad-p)
@@ -863,7 +858,6 @@
   (note-fixup segment :rel32 fixup)
   (emit-signed-dword segment (fixup-offset fixup)))
 
-
 (defmacro emit-bytes (segment &rest bytes)
   `(progn ,@(mapcar (lambda (x) `(emit-byte ,segment ,x)) bytes)))
 (defun opcode+size-bit (opcode size)
@@ -1333,7 +1327,6 @@
     (:dword (emit-dword segment value))
     (:qword (emit-signed-dword segment value))
     (:word  (emit-word segment value))))
-
 ;;;; prefixes
 
 (define-instruction rex (segment)
@@ -1692,7 +1685,6 @@
    (emit-prefixes segment dst nil (operand-size dst))
    (emit-bytes segment #x0F #xC7)
    (emit-ea segment dst 6)))
-
 ;;;; flag control instructions
 
 (macrolet ((def (mnemonic opcode)
@@ -1714,7 +1706,6 @@
   (def cld   #xFC) ; Clear Direction Flag.
   (def std   #xFD) ; Set Direction Flag.
 )
-
 ;;;; arithmetic
 
 (flet ((emit* (name segment prefix dst src opcode)
@@ -1910,7 +1901,6 @@
      (emit-bytes segment #x0F (opcode+size-bit #xC0 size))
      (emit-ea segment dst src))))
 
-
 ;;;; logic
 
 (define-instruction-format
@@ -1996,7 +1986,6 @@
            (t
             (emit-byte segment (opcode+size-bit #x84 size))
             (emit-ea segment this that))))))
-
 ;;;; string manipulation
 
 (flet ((emit* (segment opcode size)
@@ -2035,7 +2024,6 @@
   (:emitter
    (emit-byte segment #b11010111)))
 
-
 ;;;; bit manipulation
 
 (flet ((emit* (segment opcode prefix dst src)
@@ -2082,7 +2070,6 @@
     (define btr 6)
     (define btc 7)))
 
-
 ;;;; control transfer
 
 (define-instruction call (segment where)
@@ -2206,7 +2193,6 @@
   (:emitter
    (emit-byte segment #xE0)
    (emit-byte-displacement-backpatch segment target)))
-
 ;;;; conditional move
 (define-instruction cmov (segment &prefix prefix cond dst src)
   (:printer cond-move ())
@@ -2228,7 +2214,6 @@
    (emit-byte segment #x0F)
    (emit-byte segment (dpb (encoded-condition cond) (byte 4 0) #b10010000))
    (emit-ea segment dst #b000)))
-
 ;;;; enter/leave
 
 (define-instruction enter (segment disp &optional (level 0))
@@ -2243,7 +2228,6 @@
 (define-instruction leave (segment)
   (:printer byte ((op #xC9)))
   (:emitter (emit-byte segment #xC9)))
-
 ;;;; interrupt instructions
 
 ;;; The default interrupt instruction is INT3 which signals SIGTRAP.
@@ -2306,7 +2290,6 @@
 (define-instruction iret (segment)
   (:printer byte ((op #xCF)))
   (:emitter (emit-byte segment #xCF)))
-
 ;;;; processor control
 
 (define-instruction nop (segment)
@@ -2351,7 +2334,6 @@
   (:printer two-bytes ((op '(#x0F #x05))))
   (:emitter (emit-bytes segment #x0F #x05)))
 
-
 ;;;; miscellaneous hackery
 
 (define-instruction byte (segment byte)
@@ -2374,7 +2356,6 @@
 (define-instruction simple-fun-header-word (segment)
   (:emitter
    (emit-header-data segment simple-fun-widetag)))
-
 ;;;; Instructions required to do floating point operations using SSE
 
 ;;; Return a :PRINTER expression for SSE instructions.

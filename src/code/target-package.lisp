@@ -304,7 +304,6 @@
     (if table-var
         `(let ((,table-var *all-packages*)) ,guts)
         guts)))
-
 ;;;; iteration macros
 
 (define-thread-local *clear-resized-symbol-tables* t)
@@ -608,7 +607,6 @@ of :INHERITED :EXTERNAL :INTERNAL."
                      (not (read-only-space-obj-p old)))
             (fill old 0))
           new)))))
-
 ;;;; package locking operations, built unconditionally now
 
 (defun package-locked-p (package)
@@ -798,7 +796,6 @@ error if any of PACKAGES is not a valid package designator."
                                 :format-arguments (cons name format-arguments)))))
   name)
 
-
 ;;;; miscellaneous PACKAGE operations
 
 (defmethod print-object ((package package) stream)
@@ -1086,7 +1083,6 @@ Experimental: interface subject to change."
 
 (defun package-external-symbol-count (package)
   (%symtbl-count (package-external-symbols package)))
-
 (defvar *package* (error "*PACKAGE* should be initialized in cold load!")
   "the current package")
 
@@ -1102,7 +1098,6 @@ Experimental: interface subject to change."
   (if (listp thing)
       (mapcar #'find-undeleted-package-or-lose thing)
       (list (find-undeleted-package-or-lose thing))))
-
 ;;;; operations on symbol hashsets
 
 ;;; Add a symbol to a hashset. The symbol MUST NOT be present.
@@ -1327,13 +1322,11 @@ Experimental: interface subject to change."
         (used (%symtbl-count table)))
     (when (< used (truncate size 4))
       (resize-symbol-table table (* used 2) reason))))
-
 (defun list-all-packages ()
   "Return a list of all existing packages."
   (let ((result ()))
     (do-packages (package) (push package result))
     result))
-
 ;;; Check internal and external symbols, then scan down the list
 ;;; of hashtables for inherited symbols.
 (defun %find-symbol (string length package)
@@ -1493,7 +1486,6 @@ Experimental: interface subject to change."
     (with-symbol ((symbol) (package-external-symbols package) string length hash)
       (return-from find-external-symbol symbol)))
   0)
-
 (define-condition name-conflict (reference-condition package-error)
   ((function :initarg :function :reader name-conflict-function)
    (datum :initarg :datum :reader name-conflict-datum)
@@ -1660,7 +1652,6 @@ uninterned."
                      (%set-symbol-package symbol nil))
                  t)
                 (t nil)))))))
-
 ;;; Take a symbol-or-list-of-symbols and return a list, checking types.
 (defun symbol-listify (thing)
   (cond ((listp thing)
@@ -1677,7 +1668,6 @@ uninterned."
 
 (defun string-listify (thing)
   (mapcar #'string (ensure-list thing)))
-
 (defun export (symbols &optional (package (sane-package)))
   "Exports SYMBOLS from PACKAGE, checking that no name conflicts result."
   (with-package-graph ()
@@ -1736,7 +1726,6 @@ uninterned."
               (add-symbol external sym 'export)
               (nuke-symbol internal sym 'export)))))
       t)))
-
 ;;; Check that all symbols are accessible, then move from external to internal.
 (defun unexport (symbols &optional (package (sane-package)))
   "Makes SYMBOLS no longer exported from PACKAGE."
@@ -1762,7 +1751,6 @@ uninterned."
             (add-symbol internal sym 'unexport)
             (nuke-symbol external sym 'unexport))))
       t)))
-
 ;;; Check for name conflict caused by the import and let the user
 ;;; shadowing-import if there is.
 ;;;
@@ -1813,7 +1801,6 @@ the importation, then a correctable error is signalled."
         (dolist (sym homeless)
           (%set-symbol-package sym package))
         t))))
-
 ;;; If a conflicting symbol is present, unintern it, otherwise just
 ;;; stick the symbol in.
 (defun shadowing-import (symbols &optional (package (sane-package)))
@@ -1870,7 +1857,6 @@ it is not already present."
                 (add-symbol internal s 'shadow))
               (pushnew s (package-%shadowing-symbols package))))))))
   t)
-
 ;;; Do stuff to use a package, with all kinds of fun name-conflict checking.
 (defun use-package (packages-to-use &optional (package (sane-package)))
   "Add all the PACKAGES-TO-USE to the use list for PACKAGE so that the
@@ -1937,7 +1923,6 @@ PACKAGE."
                 (delete (package-external-symbols p) (package-tables package)))
           (setf (package-%used-by p) nil))) ; recomputed on demand
       t)))
-
 ;;;; final initialization
 
 ;;;; Due to the relative difficulty - but not impossibility - of manipulating
@@ -2207,7 +2192,6 @@ PACKAGE."
               ;; cookie. i.e. a cached NIL is correct until the next cache invalidation.
               (or (null pkg) (and (packagep pkg) (package-%name pkg)))))
 
-
 ;;;; special package hacks for the loader
 
 (defvar *deferred-package-names*)

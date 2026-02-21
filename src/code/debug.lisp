@@ -13,7 +13,6 @@
 
 ;;; used to communicate to debug-loop that we are at a step breakpoint
 (define-condition step*-condition (step-condition) ())
-
 ;;;; variables and constants
 
 ;;; things to consider when tweaking these values:
@@ -162,7 +161,6 @@ Other commands:
     Discard all pending input on *STANDARD-INPUT*. (This can be
     useful when the debugger was invoked to handle an error in
     deeply nested input syntax, and now the reader is confused.)")
-
 ;;;; breakpoint state
 
 (defvar *only-block-start-locations* nil
@@ -199,7 +197,6 @@ Other commands:
 (defvar *default-breakpoint-debug-fun* nil)
 (declaim (type (or list sb-di:debug-fun) *default-breakpoint-debug-fun*))
 
-
 ;;;; the BREAKPOINT-INFO structure
 
 ;;; info about a made breakpoint
@@ -266,7 +263,6 @@ Other commands:
        (format *debug-io* "~&~S: FUN-END in ~S" bp-number
                (sb-di:debug-fun-name place))))))
 
-
 ;;;; code location utilities
 
 ;;; Return the first code-location in the passed debug block.
@@ -355,7 +351,6 @@ Other commands:
                loc)))
       loc))
 
-
 ;;;; MAIN-HOOK-FUN for steps and breakpoints
 
 ;;; This must be passed as the hook function. It keeps track of where
@@ -430,7 +425,6 @@ Other commands:
                  (format *debug-io* "~A" string)))
             (t
              (break "unknown breakpoint"))))))
-
 ;;; Set breakpoints at the next possible code-locations. After calling
 ;;; this, either (CONTINUE) if in the debugger or just let program flow
 ;;; return if in a hook function.
@@ -496,7 +490,6 @@ Other commands:
    error is signalled."
   `(step-internal #'(lambda () ,form) ',form))
 
-
 ;;;; BACKTRACE
 
 (declaim (unsigned-byte *backtrace-frame-count*))
@@ -819,7 +812,6 @@ information."
                     (let ((thread (sb-thread::avlnode-data it)))
                       (when (in-stack-range-p)
                         thread)))))))))
-
 ;;;; frame printing
 
 ;;; This is a convenient way to express what to do for each type of
@@ -1154,7 +1146,6 @@ the current thread are replaced with dummy objects which can safely escape."
               (format stream "~&   no source available for frame")))
           (error (c)
             (format stream "~&   error printing frame source: ~A" c)))))))
-
 ;;;; INVOKE-DEBUGGER
 
 (defvar *debugger-hook* nil
@@ -1566,7 +1557,6 @@ and LDB (the low-level debugger).  See also ENABLE-DEBUGGER."
             (typep *debug-condition* '(and step-condition
                                        (not step*-condition)))))
       (funcall *debug-loop-fun*))))
-
 ;;;; DEBUG-LOOP
 
 ;;; Note: This defaulted to T in CMU CL. The changed default in SBCL
@@ -1663,7 +1653,6 @@ forms that explicitly control this kind of evaluation.")
       (fresh-line *debug-io*)
       (prin1 value *debug-io*)))
   (force-output *debug-io*))
-
 ;;;; debug loop functions
 
 ;;; These commands are functions, not really commands, so that users
@@ -1836,7 +1825,6 @@ forms that explicitly control this kind of evaluation.")
           (sb-di:debug-var-value var *current-frame*)
           (error "invalid argument value"))
         var)))
-
 ;;;; machinery for definition of debug loop commands
 
 (define-load-time-global *debug-commands* nil)
@@ -1925,7 +1913,6 @@ forms that explicitly control this kind of evaluation.")
             (push (cons name restart-fun) commands))))
     (incf num))
   commands))
-
 ;;;; frame-changing commands
 
 (!def-debug-command "UP" ()
@@ -1976,7 +1963,6 @@ forms that explicitly control this kind of evaluation.")
   (print-frame-call *current-frame* *debug-io*))
 
 (!def-debug-command-alias "F" "FRAME")
-
 ;;;; commands for entering and leaving the debugger
 
 (!def-debug-command "TOPLEVEL" ()
@@ -2009,7 +1995,6 @@ forms that explicitly control this kind of evaluation.")
       (if restart
           (invoke-restart-interactively restart)
           (princ "There is no such restart." *debug-io*)))))
-
 ;;;; information commands
 
 (!def-debug-command "HELP" ()
@@ -2087,7 +2072,6 @@ forms that explicitly control this kind of evaluation.")
   (print (code-location-source-form (sb-di:frame-code-location *current-frame*)
                                     (read-if-available 0))
          *debug-io*))
-
 ;;;; source location printing
 
 (defun code-location-source-form (location context &optional (errorp t))
@@ -2104,7 +2088,6 @@ forms that explicitly control this kind of evaluation.")
              (funcall (if errorp #'error #'warn)
                       "~@<Bogus form-number: the source file has ~
                           probably changed too much to cope with.~:@>"))))))
-
 ;;; breakpoint and step commands
 
 ;;; Step to the next code-location.
@@ -2310,7 +2293,6 @@ forms that explicitly control this kind of evaluation.")
            (format *debug-io* "all breakpoints deleted~%")))))
 
 (!def-debug-command-alias "DBP" "DELETE-BREAKPOINT")
-
 
 ;;; start single-stepping
 (!def-debug-command "START" ()
@@ -2510,7 +2492,6 @@ forms that explicitly control this kind of evaluation.")
   (sb-di:debug-var-info-available
    (sb-di:code-location-debug-fun
     (sb-di:frame-code-location frame))))
-
 ;;;; debug loop command utilities
 
 (defun read-prompting-maybe (prompt)

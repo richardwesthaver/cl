@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; allocation helpers
 
 ;;; Most allocation is done by inline code with sometimes help
@@ -601,7 +600,6 @@
   (:generator 0
     (inst push null-tn)
     (inst lea result (ea (- list-pointer-lowtag n-word-bytes) rsp-tn))))
-
 ;;;; special-purpose inline allocators
 
 ;;; Special variant of 'storew' which might have a shorter encoding
@@ -988,7 +986,6 @@
          (storew null-tn tail cons-cdr-slot list-pointer-lowtag)
          ALLOC-DONE))
       done))) ; label needed by calc-size-in-bytes
-
 (define-allocator (make-fdefn)
   (:policy :fast-safe)
   (:translate make-fdefn)
@@ -1049,7 +1046,6 @@
       (lambda ()
         (storew (encode-value-if-immediate value)
                 result value-cell-value-slot other-pointer-lowtag)))))
-
 ;;;; automatic allocators for primitive objects
 
 (flet

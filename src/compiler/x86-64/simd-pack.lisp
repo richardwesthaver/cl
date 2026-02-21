@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 (defun ea-for-sse-stack (tn &optional (base rbp-tn))
   (ea (frame-byte-offset (1+ (tn-offset tn))) base))
 
@@ -19,7 +18,6 @@
             double-sse-reg double-sse-stack double-sse-immediate))
 (defun int-sse-p (tn)
   (sc-is tn int-sse-reg int-sse-stack int-sse-immediate))
-
 #+sb-xc-host
 (progn ; the host compiler will complain about absence of these
   (defun %simd-pack-low (x) (error "Called %SIMD-PACK-LOW ~S" x))
@@ -149,7 +147,6 @@
   (int-sse-reg double-sse-reg single-sse-reg)
   (descriptor-reg))
 
-
 (define-vop (%simd-pack-low)
   (:translate %simd-pack-low)
   (:args (x :scs (int-sse-reg double-sse-reg single-sse-reg)))

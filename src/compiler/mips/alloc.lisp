@@ -31,7 +31,6 @@
              (inst sw new-freeptr null-tn (- region-offset nil-value-offset))
              (unless (= lowtag 0)
                (inst or result lowtag)))))))
-
 ;;;; LIST and LIST*
 (define-vop (list)
   (:args (things :more t :scs (any-reg descriptor-reg zero null control-stack)))
@@ -75,7 +74,6 @@
                                 cons-cdr-slot list-pointer-lowtag)))
                  (aver (null (tn-ref-across things)))
                  (move result res))))))
-
 ;;;; Special purpose inline allocators.
 
 ;;; ALLOCATE-VECTOR
@@ -178,7 +176,6 @@
     (with-fixed-allocation (result pa-flag temp value-cell-widetag
                             value-cell-size)
       (storew value result value-cell-value-slot other-pointer-lowtag))))
-
 ;;;; Automatic allocators for primitive objects.
 
 (define-vop (make-unbound-marker)

@@ -22,7 +22,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 ;;;; ANSI CL condition for unbound slots
 
 (define-condition unbound-slot (cell-error)
@@ -52,7 +51,6 @@
 ;;; structure protocol are promoted to the implementation-specific class
 ;;; std-class. Many of these methods call these four functions.
 
-
 ;;;; STANDARD-INSTANCE-ACCESS
 
 (declaim (inline standard-instance-access
@@ -81,7 +79,6 @@
 (defun (cas funcallable-standard-instance-access) (old-value new-value instance location)
   ;; FIXME: Maybe get rid of CLOS-SLOTS-REF entirely?
   (cas (svref (fsc-instance-slots instance) location) old-value new-value))
-
 ;;;; SLOT-VALUE, (SETF SLOT-VALUE), SLOT-BOUNDP, SLOT-MAKUNBOUND
 
 ;;; Structure-slot-value is usually faster than our litle chunks of code that are
@@ -415,7 +412,6 @@
       (let ((function (slot-definition-internal-writer-function slotd)))
         (declare (type function function))
         (funcall function sb-pcl:+slot-unbound+ object))))
-
 (defmethod slot-missing
            ((class t) instance slot-name operation &optional new-value)
   (error 'missing-slot
@@ -470,7 +466,6 @@
               :key #'slot-definition-location)))
       (cons
        (car position))))))
-
 ;;; FIXME: AMOP says that allocate-instance implies finalize-inheritance
 ;;; if the class is not yet finalized, but we don't seem to be taking
 ;;; care of this for non-standard-classes.

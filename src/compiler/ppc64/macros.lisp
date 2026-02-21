@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;; Instruction-like macros.
 
 (defmacro move (dst src)
@@ -110,7 +109,6 @@
      (inst lra-header-word)))
 
 
-
 ;;;; Stack TN's
 
 ;;; Move a stack TN to a register and vice-versa.
@@ -141,7 +139,6 @@
           ((control-stack)
            (loadw ,n-reg cfp-tn (tn-offset ,n-stack))))))))
 
-
 (defmacro with-fixed-allocation ((result-tn flag-tn temp-tn type-code size
                                             &key (lowtag other-pointer-lowtag)
                                                  stack-allocate-p)
@@ -166,7 +163,6 @@
        (storew ,temp-tn ,result-tn 0 ,lowtag)
        ,@body)))
 
-
 ;;;; Error Code
 (defun emit-error-break (vop kind code values)
   (assemble ()
@@ -185,7 +181,6 @@
       (emit-label start-lab)
       (emit-error-break vop error-trap (error-number-or-lose error-code) values)
       start-lab)))
-
 ;;;; PSEUDO-ATOMIC
 
 ;;; handy macro for making sequences look atomic with respect to GC

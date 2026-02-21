@@ -11,7 +11,6 @@
 
 (in-package "SB-VM")
 
-
 ;;;; Allocator for the array header.
 
 (define-vop (make-array-header)
@@ -42,7 +41,6 @@
       ;; And store the header value.
       (storew ndescr header 0 other-pointer-lowtag))
     (move result header)))
-
 ;;;; Additional accessors and setters for the array header.
 (define-full-reffer %array-dimension *
   array-dimensions-offset other-pointer-lowtag
@@ -421,7 +419,6 @@
                                                   (- (* vector-data-offset n-word-bytes) other-pointer-lowtag)))))
       (inst tst x (ash 1 bit)))))
 
-
 ;;; Complex float arrays.
 
 (define-vop (data-vector-ref/simple-array-complex-single-float)
@@ -487,7 +484,6 @@
     (inst add offset offset (- (* vector-data-offset n-word-bytes)
                                other-pointer-lowtag))
     (inst str value (@ object offset))))
-
 ;;; These vops are useful for accessing the bits of a vector irrespective of
 ;;; what type of vector it is.
 (define-full-reffer vector-raw-bits * vector-data-offset other-pointer-lowtag
@@ -500,7 +496,6 @@
   (any-reg descriptor-reg) * %weakvec-ref)
 (define-full-setter %weakvec-set * vector-data-offset other-pointer-lowtag
   (any-reg descriptor-reg) * %weakvec-set)
-
 (define-vop (%compare-and-swap-svref word-index-cas)
   (:note "inline array compare-and-swap")
   (:policy :fast-safe)

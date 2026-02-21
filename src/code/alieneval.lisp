@@ -16,7 +16,6 @@
 
 (defvar *default-c-string-external-format* nil)
 
-
 ;;;; utility functions
 
 (defun align-offset (offset alignment)
@@ -31,7 +30,6 @@
         ((> bits 1) 8)
         (t 1)))
 
-
 ;;;; ALIEN-TYPE-INFO stuff
 
 (defglobal *alien-type-classes* (make-array 32 :initial-element nil))
@@ -203,13 +201,11 @@
                       (return fn))))
                 ,type ,@args))))
 
-
 ;;;; the root alien type
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (create-alien-type-class-if-necessary 'root 'alien-type nil))
 
-
 ;;;; type parsing and unparsing
 
 (defvar *new-auxiliary-types* nil)
@@ -304,7 +300,6 @@
   (invoke-alien-type-method :unparse type state))
 (defun %unparse-alien-types (state list)
   (mapcar (lambda (x) (%unparse-alien-type state x)) list))
-
 ;;;; alien type defining stuff
 
 (defmacro define-alien-type-translator (name lambda-list &body body)
@@ -375,7 +370,6 @@
   (setf (info :source-location :alien-type name) source-location)
   name)
 
-
 ;;;; Interfaces to the different methods
 
 (defun alien-type-= (type1 type2)
@@ -453,7 +447,6 @@
 (defun compute-alien-rep-type (type &optional (context :normal))
   (invoke-alien-type-method :alien-rep type context))
 
-
 ;;;; default methods
 
 (define-alien-type-method (root :subtypep) (type1 type2)
@@ -479,7 +472,6 @@
 
 (define-alien-type-method (root :deposit-gen) (type sap offset value)
   `(setf ,(invoke-alien-type-method :extract-gen type sap offset) ,value))
-
 ;;;; the INTEGER type
 
 ;; INTEGER could probably rob 1 bit from the HASH field for SIGNED which would
@@ -561,7 +553,6 @@
         `(,ref-fun ,sap (/ ,offset sb-vm:n-byte-bits))
         (error "cannot extract ~W-bit integers"
                (alien-integer-type-bits type)))))
-
 ;;;; the BOOLEAN type
 
 ;;; INCLUDE-ARGS is just because DEFINE-ALIEN-TYPE-CLASS is too naive to insert
@@ -587,7 +578,6 @@
 (define-alien-type-method (boolean :deport-gen) (type value)
   (declare (ignore type))
   `(if ,value 1 0))
-
 ;;;; the ENUM type
 
 (define-alien-type-class (enum :include (integer (bits 32))
@@ -763,7 +753,6 @@
      ,@(mapcar (lambda (mapping)
                  `(,(car mapping) ,(cdr mapping)))
                (alien-enum-type-from type))))
-
 ;;;; the FLOAT types
 
 (define-alien-type-class (float)
@@ -803,7 +792,6 @@
   (declare (ignore type))
   `(sap-ref-double ,sap (/ ,offset sb-vm:n-byte-bits)))
 
-
 ;;;; the SAP type
 
 (define-alien-type-class (system-area-pointer))
@@ -853,7 +841,6 @@
   (def-singleton-type double-float 64 (!make-alien-double-float-type :type 'double-float))
   (def-singleton-type system-area-pointer sb-vm:n-machine-word-bits
       (!make-alien-system-area-pointer-type)))
-
 ;;;; the ALIEN-VALUE type
 
 (define-alien-type-class (alien-value :include system-area-pointer))
@@ -870,7 +857,6 @@
   (/noshow "doing alien type method ALIEN-VALUE :DEPORT-GEN" value)
   `(alien-sap ,value))
 
-
 ;;;; the POINTER type
 
 (define-alien-type-class (pointer :include (alien-value (bits
@@ -931,7 +917,6 @@
       (null
        (int-sap 0)))
    `(or null system-area-pointer (alien ,type))))
-
 ;;;; the MEM-BLOCK type
 
 (define-alien-type-class (mem-block :include alien-value))
@@ -947,7 +932,6 @@
     `(sb-kernel:system-area-ub8-copy ,value 0 ,sap
       (truncate ,offset sb-vm:n-byte-bits)
       ',(truncate bits sb-vm:n-byte-bits))))
-
 ;;;; the ARRAY type
 
 (define-alien-type-class (array :include mem-block)
@@ -997,7 +981,6 @@
                   (equal dim1 dim2))
               (alien-subtype-p (alien-array-type-element-type type1)
                                (alien-array-type-element-type type2))))))
-
 ;;;; the RECORD type
 
 (defstruct (alien-record-field (:constructor make-alien-record-field (name offset type))
@@ -1229,7 +1212,6 @@
              (let ((*alien-type-matches* (make-hash-table :test #'eq)))
                (match-fields))))))
 
-
 ;;;; the FUNCTION and VALUES alien types
 
 ;;; not documented in CMU CL:-(
@@ -1361,7 +1343,6 @@
               (alien-values-type-values type1)
               (alien-values-type-values type2))))
 
-
 ;;;; alien variables
 
 (defmethod print-object ((info heap-alien-info) stream)

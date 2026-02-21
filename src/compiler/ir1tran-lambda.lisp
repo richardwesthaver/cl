@@ -1082,7 +1082,6 @@
                                :ftype ftype))))))
 
 (declaim (end-block))
-
 ;;;; defining global functions
 
 ;;; Given a lambda-list, return a FUN-TYPE object representing the signature:
@@ -1371,7 +1370,6 @@
       (setf (defined-fun-inline-expansion var) var-expansion)
       fun)))
 
-
 ;;; Entry point utilities
 
 ;;; Return a function for the Nth entry point.

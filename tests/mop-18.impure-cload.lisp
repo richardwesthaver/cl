@@ -44,7 +44,6 @@
   (reinitialize-instance (find-class 'test-standard-object) :direct-slots nil)
   (assert (eq *finalized-class* (find-class 'test-standard-object)))
   (assert (null (sb-mop:class-slots (find-class 'test-standard-object)))))
-
 (defclass test-funcallable-standard-class (sb-mop:funcallable-standard-class)
   ())
 

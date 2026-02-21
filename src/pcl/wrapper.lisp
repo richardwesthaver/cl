@@ -268,7 +268,6 @@
     (if (invalid-wrapper-p wrapper)
         (check-wrapper-validity instance)
         wrapper)))
-
 ;;;  NIL: means nothing so far, no actual arg info has NILs in the
 ;;;  metatype.
 ;;;

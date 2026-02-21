@@ -88,7 +88,6 @@
                                            'writer source-location)))
     (dolist (reader readers) (do-reader-definition reader))
     (dolist (writer writers) (do-writer-definition writer))))
-
 (defun class-of (x)
   (declare (explicit-check))
   (wrapper-class (layout-of x)))
@@ -199,7 +198,6 @@
 ;;; from installing the DEFSTRUCT-HOOK until there are no more
 ;;; defstruct forms to execute within PCL itself.
 (pushnew 'ensure-deffoo-class sb-kernel::*define-condition-hooks*)
-
 (defun !make-class-predicate (class name source-location)
   (let* ((gf (ensure-generic-function name :lambda-list '(object)
                                       'source source-location))

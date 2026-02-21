@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 (macrolet ((ea-for-xf-desc (tn slot)
              `(ea (- (* ,slot n-word-bytes) other-pointer-lowtag) ,tn)))
   (defun ea-for-df-desc (tn)
@@ -68,7 +67,6 @@
     (ea-for-cxf-stack tn :double :real base))
   (defun ea-for-cdf-imag-stack (tn &optional (base rbp-tn))
     (ea-for-cxf-stack tn :double :imag base)))
-
 ;;;; move functions
 
 ;;; X is source, Y is destination.
@@ -111,7 +109,6 @@
   ((double-reg) (double-stack))
   (inst movsd  (ea-for-df-stack y) x))
 
-
 ;;;; complex float move functions
 
 ;;; X is source, Y is destination.
@@ -130,7 +127,6 @@
 (define-move-fun (store-complex-double 2) (vop x y)
   ((complex-double-reg) (complex-double-stack))
   (inst movupd (ea-for-cdf-data-stack y) x))
-
 ;;;; move VOPs
 
 ;;; float register to register moves
@@ -151,7 +147,6 @@
   (frob complex-single-move complex-single-reg)
   (frob complex-double-move complex-double-reg))
 
-
 ;;; Move from float to a descriptor reg. allocating a new float
 ;;; object in the process.
 (define-vop (move-from-single)
@@ -216,7 +211,6 @@
     (inst movsd y (ea-for-df-desc x))))
 (define-move-vop move-to-double :move (descriptor-reg) (double-reg))
 
-
 ;;; Move from complex float to a descriptor reg. allocating a new
 ;;; complex float object in the process.
 (define-allocator (move-from-complex-single)
@@ -259,7 +253,6 @@
                 (define-move-vop ,name :move (descriptor-reg) (,sc)))))
   (frob move-to-complex-single complex-single-reg :single)
   (frob move-to-complex-double complex-double-reg :double))
-
 ;;;; the move argument vops
 ;;;;
 ;;;; Note these are also used to stuff fp numbers onto the c-call
@@ -325,7 +318,6 @@
    complex-single-reg complex-double-reg)
   (descriptor-reg))
 
-
 ;;;; arithmetic VOPs
 
 (define-vop (float-op)
@@ -853,7 +845,6 @@
        (inst xorpd y y))
      (note-float-location 'sqrt vop x)
      (inst sqrtss y x)))
-
 (macrolet ((frob ((name translate sc type) &body body)
              `(define-vop (,name)
                   (:args (x :scs (,sc) :target y))
@@ -888,7 +879,6 @@
   (frob (abs/single-float abs single-reg single-float)
         (inst andps y (register-inline-constant :oword (ldb (byte 31 0) -1)))))
 
-
 ;;;; comparison
 
 (define-vop (float-compare)
@@ -1132,7 +1122,6 @@
   (define <= <=single-float <=double-float (not :p :a) :nb)
   (define >= >=single-float >=double-float (:nb)))
 
-
 ;;;; conversion
 
 (macrolet ((frob (name translate inst to-sc to-type)
@@ -1393,7 +1382,6 @@
          (inst mov :dword lo-bits
                (object-slot-ea float double-float-value-slot
                                         other-pointer-lowtag))))))
-
 
 ;;;; complex float VOPs
 

@@ -467,7 +467,6 @@ lra:
 	C_FULL_EPILOG
 	blr
 	SET_SIZE(call_into_lisp)
-
 
 	GFUNCDEF(call_into_c)
 	/* We're kind of low on unboxed, non-dedicated registers here:
@@ -603,7 +602,6 @@ lra:
 	blr
 
 	SET_SIZE(call_into_c)
-
 	/* The fun_end_breakpoint support here is considered by the
 	authors of the other $ARCH-assem.S files to be magic, and it
 	is.  It is a small fragment of code that is copied into a heap
@@ -645,7 +643,6 @@ CSYMBOL(fun_end_breakpoint_trap):
 	in order to populate out a suitably-sized code object. */
 CSYMBOL(fun_end_breakpoint_end):
 	SET_SIZE(fun_end_breakpoint_guts)
-
 
 	GFUNCDEF(ppc_flush_cache_line)
 	dcbf 0,REG(3)

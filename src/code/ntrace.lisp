@@ -28,7 +28,6 @@
 (defvar *trace-report-default* 'trace
   "the default value for the :REPORT option to TRACE")
 
-
 ;;;; internal state
 
 ;;; a hash table that maps each traced function to the TRACE-INFO. The
@@ -95,7 +94,6 @@
 ;;; trace action invokes a function that is itself traced. In this
 ;;; case, we quietly ignore the inner tracing.
 (defvar *in-trace* nil)
-
 ;;;; utilities
 
 ;;; Given X -- a function object or an s-expression naming a global function,
@@ -280,7 +278,6 @@
                     (sb-di:fun-end-cookie-valid-p frame cookie))))
       (return))
     (pop *traced-entries*)))
-
 ;;;; hook functions
 
 ;;; Return a closure that can be used for a function start breakpoint
@@ -395,7 +392,6 @@
           (finish-output *trace-output*))
         (apply #'trace-maybe-break info (trace-info-break-after info) "after"
                frame values)))))
-
 ;;; This function is called by the trace encapsulation. It calls the
 ;;; breakpoint hook functions with NIL for the breakpoint and cookie,
 ;;; which we have cleverly contrived to work for our hook functions.
@@ -463,7 +459,6 @@
             (apply #'trace-method-call info fun fmf-p args))
           fun))))
 (setf (symbol-function 'sb-pcl::maybe-trace-method) #'maybe-trace-method)
-
 ;;; Trace one function according to the specified options. We copy the
 ;;; trace info (it was a quoted constant), fill in the functions, and
 ;;; then install the breakpoints or encapsulation.
@@ -564,7 +559,6 @@
               (trace-1 (sb-pcl::%method-function-fast-function mf) info)))))
 
       function-or-name)))
-
 ;;;; the TRACE macro
 
 ;;; Parse leading trace options off of SPECS, modifying INFO
@@ -775,7 +769,6 @@ the N-th value returned by the function."
   (if specs
       (expand-trace specs)
       '(%list-traced-funs)))
-
 ;;;; untracing
 
 ;;; Untrace one function.

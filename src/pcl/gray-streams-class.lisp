@@ -9,7 +9,6 @@
 ;;;; warranty. See the COPYING and CREDITS files for more information.
 
 (in-package "SB-GRAY")
-
 (defclass fundamental-stream (standard-object stream)
   ((open-p :initform t :accessor stream-open-p))
   (:documentation "Base class for all Gray streams."))
@@ -48,7 +47,6 @@ is a subtype of unsigned-byte or signed-byte."))
     (fundamental-output-stream fundamental-binary-stream) nil
   (:documentation "Superclass of all Gray output streams whose element-type
 is a subtype of unsigned-byte or signed-byte."))
-
 ;;; This is not in the Gray stream proposal, so it is left here
 ;;; as example code.
 ;;;

@@ -33,7 +33,6 @@
 #include "var-io.h"
 #include "sc-offset.h"
 #include "gc.h"
-
 /* the way that we shut down the system on a fatal error */
 extern void ldb_monitor(void);
 
@@ -195,7 +194,6 @@ corruption_warning_and_maybe_lose(char *fmt, ...)
     va_end(ap);
     maybe_lose();
 }
-
 static void print_constant(os_context_t *context, int offset, FILE* ostream) {
     lispobj code = find_code(context);
     if (code != NIL) {

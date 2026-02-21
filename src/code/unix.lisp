@@ -38,7 +38,6 @@
         (if c-string
             (push c-string reversed-result)
             (return (nreverse reversed-result)))))))
-
 ;;;; Lisp types used by syscalls
 
 (deftype unix-pathname () 'simple-string)
@@ -48,7 +47,6 @@
 (deftype unix-pid () '(unsigned-byte 32))
 (deftype unix-uid () '(unsigned-byte 32))
 (deftype unix-gid () '(unsigned-byte 32))
-
 ;;;; system calls
 
 (/show0 "unix.lisp 74")
@@ -125,7 +123,6 @@ SYSCALL-FORM. Repeat evaluation of SYSCALL-FORM if it is interrupted."
 
 (defmacro void-syscall ((name &rest arg-types) &rest args)
   `(syscall (,name ,@arg-types) (values t 0) ,@args))
-
 ;;;; hacking the Unix environment
 
 #-win32
@@ -137,7 +134,6 @@ SYSCALL-FORM. Repeat evaluation of SYSCALL-FORM if it is interrupted."
 corresponds to NAME, or NIL if there is none."
   (with-alien ((posix-getenv (function c-string (c-string :not-null t)) :extern "getenv"))
     (acond ((alien-funcall posix-getenv name) (possibly-base-stringize it))))))
-
 ;;; from stdio.h
 
 ;;; Rename the file with string NAME1 to the string NAME2. NIL and an
@@ -148,7 +144,6 @@ corresponds to NAME, or NIL if there is none."
   (void-syscall ("rename" (c-string :not-null t)
                           (c-string :not-null t))
                 name1 name2))
-
 ;;; from sys/types.h and gnu/types.h
 
 (/show0 "unix.lisp 220")
@@ -166,8 +161,6 @@ corresponds to NAME, or NIL if there is none."
                                         sb-vm:n-machine-word-bits)))))
 
 (/show0 "unix.lisp 304")
-
-
 ;;;; fcntl.h
 ;;;;
 ;;;; POSIX Standard: 6.5 File Control Operations        <fcntl.h>
@@ -205,7 +198,6 @@ corresponds to NAME, or NIL if there is none."
   (declare (type unix-fd fd))
   #+win32 (sb-win32:unixlike-close fd)
   #-win32 (void-syscall ("close" int) fd))
-
 ;;;; stdlib.h
 
 ;;; There are good reasons to implement some OPEN options with an
@@ -229,7 +221,6 @@ corresponds to NAME, or NIL if there is none."
             (values nil (get-errno))
             (values #-win32 fd #+win32 (sb-win32::duplicate-and-unwrap-fd fd)
                     (octets-to-string template-buffer)))))))
-
 ;;;; resourcebits.h
 
 (defconstant rusage_self 0) ; the calling process
@@ -254,7 +245,6 @@ corresponds to NAME, or NIL if there is none."
     (ru-nsignals long)              ; signals received
     (ru-nvcsw long)                 ; voluntary context switches
     (ru-nivcsw long)))              ; involuntary context switches
-
 ;;;; unistd.h
 
 ;;; Given a file path (a string) and one of four constant modes,
@@ -569,7 +559,6 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
   (declare (type unix-fd fd)
            (type word cmd))
   (void-syscall ("ioctl" int unsigned-long &optional (* char)) fd cmd arg))
-
 ;;;; sys/resource.h
 
 ;;; Return information about the resource usage of the process
@@ -601,7 +590,6 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
                       (slot usage 'ru-nvcsw)
                       (slot usage 'ru-nivcsw))
               who (addr usage))))
-
 (defvar *on-dangerous-wait* :warn)
 
 ;;; Calling select in a bad place can hang in a nasty manner, so it's better
@@ -624,7 +612,6 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
                type)
        (sb-debug:print-backtrace)))
     nil))
-
 ;;;; poll.h
 #+os-provides-poll
 (progn
@@ -670,7 +657,6 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
                 (or (and (eql 1 count) (logtest events revents))
                     (logtest pollhup revents)))
               (error "Syscall poll(2) failed: ~A" (strerror))))))))
-
 ;;;; sys/select.h
 
 (defmacro with-fd-setsize ((n) &body body)
@@ -764,7 +750,6 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
           ((0) nil)
           (otherwise
            (error "Syscall select(2) failed on fd ~D: ~A" fd (strerror))))))))
-
 ;;;; sys/stat.h
 
 ;;; This is a structure defined in src/runtime/wrap.c, to look
@@ -877,7 +862,6 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
       (#.s-iflnk :link)
       (#.s-ififo :fifo)
       (t :unknown))))
-
 ;;;; time.h
 
 ;; used by other time functions
@@ -918,7 +902,6 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
   (alien-funcall (extern-alien "sb_nanosleep_float" (function (values) float))
                  seconds)
   nil)
-
 
 ;; Type of the second argument to `getitimer' and
 ;; the second and third arguments `setitimer'.
@@ -983,14 +966,12 @@ avoiding atexit(3) hooks, etc. Otherwise exit(2) is called."
                         (slot (slot itvo 'it-value) 'tv-usec))
                 which (alien-sap (addr itvn)) (alien-sap (addr itvo))))))
 
-
 ;;; FIXME: Many Unix error code definitions were deleted from the old
 ;;; CMU CL source code here, but not in the exports of SB-UNIX. I
 ;;; (WHN) hope that someday I'll figure out an automatic way to detect
 ;;; unused symbols in package exports, but if I don't, there are
 ;;; enough of them all in one place here that they should probably be
 ;;; removed by hand.
-
 (defconstant microseconds-per-internal-time-unit
   (/ 1000000 internal-time-units-per-second))
 (defconstant nanoseconds-per-internal-time-unit
@@ -1112,7 +1093,6 @@ the UNIX epoch (January 1st 1970.)"
          (floor (+ utime-usec stime-usec
                    (floor microseconds-per-internal-time-unit 2))
                 microseconds-per-internal-time-unit)))))
-
 ;;; FIXME, KLUDGE: GET-TIME-OF-DAY used to be UNIX-GETTIMEOFDAY, and had a
 ;;; primary return value indicating sucess, and also returned timezone
 ;;; information -- though the timezone data was not there on Darwin.
@@ -1124,7 +1104,6 @@ the UNIX epoch (January 1st 1970.)"
   #+win32 (declare (notinline get-time-of-day)) ; forward ref
   (multiple-value-bind (sec usec) (get-time-of-day)
     (values t sec usec nil nil)))
-
 ;;;; opendir, readdir, closedir, and dirent-name
 
 (declaim (inline unix-opendir))

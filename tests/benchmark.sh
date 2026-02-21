@@ -15,22 +15,13 @@ then
     exit 1
 fi
 
-logdir=${SBCL_PAREXEC_TMP:-$HOME}/sbcl-test-logs-$$
+logdir=${CL_PAREXEC_TMP:-$HOME}/cl-test-logs-$$
 echo ==== Writing logs to $logdir ====
-junkdir=${SBCL_PAREXEC_TMP:-/tmp}/junk
+junkdir=${CL_PAREXEC_TMP:-/tmp}/junk
 mkdir -p $junkdir $logdir
 
-case `uname` in
-    CYGWIN* | WindowsNT | MINGW* | MSYS*)
-        echo ";; Using -j$1"
-        echo "LOGDIR=$logdir" >$logdir/Makefile
-        ../run-sbcl.sh --script genmakefile.lisp >>$logdir/Makefile
-        exec make -k -j $1 -f $logdir/Makefile
-        ;;
-esac
-
-export TEST_DIRECTORY SBCL_HOME
-TEST_DIRECTORY=$junkdir SBCL_HOME=../obj/sbcl-home exec ../src/runtime/sbcl \
-  --noinform --core ../output/sbcl.core \
+export TEST_DIRECTORY CL_HOME
+TEST_DIRECTORY=$junkdir CL_HOME=../obj/cl-home exec ../src/runtime/cl \
+  --noinform --core ../output/cl.core \
   --no-userinit --no-sysinit --noprint --disable-debugger $logdir $* \
   < benchmark.lisp

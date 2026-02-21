@@ -21,7 +21,6 @@ time format. (See INTERNAL-TIME-UNITS-PER-SECOND.)")
 INTERNAL-TIME-UNITS-PER-SECOND.) This is useful for finding CPU usage.
 Includes both \"system\" and \"user\" time."
   (system-internal-run-time))
-
 ;;;; Encode and decode universal times.
 
 ;;; In August 2003, work was done in this file for more plausible
@@ -238,7 +237,6 @@ format."
                   (truncate-to-unix-range guess))))
           (setf encoded-time (+ guess (- secwest secwest-guess)))))
     encoded-time))
-
 ;;;; TIME
 
 (defvar *gc-real-time* 0

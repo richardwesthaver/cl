@@ -527,7 +527,6 @@ scav_closure(lispobj *where, lispobj header)
     return 1 + payload_words;
 }
 #endif
-
 /*
  * instances
  */
@@ -656,7 +655,6 @@ scav_instance_pointer(lispobj *where, lispobj object)
     return 1;
 }
 
-
 /*
  * lists and conses
  */
@@ -713,7 +711,6 @@ scav_list_pointer(lispobj *where, lispobj object)
     *where = copy;
     return 1;
 }
-
 /*
  * scavenging and transporting other pointers
  */
@@ -738,7 +735,6 @@ scav_other_pointer(lispobj *where, lispobj object)
     CHECK_COPY_POSTCONDITIONS(copy, OTHER_POINTER_LOWTAG);
     return 1;
 }
-
 /*
  * immediate, boxed, and unboxed objects
  */
@@ -1128,7 +1124,6 @@ trans_ratio_or_complex(lispobj object)
     }
     return gc_copy_object(object, 4, boxed_region, PAGE_TYPE_BOXED);
 }
-
 /* vector-like objects */
 static lispobj
 trans_vector_t(lispobj object)
@@ -1329,7 +1324,6 @@ void smash_weak_pointers(void)
     weak_vectors = 0;
 }
 
-
 /* Hash tables */
 
 /* List of weak hash tables chained through their NEXT-WEAK-HASH-TABLE
@@ -1961,7 +1955,6 @@ void cull_weak_hash_tables(int (*alivep[4])(lispobj,lispobj))
     ensure_region_closed(cons_region, PAGE_TYPE_CONS);
 }
 
-
 /*
  * initialization
  */
@@ -1981,7 +1974,6 @@ size_lose(lispobj *where)
          (void*)where, widetag_of(where));
     return 1; /* bogus return value to satisfy static type checking */
 }
-
 /*
  * initialization
  */
@@ -2405,7 +2397,6 @@ scrub_thread_control_stack(struct thread *th)
 #endif
 #endif /* LISP_FEATURE_C_STACK_IS_CONTROL_STACK */
 }
-
 #if !defined(LISP_FEATURE_X86) && !defined(LISP_FEATURE_X86_64)
 
 void

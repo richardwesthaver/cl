@@ -34,10 +34,10 @@
 
 (define-load-time-global *core-string* "")
 (define-load-time-global *core-pathname* nil
-    "The absolute pathname of the running SBCL core.")
+    "The absolute pathname of the running CL core.")
 (define-load-time-global *software-version* nil)
 (define-load-time-global *runtime-pathname* nil
-    "The absolute pathname of the running SBCL runtime.")
+    "The absolute pathname of the running CL runtime.")
 (define-load-time-global *sbcl-homedir-pathname* nil)
 
 (defun os-deinit ()

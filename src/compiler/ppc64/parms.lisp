@@ -72,7 +72,6 @@
 
 (defconstant float-fast-bit 2)         ; Non-IEEE mode
 
-
 ;;;; Where to put the different spaces.
 
 (gc-space-setup #x04000000
@@ -82,7 +81,6 @@
 (defconstant alien-linkage-table-growth-direction :up)
 (defconstant alien-linkage-table-entry-size #+little-endian 28 #+big-endian 24)
 
-
 (defenum (:start 8)
   halt-trap
   pending-interrupt-trap
@@ -93,7 +91,6 @@
   single-step-around-trap
   single-step-before-trap
   error-trap)
-
 ;;;; Static symbols.
 
 

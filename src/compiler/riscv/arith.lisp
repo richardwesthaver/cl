@@ -460,7 +460,6 @@
     (let ((zero (generate-error-code vop 'division-by-zero-error x)))
       (inst beq y zero-tn zero))))
 
-
 ;;;; Binary conditional VOPs.
 
 ;;; Unlike other backends, it is not worth defining vops which
@@ -538,7 +537,6 @@
   (:arg-types * tagged-num)
   (:variant-cost 7))
 
-
 ;;;; Logical operations
 
 (macrolet ((define (translate operation)
@@ -554,7 +552,6 @@
                 (:generator 1 (inst ,operation r num amount)))))
   (define shift-towards-start srl)
   (define shift-towards-end   sll))
-
 ;;;; Modular arithmetic
 (defmacro define-mod-binop ((name prototype) function)
   `(define-vop (,name ,prototype)

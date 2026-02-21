@@ -189,7 +189,6 @@
               (remf (info :source-location :declaration name) 'defknown))))))
   names)
 
-
 ;;; This macro should be the way that all implementation independent
 ;;; information about functions is made known to the compiler.
 ;;;
@@ -346,7 +345,6 @@
 (declaim (ftype (sfunction (t) fun-info) fun-info-or-lose))
 (defun fun-info-or-lose (name)
   (or (info :function :info name) (error "~S is not a known function." name)))
-
 ;;;; generic type inference methods
 
 (defun maybe-find-free-var (name)

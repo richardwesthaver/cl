@@ -124,7 +124,6 @@
        (if macro-p
            (setq place expansion) ; iterate
            (return place)))))
-
 ;;;; SETF itself
 
 ;; Code shared by SETF, PSETF, SHIFTF attempting to minimize the expansion.
@@ -402,7 +401,6 @@
   "The first argument is some location holding a number. This number is
   decremented by the second argument, DELTA, which defaults to 1."
     (expand place delta env 'xsubtract)))
-
 ;;;; DEFINE-MODIFY-MACRO stuff
 
 (sb-xc:defmacro define-modify-macro (name lambda-list function &optional doc-string)
@@ -422,7 +420,6 @@
        ,@(when doc-string (list (the string doc-string)))
        (expand-rmw-macro ',function '() ,place
                          (list* ,@args ,(car rest)) t ,env ',args))))
-
 ;;;; DEFSETF
 
 ;;; Assign SETF macro information for NAME, making all appropriate checks.
@@ -576,7 +573,6 @@
                         newval-binding
                         (cdr stores)))))
          (if bindings `(let* ,bindings ,setter) setter))))
-
 ;;;; DEFMACRO DEFINE-SETF-EXPANDER and various DEFINE-SETF-EXPANDERs
 
 ;;; DEFINE-SETF-EXPANDER is a lot like DEFMACRO.

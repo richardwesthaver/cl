@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; DEFKNOWNs
 
 (deftransform foreign-symbol-address ((symbol &optional datap)
@@ -113,7 +112,6 @@
   (defsapref sap-ref-long       long-float) ; actually DOUBLE-FLOAT
 ) ; MACROLET
 
-
 ;;;; transforms for converting sap relation operators
 
 (macrolet ((def (sap-fun int-fun)
@@ -124,7 +122,6 @@
   (def sap= =)
   (def sap>= >=)
   (def sap> >))
-
 ;;;; transforms for optimizing SAP+
 
 (deftransform sap+ ((sap offset))
@@ -153,7 +150,6 @@
                   `(funcall #'(setf ,',fun) ,value ,sap ,offset))))))
   (def sap-ref-word word)
   (def signed-sap-ref-word sb-vm:signed-word))
-
 ;;; Transforms for 64-bit SAP accessors on 32-bit platforms.
 
 #-(or 64-bit 64-bit-registers)

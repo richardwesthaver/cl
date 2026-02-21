@@ -9,7 +9,6 @@
 ;;;; provided with absolutely no warranty. See the COPYING and CREDITS
 ;;;; files for more information.
 (in-package "SB-VM")
-
 ;;; (ARRAY NIL) stuff looks the same on all platforms
 ;;;
 ;;; This is separate from DATA-VECTOR-REF, because it's declared as
@@ -85,7 +84,6 @@
       cerror-trap
       (error-number-or-lose 'check-type-error)
       (list r var type))))
-
 #+(or immobile-space permgen) ; i.e. can LAYOUT instance have immediate SC
 (defun type-err-type-tn-loadp (thing)
   (cond ((sc-is thing immediate)
@@ -173,7 +171,6 @@
         ;; just report the type without the value
         (error-call vop 'sb-kernel::op-not-type1-error (emit-constant *location-context*))
         (error-call vop 'sb-kernel::op-not-type1-error a))))
-
 
 (defun emit-internal-error (kind code values &key trap-emitter)
   (let ((trap-number (if (eq kind error-trap)

@@ -66,7 +66,6 @@
   (defconstant-eqx float-exceptions-byte (byte 8 0) #'equalp)
 
   (defconstant float-fast-bit (ash 1 24))) ;; Flush-to-zero mode
-
 ;;;; Where to put the different spaces.
 
 (gc-space-setup #+(or linux openbsd netbsd freebsd win32)
@@ -88,7 +87,6 @@
   ;;   |<------------->|
 #+(and sb-xc-host immobile-space)
 (defparameter alien-linkage-space-start (- text-space-start alien-linkage-space-size))
-
 ;;;; other miscellaneous constants
 
 (defenum (:start 8)
@@ -101,7 +99,6 @@
   single-step-before-trap
   invalid-arg-count-trap
   error-trap)
-
 ;;;; Static symbols.
 
 ;;; These symbols are loaded into static space directly after NIL so
@@ -123,7 +120,6 @@
 
 (defconstant-eqx +static-fdefns+ `#(,@common-static-fdefns) #'equalp)
 
-
 ;;;; Assembler parameters:
 
 ;;; The number of bits per element in the assemblers code vector.

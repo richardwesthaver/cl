@@ -92,8 +92,8 @@
   ((new
     (with-output-to-string (makefile)
       (format makefile
-          "SBCL=src/runtime/sbcl
-ARGS=--core output/sbcl.core --noinform --disable-debugger --noprint --no-userinit --no-sysinit
+          "CL=src/runtime/cl
+ARGS=--core output/cl.core --noinform --disable-debugger --noprint --no-userinit --no-sysinit
 SCRIPT1=crossbuild-runner/pass-1.lisp
 SCRIPT2=crossbuild-runner/pass-2.lisp
 DEPS1=crossbuild-runner/pass-1.lisp src/cold/build-order.lisp-expr~%")
@@ -104,9 +104,9 @@ DEPS1=crossbuild-runner/pass-1.lisp src/cold/build-order.lisp-expr~%")
         (format makefile
                 (interpolate
                  "~%obj/xbuild/{cfg}/xc.core: $(DEPS1)
-	$(SBCL) $(ARGS) {cfg} {arch} \"{feat}\" < $(SCRIPT1)
+	$(CL) $(ARGS) {cfg} {arch} \"{feat}\" < $(SCRIPT1)
 obj/xbuild/{cfg}.core: obj/xbuild/{cfg}/xc.core
-	$(SBCL) $(ARGS) {cfg} < $(SCRIPT2)~%"
+	$(CL) $(ARGS) {cfg} < $(SCRIPT2)~%"
                  `(("cfg" . ,config-name)
                    ("arch" . ,(car arch+configs))
                    ;; features string can't contain a #\newline

@@ -153,7 +153,6 @@
 (defun reconstitute-object (address)
   (let ((sap (descriptor-sap address)))
     (lispobj@baseptr sap (widetag@baseptr sap))))
-
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *cpu-features* nil))

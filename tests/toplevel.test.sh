@@ -55,7 +55,7 @@ fi
 
 # disable the use of --disable-debugger through run_sbcl for the rest of
 # this file
-SBCL_ARGS="--noinform --no-sysinit --no-userinit --noprint"
+CL_ARGS="--noinform --no-sysinit --no-userinit --noprint"
 
 # --non-interactive with error
 #

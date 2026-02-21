@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Arenas
 (defmacro thread-current-arena ()
   `(sap-ref-lispobj (current-thread-offset-sap thread-this-slot)
@@ -56,7 +55,6 @@
 ;;; FIXME: should be called PAD-DATA-BLOCK-SIZE
 (defmacro pad-data-block (words)
   `(logandc2 (+ (ash ,words word-shift) lowtag-mask) lowtag-mask))
-
 ;;;; primitive object definition stuff
 
 (defun remove-keywords (options keywords)
@@ -215,7 +213,6 @@
                      ,sb-name ,@args)
                    (defconstant ,constant-name ,sc-number))))))
       `(progn ,@(mapcan #'process-class classes)))))
-
 ;;;; some general constant definitions
 
 ;;; The maximum number of storage classes and offsets within a given
@@ -237,7 +234,6 @@
   (integer-length (1- finite-sc-offset-limit)))
 (deftype finite-sc-offset () `(integer 0 (,finite-sc-offset-limit)))
 (deftype finite-sc-offset-map () `(unsigned-byte ,finite-sc-offset-limit))
-
 ;;;; stuff for defining reffers and setters
 
 (in-package "SB-C")

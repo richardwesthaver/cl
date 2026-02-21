@@ -245,7 +245,6 @@ subsequent phases to ignore the call.  If the call is legal and is to a known
 function, then we annotate the Combination node with the Function-Info
 structure that contains the compiler information for the function.
 
-
 \section{Tail sets}
 \#|
 Probably want to have a GTN-like function result equivalence class mechanism
@@ -313,7 +312,6 @@ When a given return has no non-call uses, we represent this by using
 *empty-type*.  This is consistent with the interpretation that a return type of
 NIL means the function can't return.
 
-
 \section{Hairy function representation}
 
 Non-fixed-arg functions are represented using Optional-Dispatch.  An
@@ -356,7 +354,6 @@ we can parse keywords at compile time for calls to known functions.  We keep
 around the original parsed lambda-list and related information so that people
 can figure out how to call the main entry.
 
-
 \section{ICR representation of non-local exits}
 
 All exits are initially represented by EXIT nodes:
@@ -448,7 +445,6 @@ eliminates any need to special-case ICR flow analysis.  Obviously we don't
 really want to make heap-closures here.  In reality these functions are
 special-cased by the back-end according to their KIND.
 
-
 \section{Block compilation}
 
 One of the properties of ICR is that it supports ``block compilation'' by allowing
@@ -472,7 +468,6 @@ We actually convert each form in the file separately, creating a separate
 needed.  The main reason for doing this is to cause EVAL-WHEN processing to be
 interleaved with reading. 
 
-
 \section{Entry points}
 
 \#|
@@ -547,4 +542,3 @@ previously a non-local reference.  When we delete the reference to the XEP, we
 may find that it has no references.  In this case, we can delete the XEP,
 causing the function to no longer be an entry-point.
 
-

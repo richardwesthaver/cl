@@ -52,7 +52,6 @@
 (defun round-up (number size)
   "Round NUMBER up to be an integral multiple of SIZE."
   (* size (ceiling number size)))
-
 ;;;; implementing the concept of "vector" in (almost) portable
 ;;;; Common Lisp
 ;;;;
@@ -180,7 +179,6 @@
             do (setf (svref new-outer-vector i) (make-smallvec)))
       (setf (bigvec-outer-vector bigvec)
             new-outer-vector))))
-
 ;;;; looking up bytes and multi-byte values in a BIGVEC (considering
 ;;;; it as an image of machine memory on the cross-compilation target)
 
@@ -249,7 +247,6 @@
     (declare (type sb-xc:fixnum index))
     (aver (not (logtest index (ash sb-vm:lowtag-mask -1))))
     (access bytes index t)))
-
 ;;;; representation of spaces in the core
 
 ;;; If there is more than one dynamic space in memory (i.e., if a
@@ -359,7 +356,6 @@
     (setf (access bvref-32) (ldb (byte 32 0) (the (signed-byte 32) newval))))
   (defun (setf sap-ref-64) (newval sap offset)
     (setf (access bvref-64) newval)))
-
 ;;;; representation of descriptors
 
 (declaim (inline is-fixnum-lowtag))
@@ -668,7 +664,6 @@
 (defun make-character-descriptor (data)
   (make-other-immediate-descriptor data sb-vm:character-widetag))
 
-
 ;;;; miscellaneous variables and other noise
 
 ;;; a handle on the trap object
@@ -688,7 +683,6 @@
 ;;; loadtime value, represented by (CONS KEYWORD ..).
 (declaim (special *!cold-toplevels* *cold-methods*))
 
-
 ;;;; miscellaneous stuff to read and write the core memory
 (declaim (ftype (function (descriptor sb-vm:word) descriptor) read-wordindexed))
 (macrolet ((read-bits ()
@@ -734,7 +728,6 @@
     (declare (type descriptor address) (type sb-vm:word index)
              (type (or sb-vm:word sb-vm:signed-word) bits))
     (write-bits (logand bits sb-ext:most-positive-word))))
-
 ;;;; allocating images of primitive objects in the cold core
 
 (defun write-header-word (des header-word)
@@ -864,7 +857,6 @@
   (allocate-struct (struct-size type)
                    (cold-layout-descriptor (gethash type *cold-layouts*))
                    gspace))
-
 ;;;; copying simple objects into the cold core
 
 (defun cold-simple-vector-p (obj)
@@ -1117,7 +1109,6 @@ core and return a descriptor to it."
          (vector (make-array len)))
     (dotimes (i len vector)
       (setf (aref vector i) (funcall transform (cold-svref descriptor i))))))
-
 ;;;; symbol magic
 
 (defvar *tls-index-to-symbol*)
@@ -1254,7 +1245,6 @@ core and return a descriptor to it."
           (write-wordindexed/raw des wordindex newbits)))
       (assert (= (fname-linkage-index fname) index)))
     index)))
-
 ;;;; layouts and type system pre-initialization
 
 ;;; Since we want to be able to dump structure constants and
@@ -1582,7 +1572,6 @@ core and return a descriptor to it."
         (chill-layout 'null t-layout sequence list symbol))
       (chill-layout 'sb-lockless::list-node t-layout s-o-layout)
       (chill-layout 'stream t-layout))))
-
 ;;;; interning symbols in the cold image
 
 ;;; a map from package name as a host string to
@@ -2116,7 +2105,6 @@ core and return a descriptor to it."
     (cold-set 'sb-vm::*fp-constant-1d0* (number-to-core 1d0))
     (cold-set 'sb-vm::*fp-constant-0f0* (number-to-core 0f0))
     (cold-set 'sb-vm::*fp-constant-1f0* (number-to-core 1f0))))
-
 ;;;; functions and fdefinition objects
 
 ;;; Given a cold representation of a symbol, return a warm
@@ -2292,7 +2280,6 @@ core and return a descriptor to it."
           (cond
             #+x86-64 ((eq warm-sym t) (setq *t-symbol-info* info))
             (t (write-wordindexed (cold-intern warm-sym) sb-vm:symbol-info-slot info))))))
-
 ;;;; fixups and related stuff
 
 ;;; an EQUAL hash table
@@ -2406,7 +2393,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
       ;; C runtime reads the core header entry but cold-init reads the lisp symbol
       (cold-set (cold-intern 'sb-sys:*linkage-info*) (cold-cons *nil-descriptor* v))
       v)))
-
 ;;;; general machinery for cold-loading FASL files
 
 (defun pop-fop-stack (stack)
@@ -2463,7 +2449,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
                 (*trace-output* f))
             (load-as-fasl s nil nil)))
         (load-as-fasl s nil nil))))
-
 ;;;; miscellaneous cold fops
 
 (define-cold-fop (fop-misc-trap) *unbound-marker*)
@@ -2527,7 +2512,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
     (if existing-layout
         (cold-layout-descriptor existing-layout)
         (make-cold-layout name depthoid flags length bitmap-value inherits))))
-
 ;;;; cold fops for loading symbols
 
 ;;; Given STRING naming a symbol exported from COMMON-LISP, return either "SB-XC"
@@ -2582,14 +2566,12 @@ Legal values for OFFSET are -4, -8, -12, ..."
               (read-cold-symbol-name symbol))))
     ;; Genesis performs additional coalescing of uninterned symbols
     (push-fop-table (get-uninterned-symbol name) (fasl-input))))
-
 ;;;; cold fops for loading packages
 
 (define-cold-fop (fop-named-package-save (namelen))
   (let ((name (make-string namelen)))
     (read-string-as-bytes (fasl-input-stream) name)
     (push-fop-table (find-package name) (fasl-input))))
-
 ;;;; cold fops for loading vectors
 
 (define-cold-fop (fop-base-string (len))
@@ -2646,7 +2628,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
   (let ((im (pop-stack)))
     (number-pair-to-core (pop-stack) im sb-vm:complex-rational-widetag)))
 
-
 ;;;; cold fops for calling (or not calling)
 
 (defvar *load-time-value-counter*)
@@ -2686,7 +2667,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
                    (pop-stack))
         *!cold-toplevels*))
 
-
 ;;;; cold fops for fixing up circularities
 
 (define-cold-fop (fop-rplaca (tbl-slot idx))
@@ -2712,7 +2692,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
   (dotimes (i index)
     (setq obj (read-wordindexed obj sb-vm:cons-cdr-slot)))
   obj)
-
 ;;;; cold fops for loading code objects and functions
 
 (define-cold-fop (fop-fset)
@@ -3031,7 +3010,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
                                                  (host-object-from-core retained-fixups)))
                      #-linkage-space retained-fixups)
   t)
-
 ;;;; sanity checking space layouts
 
 (defun check-spaces ()
@@ -3064,7 +3042,6 @@ Legal values for OFFSET are -4, -8, -12, ..."
       #-immobile-space
       (let ((end (+ sb-vm:alien-linkage-space-start sb-vm:alien-linkage-space-size)))
         (check sb-vm:alien-linkage-space-start end :linkage-table)))))
-
 ;;;; emitting C header file
 
 (defun tailwise-equal (string tail)
@@ -3762,7 +3739,6 @@ static inline int hashtable_weakness(struct hash_table* ht) { return ht->uw_flag
 };~2%")
     (write-array "sc_and_offset_sc_number_bytes" sb-c::+sc+offset-scn-bytes+)
     (write-array "sc_and_offset_offset_bytes"    sb-c::+sc+offset-offset-bytes+)))
-
 ;;;; writing map file
 
 ;;; Write a map file describing the cold load. Some of this
@@ -3969,7 +3945,6 @@ INDEX   LINK-ADDR       FNAME    FUNCTION  NAME
       ;; Sort by address
       (format t "~|~%II.B. defined functions (numerically):")
       (output (sort (copy-list lines) #'< :key (lambda (x) (fourth x)))))))
-
 ;;;; writing core file
 
 #+linkage-space
@@ -4225,7 +4200,6 @@ INDEX   LINK-ADDR       FNAME    FUNCTION  NAME
     (format t "done]~%")
     (force-output))
   (values))
-
 ;;;; the actual GENESIS function
 
 ;;; Read the FASL files in OBJECT-FILE-NAMES and produce a Lisp core,
@@ -4234,7 +4208,7 @@ INDEX   LINK-ADDR       FNAME    FUNCTION  NAME
 ;;; output files arguments (any of which may be NIL to suppress output):
 ;;;   CORE-FILE-NAME gets a Lisp core.
 ;;;   C-HEADER-DIR-NAME gets the path in which to place generated headers
-;;;   MAP-FILE-NAME gets the name of the textual 'cold-sbcl.map' file
+;;;   MAP-FILE-NAME gets the name of the textual 'cold-cl.map' file
 (defun sb-cold:genesis (&key object-file-names foptrace-file-names tls-init
                              defstruct-descriptions
                              build-id
@@ -4396,7 +4370,7 @@ INDEX   LINK-ADDR       FNAME    FUNCTION  NAME
       (when map-file-name
         (let ((all-objects (gspace-objects *dynamic*)))
           (when all-objects
-            (with-open-file (stream "output/cold-sbcl.fullmap"
+            (with-open-file (stream "output/cold-cl.fullmap"
                                     :direction :output
                                     :if-exists :supersede)
               (format t "~&Headered objects: ~d, Conses: ~d~%"

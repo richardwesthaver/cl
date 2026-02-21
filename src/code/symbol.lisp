@@ -543,7 +543,6 @@ distinct from the global value. Can also be SETF."
 (defun keywordp (object)
   "Return true if Object is a symbol in the \"KEYWORD\" package."
   (keywordp object)) ; transformed
-
 ;;;; GENSYM and friends
 
 (defvar *gentemp-counter* 0)

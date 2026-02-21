@@ -55,7 +55,6 @@
 (defconstant-eqx float-exceptions-byte (byte 5 0) #'equalp)
 (defconstant float-fast-bit (ash 1 24)) ;; Flush-to-zero mode
 
-
 ;;;; Where to put the different spaces.
 
 (gc-space-setup #x04000000 :dynamic-space-start #x4f000000)
@@ -65,7 +64,6 @@
 (setq *alien-linkage-table-predefined-entries* '(("alloc" nil)
                                                  ("alloc_list" nil)))
 
-
 ;;;; other miscellaneous constants
 
 (defenum (:start 8)
@@ -78,7 +76,6 @@
   single-step-before-trap
   invalid-arg-count-trap
   error-trap)
-
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *runtime-asm-routines* '(call-into-lisp do-pending-interrupt)))
@@ -105,7 +102,6 @@
 
 (defconstant-eqx +static-fdefns+ `#(,@common-static-fdefns) #'equalp)
 
-
 ;;;; Assembler parameters:
 
 ;;; The number of bits per element in the assemblers code vector.

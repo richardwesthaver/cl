@@ -7,7 +7,6 @@
 % 		 (format s "~A~%" k))
 % 	     (c::backend-template-names c::*backend*))))
 
-
 \section{Scope and Purpose}
 
 This document describes the Virtual Machine that serves as the basis for the
@@ -180,7 +179,6 @@ here.  Others are in implementation-specific VM documentation.
 \comment<Not all sub-primitives are VOPs, and most VOPs are not sub-primitives.>
 
 
-
 \subsection{VOP base name rules}
 
 The names of VOPs that implement functions are based on the function name.
@@ -201,7 +199,6 @@ through an implicit control transfer.  These operations are prefixed with
 ``{\tt check-}'', as in {\tt check-fixnum} and {\tt check-bound}.
 
 
-
 \subsection{VOP name prefixes and suffixes}
 
 Prefixes and suffixes are added to the base to get the names of variant
@@ -237,10 +234,8 @@ integer.  The implementation is optimized for speed at the expense of space and
 safety.
 
 
-
 \chapter{Data Types and Storage Resources}
 
-
 \section{Lisp Objects}
 \index{Lisp objects}
 
@@ -289,7 +284,6 @@ Immediate types:
   short float
 
 
-
 \section{Type VOPs}
 
 We consider control transfer to be the fundamental result of comparison, rather
@@ -350,7 +344,6 @@ if-functionp
     code, so it is reasonable to put them out of line.
 
 
-
 \section{Type Sub-primitives}
 
 change-type (object) => result
@@ -381,7 +374,6 @@ bad will happen if an old PC is unaccompanied by an environment.
 \item[Trap]Illegal object trap.  This value is used in symbols to signify an
 undefined value or definition.
 
-
 \chapter{Characters}
 
 
@@ -432,7 +424,6 @@ if-char< (x y)
 if-char> (x y)
 \end{example}
 
-
 \chapter{Symbols}
 
 
@@ -452,7 +443,6 @@ symbol.  If the symbol is not fbound, then this slot holds the unbound marker.
 \end{description}
 
 
-
 \section{Sub-primitives}
 
 The {\tt alloc-symbol} sub-primitive allocates a new symbol object.  {\it name} is
@@ -468,7 +458,6 @@ set-symbol-package (symbol new-value)
 \end{example}
 
 
-
 \section{Accessor VOPs}
 
 These VOPs read the global symbol value and definition cells.  {\tt constant-ref}
@@ -494,7 +483,6 @@ The \clisp accessors for other symbol slots are translated into uses of the
 {\tt slot-ref} and {\tt slot-set} VOPs.
 
 
-
 \section{Special Binding}
 
 These VOPs implement dynamic binding of special variables using shallow
@@ -506,7 +494,6 @@ bind (symbol value)
 unbind (count)
 \end{example}
 
-
 \section{Property Lists}
 
 The {\tt get} VOP implements the corresponding \clisp function, while {\tt put}
@@ -516,7 +503,6 @@ get (symbol indicator default) => value
 put (symbol indicator value)
 \end{example}
 
-
 \chapter{Lists}
 
 
@@ -560,7 +546,6 @@ getf (list indicator default) => value
 putf (list indicator new-value) => list
 \end{example}
 
-
 \chapter{Numbers}
 
 \index{Fixnum format}
@@ -586,7 +571,6 @@ Complex\\Complex numbers are stored as two consecutive words of Lisp objects,
 which should both be numbers.
 
 
-
 \section{Number VOPs}
 
 integer-length
@@ -647,7 +631,6 @@ deposit-field
     turn fixnum operations with constant byte-specifiers into standard logical
     operations.
 
-
 \section{Number Sub-primitives}
 
 
@@ -659,7 +642,6 @@ logldb
 logdpb
 
 
-
 \chapter{Arrays}
 
 \cl arrays can be represented in a few different ways in \rtccl --
@@ -677,7 +659,6 @@ the original size, since the space freed by the reduction may have been
 reclaimed.
 
 
-
 \subsection{Arrays}
 \label{Arrays}
 \index{Arrays}
@@ -734,7 +715,6 @@ vector is scanned linearly, the last array index is the one that varies most
 rapidly, then the index before it, and so on.
 
 
-
 \section{Array VOPs}
 
 alloc-bit-vector
@@ -774,7 +754,6 @@ aset$<$N$>$ (array index0 ... index<n-1> new-value)
     for benchmarks.)
 
 
-
 \section{Array Sub-primitives}
 
 alloc-array
@@ -799,7 +778,6 @@ byte-blt
 sxhash-simple-string
 sxhash-simple-substring
 
-
 \chapter{Structures}
 
 {small, fast} structure-ref (s) => value
@@ -809,12 +787,10 @@ sxhash-simple-substring
 
 alloc-structure
 
-
 \chapter{Runtime Environment}
 \index{Runtime Environment}
 \label{Runtime}
 
-
 \section{Register Allocation}
 \index{Register allocation}
 
@@ -851,7 +827,6 @@ may not be able to count on it too much, though, since ENV holds other things
 will calls are in progress, and might be pretty random if we jumped into
 hyperspace.
 
-
 Runtime environment:
 
 CONT: the current control stack context.
@@ -872,7 +847,6 @@ A<n>
 CONT
 CS
 \end{verbatim}
-
 \section{Other Dynamic State}
 
 There are some dynamic state variables that are stored in known memory
@@ -887,7 +861,6 @@ current unwind-protect\\The pointer to the current unwind-protect block.
 
 
 
-
 \section{Control-Stack Format}
 \label{Control-Stack-Format}
 \index{Control-stack format}
@@ -942,7 +915,6 @@ jump right to the callee, rather than allocating a new frame.  We can do this
 because TNBind globally allocates frame locations; all frames are the same size
 and have the same TNs in the same place.
 
-
 \section{Binding-Stack Format}
 \index{Binding stack format}
 \comment<In a symbol chapter?>
@@ -958,7 +930,6 @@ first is a pointer to the symbol being bound.  Pushed second is the symbol's
 old value (any boxed item) that is to be restored when the binding stack is
 popped.
 
-
 \chapter{Functions}
 
 Function calling is a way of life.  
@@ -983,7 +954,6 @@ Aspects of function call:
 
 
 
-
 \section{Function Object Format}
 \label{Fn-Format}
 
@@ -1010,13 +980,11 @@ environment objects.
 See chapter \ref{control-conventions} for a description of how function objects
 are used.
 
-
 \section{Environment Object Sub-primitives}
 
 alloc-code ?
 alloc-closure?
 
-
 \subsection{Debug Information Location}
 
 If present, debug information is stored immediately following any fixed
@@ -1026,7 +994,6 @@ information can be recognized because it is represented by a defstruct
 structure.  See chapter \ref{debug-info} for a description of the debug
 information.
 
-		
 \section{Function Calls}
 \index{function call}
 
@@ -1121,7 +1088,6 @@ The gory details of arg count checking and dispatching are buried in the
 Function-Entry VOP, which takes a functional and a list of continuations, one
 pointing to each external entry.
 
-
 \subsection{Local Call}
 \index{local call}
 
@@ -1205,7 +1171,6 @@ known-return-simple (return-pc) ``fun''
     Similar to the non-simple VOPs, but don't allocate or deallocate frames,
     and assume that argument and value passing is done with explicit Move VOPs.
 
-
 \subsection{Full Call}
 \index{full call}
 
@@ -1311,7 +1276,6 @@ Function-Entry () ``function'' =$>$ env return-pc old-cont arg*
     explicitly bounded, since an entry point is effectively ``the end of the
     world.''}
 
-
 \section(Returning from a Function Call)
 \label(Return)
 \index(Return)
@@ -1333,7 +1297,6 @@ default-values (start end val0 ... val$<$n$>$) =$>$ val0 ... val$<$j$>$
     values were supplied, then missing values are defaulted to NIL.  As a
     side-effect, this VOP pops off any returned stack values.
 
-
 \section{Saving and Restoring Registers}
 
 We use a caller-saves convention.  The caller explicitly emits saving and
@@ -1341,10 +1304,8 @@ restoring code.  Tail-recursive calls don't need
 any register saving since we never come back.
 
 
-
 \chapter{Non-local exits}
 
-
 \subsection{Unwind Blocks}
 \index{Catch}
 \index{Catch frames}
@@ -1375,7 +1336,6 @@ The conventions used to manipulate unwind blocks are described in chapter
 \ref{Control-Conventions}.
 
 
-
 \section{Non-Local Exits}
 \label{Catch}
 \index{Catch}

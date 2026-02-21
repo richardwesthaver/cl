@@ -37,7 +37,6 @@
 (defmethod print-object ((samples samples) stream)
   (let ((*print-array* nil))
     (call-next-method)))
-
 ;;; Trace and sample and access functions
 
 (defun map-traces (function samples)
@@ -107,7 +106,6 @@ EXPERIMENTAL: Interface subject to change."
     (sb-di::compiled-debug-fun
      (let ((component (sb-di::compiled-debug-fun-component info)))
        (sap-int (sap+ (sb-kernel:code-instructions component) pc-or-offset))))))
-
 ;;; Sampling
 
 ;;; *PROFILING* is both the global enabling flag, and the operational mode.

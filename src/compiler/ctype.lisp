@@ -70,7 +70,6 @@
     (apply *unwinnage-fun* format-string format-args))
   (values))
 
-
 (defun node-asserted-type (node)
   (let ((dtype (node-derived-type node)))
     (or
@@ -430,7 +429,6 @@ and no value was provided for it." name)))))))))))
                       (if tail-set
                           (tail-set-type tail-set)
                           *wild-type*)))))))
-
 ;;;; approximate function types
 ;;;;
 ;;;; FIXME: This is stuff to look at when I get around to fixing function
@@ -668,7 +666,6 @@ and no value was provided for it." name)))))))))))
           (unless (find name keys :key #'key-info-name)
             (note-lossage "Function previously called with unknown argument keyword ~S."
                   name)))))))
-
 ;;;; ASSERT-DEFINITION-TYPE
 
 ;;; Intersect LAMBDA's var types with TYPES, giving a warning if there
@@ -936,7 +933,6 @@ and no value was provided for it." name)))))))))))
                      :allowp (fun-type-allowp type)
                      :returns (fun-type-returns type))
       type))
-
 
 (defun single-value-args (call)
   (let ((args (basic-combination-args call)))
@@ -1109,7 +1105,6 @@ and no value was provided for it." name)))))))))))
               :defined-here t
               :type type)))))
   (values))
-
 ;;;; FIXME: Move to some other file.
 (defun check-catch-tag-type (tag)
   (declare (type lvar tag))

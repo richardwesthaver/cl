@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; type frobbing VOPs
 
 (define-vop (descriptor-hash32)
@@ -96,7 +95,6 @@
     (inst movzx result (make-ea :byte :base object
                                       :disp (- other-pointer-lowtag)))))
 
-
 (define-vop ()
   (:translate %fun-pointer-widetag)
   (:policy :fast-safe)
@@ -147,7 +145,6 @@
                  (ash mask -8)))
           (t
            (bug "Unimplemented")))))
-
 ;;;; allocation
 
 (define-vop (binding-stack-pointer-sap)
@@ -165,7 +162,6 @@
   (:policy :fast-safe)
   (:generator 1
     (move int esp-tn)))
-
 ;;;; code object frobbing
 
 (define-vop (code-instructions)
@@ -236,7 +232,6 @@
     (loadw result function closure-fun-slot fun-pointer-lowtag)
     (inst sub result (- (* simple-fun-insts-offset n-word-bytes) fun-pointer-lowtag))))
 
-
 ;;;; other miscellaneous VOPs
 
 (defknown sb-unix::receive-pending-interrupt () (values))
@@ -291,7 +286,6 @@
   (:generator 1
     (note-next-instruction vop :internal-error)
     (inst wait)))
-
 ;;;; Miscellany
 
 ;;; the RDTSC instruction (present on Pentium processors and
@@ -361,7 +355,6 @@ number of CPU cycles elapsed as secondary value. EXPERIMENTAL."
   (:info index)
   (:generator 0
     (inst inc (make-ea-for-vector-data count-vector :offset index))))
-
 ;;;; Memory barrier support
 
 (define-vop (%compiler-barrier)

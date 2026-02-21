@@ -22,7 +22,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 #|
 
 This implementation of method lookup was redone in early August of 89.
@@ -78,7 +77,6 @@ And so, we are saved.
 Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
 
 |#
-
 ;;; an alist in which each entry is of the form
 ;;;   (<generator> . (<subentry> ...)).
 ;;; Each subentry is of the form
@@ -173,7 +171,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
                                  (car args-entry)))
                        collect))))
            (nreverse collect)))))
-
 ;;; Standardized class slot access: when trying to break vicious
 ;;; metacircles, we need a way to get at the values of slots of some
 ;;; standard classes without going through the whole meta machinery,
@@ -240,7 +237,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
 
 (defun standard-slot-value/class (class slot-name)
   (standard-slot-value class slot-name *the-class-standard-class*))
-
 ;;; When all the methods of a generic function are automatically
 ;;; generated reader or writer methods a number of special
 ;;; optimizations are possible. These are important because of the
@@ -376,7 +372,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
        (accessor-miss gf new arg dfun-info)))))
 
 (declaim (sb-ext:freeze-type dfun-info))
-
 (defun make-one-class-accessor-dfun (gf type wrapper index)
   (let ((emit (ecase type
                 (reader 'emit-one-class-reader)
@@ -499,7 +494,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
              (if (early-gf-p generic-function)
                  (early-gf-methods generic-function)
                  (generic-function-methods generic-function)))))
-
 (defun make-caching-dfun (generic-function &optional cache)
   (unless cache
     (when (use-constant-value-dfun-p generic-function)
@@ -706,7 +700,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
                     (make-cache :key-count nkeys :value (not (null valuep))
                                 :size 4))))
     (make-emf-cache generic-function valuep cache classes-list new-class)))
-
 (defvar *dfun-miss-gfs-on-stack* ())
 
 (defmacro dfun-miss ((gf args wrappers invalidp nemf
@@ -1024,7 +1017,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
           (unless (eq ncache ocache)
             (dfun-update generic-function
                          #'make-constant-value-dfun ncache)))))))
-
 ;;; Given a generic function and a set of arguments to that generic
 ;;; function, return a mess of values.
 ;;;
@@ -1626,7 +1618,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
                     (find-class root)
                     root)))
     nil))
-
 (defun flush-effective-method-cache (generic-function)
   (dolist (method (generic-function-methods generic-function))
     (let ((cache
@@ -1734,7 +1725,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
          (when (dolist (spec (method-specializers method) nil)
                  (when (eql-specializer-p spec) (return t)))
            (return t)))))
-
 (defun update-dfun (generic-function &optional dfun cache info)
   (let ((early-p (early-gf-p generic-function)))
     (flet ((update ()
@@ -1781,7 +1771,6 @@ Except see also BREAK-VICIOUS-METACIRCLE.  -- CSR, 2003-05-28
             ;; case there are, better fetch it while interrupts are
             ;; still enabled...
             (sb-thread::call-with-recursive-system-lock #'update lock))))))
-
 ;;; These functions aren't used in SBCL, or documented anywhere that
 ;;; I'm aware of, but they look like they might be useful for
 ;;; debugging or performance tweaking or something, so I've just

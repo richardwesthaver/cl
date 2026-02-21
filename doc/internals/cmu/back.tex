@@ -1,5 +1,4 @@
 % -*- Dictionary: design -*-
-
 \chapter{Copy propagation}
 
 File: {\tt copyprop}
@@ -46,7 +45,6 @@ doing an intersection.  Then a definition only appears in the set when it is
 unique.  We then propagate only definitions of TNs with only one write, which
 allows the TN to stand for the definition.
 
-
 \chapter{Representation selection}
 
 File: {\tt represent}
@@ -89,7 +87,6 @@ If a function doesn't use the number stack, and isn't in the same tail-set as
 any function that uses the number stack, then it doesn't need a number stack
 frame, even if other functions in the component do.
 
-
 \chapter{Lifetime analysis}
 
 File: {\tt life}
@@ -110,7 +107,6 @@ This means that we can assign all the more args and all the more results the
 same LTN number and the same lifetime info.
 |\#
 
-
 \section{Flow analysis}
 
 It seems we could use the global-conflicts structures during compute the
@@ -149,7 +145,6 @@ guarantee that the global-conflicts we are looking for are always at or after
 that pointer.  If we need to insert a new structure, then the pointer will help
 us rapidly find the place to do the insertion.]
 
-
 \section{Conflict detection}
 
 [\#\#\# Environment, :more TNs.]
@@ -253,7 +248,6 @@ save and restore than to reference get packed on the stack.  We would also like
 more often saved TNs to get higher costs so that they are packed in more
 savable locations.
 
-
 \chapter{Packing}
 
 File: {\tt pack}
@@ -469,7 +463,6 @@ are individually ``less important,'' but more important in aggregate.  Packing a
 TN may also prevent preferences from being honored.
 
 
-
 Initial packing:
 
 
@@ -488,7 +481,6 @@ This means that Pack can pack all TNs simultaneously, using one data structure
 to represent the conflicts for each location.  So we have only one conflict set
 per SB location, rather than separating this information by environment.
 
-
 Load TN packing:
 
 We create load TNs as needed in a post-pass to the initial packing.  After TNs
@@ -535,7 +527,6 @@ arguments and results all conflict with each other, and don't conflict with
 much else.  We just try packing in targeted locations before trying at random.
 
 
-
 \chapter{Code generation}
 
 This is fairly straightforward.  We translate VOPs into instruction sequences
@@ -544,7 +535,6 @@ on a per-block basis.
 After code generation, the VMR representation is gone.  Everything is
 represented by the assembler data structures.
 
-
 \chapter{Assembly}
 
 In effect, we do much of the work of assembly when the compiler is compiled.
@@ -594,7 +584,6 @@ Emit-Label (Label)
 \end{verbatim}
 
 
-
 \chapter{Dumping}
 
 So far as input to the dumper/loader, how about having a list of Entry-Info

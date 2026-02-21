@@ -1,6 +1,5 @@
 (in-package "SB-VM")
 
-
 ;;;; Return-multiple with other than one value
 
 #+sb-assembling ;; we don't want a vop for this one.
@@ -77,7 +76,6 @@
   (lisp-return lra lip))
 
 
-
 ;;;; tail-call-variable.
 
 #+sb-assembling ;; no vop for this one either.
@@ -137,7 +135,6 @@
   (loadw lip lexenv closure-fun-slot fun-pointer-lowtag) ; RAW ADDR
   (inst mtctr lip) (inst bctr))
 
-
 ;;;; Non-local exit noise.
 
 (define-assembly-routine (unwind

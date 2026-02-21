@@ -67,7 +67,7 @@ run_sbcl <<EOF
 EOF
 check_status_maybe_lose "DIRECTORY/TRUENAME part 1" $?
 
-cd "$SBCL_PWD"
+cd "$CL_PWD"
 run_sbcl <<EOF
   (in-package :cl-user)
   (let* ((directory (directory "$testdir/*.*"))

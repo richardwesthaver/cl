@@ -11,10 +11,10 @@ set -e
 b=${1:?"missing base directory name argument"}
 
 tar -cf $b-binary.tar \
-    $b/output/sbcl.core $b/src/runtime/sbcl $b/output/prefix.def \
-    $b/src/runtime/sbcl.mk \
-    `grep '^LIBSBCL=' $b/src/runtime/sbcl.mk | cut -d= -f2- | while read lib; do echo $b/src/runtime/$lib; done` \
+    $b/output/cl.core $b/src/runtime/cl $b/output/prefix.def \
+    $b/src/runtime/cl.mk \
+    `grep '^LIBCL=' $b/src/runtime/cl.mk | cut -d= -f2- | while read lib; do echo $b/src/runtime/$lib; done` \
     $b/install.sh $b/sbcl-pwd.sh $b/run-sbcl.sh \
     $b/pubring.pgp \
     $b/contrib/asdf-module.mk \
-    $b/obj/sbcl-home
+    $b/obj/cl-home

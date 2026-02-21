@@ -10,7 +10,6 @@
 (in-package "SB-KERNEL")
 
 (/show0 "target-defstruct.lisp 12")
-
 ;;;; structure frobbing primitives
 
 ;;; For lack of any better to place to write up some detail surrounding
@@ -252,7 +251,6 @@
                   (incf value-index)
                   (make-case))))))))
 
-
 ;;;; target-only parts of the DEFSTRUCT top level code
 
 ;;; A list of hooks designating functions of one argument, the
@@ -332,7 +330,6 @@
     (dolist (fun *defstruct-hooks*)
       (funcall fun classoid)))
   t)
-
 ;;; Copy any old kind of structure.
 
 ;; The finicky backends disallow loading and storing raw words
@@ -400,7 +397,6 @@
 (defun (setf %fun-layout) (newval x)
   (%set-fun-layout x newval)
   newval)
-
 ;;; default PRINT-OBJECT method
 
 ;;; Printing formerly called the auto-generated accessor functions,
@@ -673,5 +669,4 @@
                          layout pairs unique-hashes `(slot-mapper ,(dd-name dd))))
                       (funcall new symbol))))))
       (setf (layout-slot-mapper layout) me))))
-
 (/show0 "target-defstruct.lisp end of file")

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-platform="${SBCL_SOFTWARE_TYPE}-${SBCL_MACHINE_TYPE}"
+platform="${CL_SOFTWARE_TYPE}-${CL_MACHINE_TYPE}"
 
 if [ -z "$CC" ]; then
     if [ -x "`command -v cc`" ]; then

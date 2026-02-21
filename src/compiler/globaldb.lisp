@@ -39,7 +39,6 @@
     (format stream "~S ~S, ~D" (meta-info-category x) (meta-info-kind x)
             (meta-info-number x))))
 
-
 ;;; Why do we suppress the :COMPILE-TOPLEVEL situation here when we're
 ;;; running the cross-compiler? The cross-compiler (which was built
 ;;; from these sources) has its version of these data and functions
@@ -69,7 +68,6 @@
          (!make-meta-info id category kind type-spec type-checker
                           validate-function default))))
 
-
 ;;;; info types, and type numbers, part II: what's
 ;;;; needed only at compile time, not at run time
 
@@ -147,7 +145,6 @@
          ,validate-function ,default))))))
 ;; It's an external symbol of SB-INT so wouldn't be removed automatically
 (push '("SB-INT" define-info-type) *!removable-symbols*)
-
 
 ;;; INFO is the standard way to access the database. It's settable.
 ;;;
@@ -256,7 +253,6 @@
       (when hookp
         (funcall (truly-the function (cdr hook)) name info-number answer nil))
       (values answer nil))))
-
 (!begin-collecting-cold-init-forms)
 ;;;; ":FUNCTION" subsection - Data pertaining to globally known functions.
 ;;; As a special case, this info stores the interpreter's handler for sb-fasteval.
@@ -397,7 +393,6 @@
 (define-info-type (:function :predicate-truth-constraint) :type-spec t)
 
 (define-info-type (:function :specialized-xep) :type-spec t)
-
 ;;;; ":VARIABLE" subsection - Data pertaining to globally known variables.
 
 ;;; the kind of variable-like thing described

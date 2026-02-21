@@ -28,11 +28,9 @@
 ;;;; specification.
 
 (in-package "SB-WALKER")
-
 ;;;; forward references
 
 (defglobal *key-to-walker-environment* (make-symbol "*KEY-TO-WALKER-ENVIRONMENT*"))
-
 ;;;; environment hacking stuff, necessarily SBCL-specific
 
 ;;; Here in the original PCL were implementations of the
@@ -190,7 +188,6 @@
            (if (eq macro *key-to-walker-environment*)
                (values (bogo-fun-to-walker-info (cddr entry)))
                (values (function-lambda-expression (cddr entry))))))))
-
 ;;;; other environment hacking, not so SBCL-specific as the
 ;;;; environment hacking in the previous section
 
@@ -225,7 +222,6 @@
     (eval-in-lexenv `(defmacro ,gensym ,llist ,@body)
                     (sb-c::make-restricted-lexenv env))
     (macro-function gensym)))
-
 ;;;; the actual walker
 
 ;;; As the walker walks over the code, it communicates information to
@@ -338,7 +334,6 @@
 (defun var-globally-special-p (symbol)
   (eq (info :variable :kind symbol) :special))
 
-
 ;;;; handling of special forms
 
 ;;; Here are some comments from the original PCL on the difficulty of
@@ -412,7 +407,6 @@
          ;; good, etc.
          (error "Illegal function call in method body:~%  ~S"
                 context))))
-
 ;;;; the actual templates
 
 ;;; ANSI special forms
@@ -461,7 +455,6 @@
     (when (and template (not (special-operator-p s)))
       (format t "Why? ~S~%" s))))
 |#
-
 (defvar *walk-form-expand-macros-p* nil)
 (defvar *walk-form-preserve-source* nil)
 
@@ -772,7 +765,6 @@ instead of
       (recons x
               (car args)
               (relist-internal (cdr x) (cdr args) *p))))
-
 ;;;; special walkers
 
 (defun walk-declarations (body fn env
@@ -1143,7 +1135,6 @@ instead of
             (walk-form-internal predicate context env)
             (walk-form-internal arm1 context env)
             (walk-form-internal arm2 context env))))
-
 ;;;; examples
 
 #|

@@ -816,7 +816,6 @@ disappears when accents are placed on top of it. and NIL otherwise"
          (coerce-to-ordered-ranges
           #(#x0600 #x0604 #x06DD #x06DD #x070F #x070F #xFFF9 #xFFFB
             #x110BD #x110BD)))))))
-
 ;;; Unicode case algorithms
 
 (defun has-case-p (char)
@@ -1034,7 +1033,6 @@ for case-insensitive comparisons.
 The result is not guaranteed to have the same length as the input."
   (string-somethingcase #'char-foldcase string (constantly nil)))
 
-
 ;;; Unicode break algorithms
 ;;; In all the breaking methods:
 ;;; (brk) establishes a break between `first` and `second`
@@ -1653,7 +1651,6 @@ it defaults to 80 characters"
       (setf last-break-distance nil))
    next))
 
-
 ;;; Collation
 (defconstant +maximum-variable-primary-element+
   #.(read-lisp-expr-file "other-collation-info"))

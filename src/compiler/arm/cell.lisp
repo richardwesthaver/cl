@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Data object ref/set stuff.
 
 (define-vop (slot)
@@ -30,7 +29,6 @@
   (:results)
   (:generator 1
     (storew value object offset lowtag)))
-
 ;;;; Symbol hacking VOPs:
 
 ;;; The compiler likes to be able to directly SET symbols.
@@ -100,7 +98,6 @@
   (:generator 2
     (loadw res symbol symbol-hash-slot other-pointer-lowtag)
     (inst mov res (lsr res 3)))) ; shift out the 3 pseudorandom bits
-
 ;;;; Fdefinition (fdefn) objects.
 
 (define-vop (safe-fdefn-fun)
@@ -151,7 +148,6 @@
       (inst load-from-label temp lip undefined-tramp-fixup)
       (storew temp fdefn fdefn-raw-addr-slot other-pointer-lowtag))))
 
-
 ;;;; Binding and Unbinding.
 
 ;;; BIND -- Establish VAL as a binding for SYMBOL.  Save the old value and
@@ -213,7 +209,6 @@
 
     DONE
     (store-symbol-value bsp-temp *binding-stack-pointer*)))
-
 ;;;; Closure indexing.
 
 (define-full-reffer closure-index-ref *
@@ -248,12 +243,10 @@
   (:info offset)
   (:generator 4
     (storew cfp-tn object (+ closure-info-offset offset) fun-pointer-lowtag)))
-
 ;;;; Value Cell hackery.
 
 (define-vop (value-cell-set cell-set)
   (:variant value-cell-value-slot other-pointer-lowtag))
-
 ;;;; Instance hackery:
 
 (define-vop ()
@@ -271,7 +264,6 @@
 
 (define-full-setter instance-index-set * instance-slots-offset
   instance-pointer-lowtag (descriptor-reg any-reg null) * %instance-set)
-
 ;;;; Code object frobbing.
 
 (define-full-reffer code-header-ref * 0 other-pointer-lowtag

@@ -44,7 +44,6 @@
 #include "gc.h"
 #include "sys_mmap.inc"
 
-
 
 #if defined __DragonFly__
 #include <sys/lwp.h>
@@ -274,7 +273,6 @@ os_alloc_gc_space(int space_id, int attributes, os_vm_address_t addr, os_vm_size
 
     return addr;
 }
-
 /*
  * any OS-dependent special low-level handling for signals
  */

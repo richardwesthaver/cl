@@ -55,7 +55,6 @@
 ;;; passed when we are using non-standard conventions.
 (defun make-arg-count-location ()
   (make-wired-tn *fixnum-primitive-type* immediate-arg-scn nargs-offset))
-
 ;;;; Frame hackery:
 
 ;;; this is the first function in this file that differs materially from
@@ -295,7 +294,6 @@ default-value-8
         (inst compute-code-from-lra code-tn lra-tn lra-label temp)))
   (values))
 
-
 ;;;; Unknown values receiving:
 
 ;;;    Emit code needed at the return point for an unknown-values call for an
@@ -356,7 +354,6 @@ default-value-8
                :from :eval :to (:result 1))
               nvals))
 
-
 ;;; This hook in the codegen pass lets us insert code before fall-thru entry
 ;;; points, local-call entry points, and tail-call entry points.  The default
 ;;; does nothing.
@@ -366,7 +363,6 @@ default-value-8
     (emit-label trampoline-label))
   (emit-label start-label))
 
-
 ;;;; Local call with unknown values convention return:
 
 ;;; Non-TR local call for a fixed number of values passed according to the
@@ -459,7 +455,6 @@ default-value-8
       (when cur-nfp
         (load-stack-tn cur-nfp nfp-save)))))
 
-
 ;;;; Local call with known values return:
 
 ;;; Non-TR local call with known return locations.  Known-value return works
@@ -528,7 +523,6 @@ default-value-8
     ;; return to the instruction immediately following the LRA header
     (inst j return-pc-temp (- n-word-bytes other-pointer-lowtag))))
 
-
 ;;;; Full call:
 ;;;
 ;;;    There is something of a cross-product effect with full calls.  Different
@@ -833,7 +827,6 @@ default-value-8
     (inst mtlr temp)
     (inst blr)))
 
-
 ;;;; Unknown values return:
 
 ;;; Return a single value using the unknown-values convention.
@@ -960,7 +953,6 @@ default-value-8
       (inst addi temp null-tn (make-fixup 'return-multiple :assembly-routine))
       (inst mtlr temp)
       (inst blr))))
-
 ;;;; XEP hackery:
 
 ;;; Get the lexical environment from its passing location.

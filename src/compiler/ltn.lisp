@@ -12,7 +12,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; utilities
 
 ;;; Return the LTN-POLICY indicated by the node policy.
@@ -316,7 +315,6 @@
     (setf (lvar-info lvar) info))
   (ltn-annotate-casts lvar)
   (values))
-
 ;;;; node-specific analysis functions
 
 ;;; Annotate the result lvar for a function. We use the RETURN-INFO
@@ -560,7 +558,6 @@
         do
         (setf (car locs) (make-stack-pointer-tn))))
 
-
 ;;;; known call annotation
 
 ;;; Return true if RESTR is satisfied by TYPE. If T-OK is true, then a
@@ -1042,7 +1039,6 @@
               types)))))))
   (values))
 
-
 ;;;; interfaces
 
 ;;; most of the guts of the two interface functions: Compute the

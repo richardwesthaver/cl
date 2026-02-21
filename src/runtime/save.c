@@ -1,5 +1,5 @@
 /*
- * This software is part of the SBCL system. See the README file for
+ * This software is part of the CL system. See the README file for
  * more information.
  *
  * This software is derived from the CMU CL system, which was
@@ -778,7 +778,7 @@ gc_and_save(char *filename, int core_format, bool purify,
      (defined LISP_FEATURE_RELOCATABLE_STATIC_SPACE && !defined LISP_FEATURE_X86_64))
     /* SunOS says it'll give you the memory where you want, then it says
      * it won't map over it from the core file.  That's news to me.
-     * Fragment of output from 'strace -e mmap2 src/runtime/sbcl --core output/sbcl.core':
+     * Fragment of output from 'strace -e mmap2 src/runtime/cl --core output/cl.core':
      * ...
      * mmap2(0x2fb58000, 4882432, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0x2fb58000
      * mmap2(0x2fb58000, 4882432, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0x2000) = -1 EINVAL (Invalid argument)

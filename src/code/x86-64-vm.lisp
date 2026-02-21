@@ -201,7 +201,6 @@
 
 (defun (setf floating-point-modes) (val) (%floating-point-modes-setter val))
 
-
 ;;;; INTERNAL-ERROR-ARGS
 
 ;;; Given a (POSIX) signal context, extract the internal error
@@ -229,7 +228,6 @@
                        `(:raw ,ea ,nbytes ,value)))))
           (t
            (sb-kernel::decode-internal-error-args (sap+ pc 1) trap-number)))))
-
 
 (defun write-funinstance-prologue (fin)
   ;; Encode: MOV RAX,[RIP+9] / JMP [RAX-3] / NOP / MOV EBX, #x0

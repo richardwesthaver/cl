@@ -476,7 +476,6 @@ See also: RETURN-FROM-THREAD and SB-EXT:EXIT."
            ;; We /could/ use TOPLEVEL-CATCHER or %END-OF-THE-WORLD as well, but
            ;; this seems tidier. Those to are a bit too overloaded already.
            (throw '%abort-thread t)))))
-
 
 ;;;; Aliens, low level stuff
 
@@ -539,7 +538,6 @@ See also: RETURN-FROM-THREAD and SB-EXT:EXIT."
          ;; previous wait marks using WITHOUT-THREAD-WAITING-FOR
          (setf (thread-waiting-for ,n-thread) nil)
          (barrier (:memory))))))
-
 ;;;; Mutexes
 
 (setf (documentation 'make-mutex 'function) "Create a mutex."
@@ -1016,7 +1014,6 @@ IF-NOT-OWNER is :FORCE)."
         (with-pinned-objects (mutex)
             (futex-wake (mutex-state-address mutex) 1)))
       nil)))
-
 
 ;;;; Waitqueues/condition variables
 
@@ -1291,7 +1288,6 @@ must be held by this thread during this call."
                     ;; results in -1, which wakes up only one thread.
                     (ldb (byte 29 0)
                          most-positive-fixnum)))
-
 
 ;;;; Semaphores
 
@@ -1465,7 +1461,6 @@ on this semaphore, then N of them is woken up."
           (count (incf (semaphore-%count semaphore) n)))
       (when (plusp waitcount)
         (condition-notify (semaphore-queue semaphore) (min waitcount count))))))
-
 
 ;;;; Job control, independent listeners
 
@@ -1729,7 +1724,6 @@ session."
                         (sb-impl::toplevel-repl nil)
                      (flush-standard-output-streams))))))
       (make-thread #'thread-repl))))
-
 
 ;;;; The beef
 #+sb-thread
@@ -2564,7 +2558,6 @@ mechanism for inter-thread communication."
                  :info (list :write :unbound-in-thread))
           (values nil nil))))
 
-
 
 ;;; Initialize thread-local special vars other than the GC control specials.
 ;;; globaldb should indicate that the variable is both :always-thread-local

@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; utilities for optimizing array operations
 
 ;;; Return UPGRADED-ARRAY-ELEMENT-TYPE for LVAR, or do
@@ -163,7 +162,6 @@
   (and arg
        (not (types-equal-or-intersect (lvar-type arg)
                                       (specifier-type 'null)))))
-
 ;;;; DERIVE-TYPE optimizers
 
 (defun sequence-elements-type (sequence &optional key)
@@ -774,7 +772,6 @@
     ((dims widetag n-bits) node)
   (%make-array-derive-type widetag dims nil nil nil node))
 
-
 ;;;; constructors
 
 ;;; Convert VECTOR into a MAKE-ARRAY.
@@ -1832,7 +1829,6 @@
         `(sb-vm::%make-simple-array ',dims widetag n-bits)
         (give-up-ir1-transform))))
 
-
 ;;;; ADJUST-ARRAY
 (deftransform adjust-array ((array dims &key displaced-to displaced-index-offset)
                             (array integer &key
@@ -1905,7 +1901,6 @@
                            dims
                            (type-specifier array-type)))
           int))))
-
 ;;;; miscellaneous properties of arrays
 
 ;;; Transforms for various array properties. If the property is known
@@ -2210,7 +2205,6 @@
 (defoptimizer (%check-bound derive-type) ((array bound index))
   (when (check-bound-empty-p bound index)
     *empty-type*))
-
 ;;;; WITH-ARRAY-DATA
 
 ;;; This checks to see whether the array is simple and the start and
@@ -2369,7 +2363,6 @@
                                 :policy (> speed space))
   "inline non-SIMPLE-vector-handling logic"
   (transform-%with-array-data/mumble array node t))
-
 ;;;; array accessors
 
 ;;; We convert all typed array accessors into AREF and (SETF AREF) with type
@@ -2624,7 +2617,6 @@
   (if (policy node (zerop insert-array-bounds-checks))
       `(hairy-data-vector-set array index new-value)
       `(hairy-data-vector-set/check-bounds array index new-value)))
-
 ;;;; bit-vector array operation canonicalization
 ;;;;
 ;;;; We convert all bit-vector operations to have the result array
@@ -2664,7 +2656,6 @@
 (deftransform bit-not ((bit-array-1 result-bit-array)
                        (bit-vector (eql t)))
   '(bit-not bit-array-1 bit-array-1))
-
 ;;; Pick off some constant cases.
 (defoptimizer (array-header-p derive-type) ((array))
   (let ((type (lvar-type array)))

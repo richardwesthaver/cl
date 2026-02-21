@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-DISASSEM")
-
 ;;; types and defaults
 
 (deftype text-width () '(integer 0 1000))
@@ -25,7 +24,6 @@
   `(integer 0 (,max-filtered-value-index)))
 (deftype filtered-value-vector ()
   `(simple-array t (,max-filtered-value-index)))
-
 ;;;; disassembly parameters
 
 ;; With a few tweaks, you can use a running SBCL as a cross-assembler
@@ -55,7 +53,6 @@
 
 (defvar *disassem-note-column* (+ 45 *disassem-inst-column-width*)
   "The column in which end-of-line comments for notes are started.")
-
 ;;;; A DCHUNK contains the bits we look at to decode an
 ;;;; instruction.
 ;;;; I tried to keep this abstract so that if using integers > the machine
@@ -149,7 +146,6 @@
 (defun dchunk-count-bits (x)
   (declare (type dchunk x))
   (logcount x))
-
 (defstruct (arg (:constructor %make-arg (name))
                 (:copier nil)
                 (:predicate nil))
@@ -175,7 +171,6 @@
 
   (default-printer nil :type list :read-only t))
 (declaim (freeze-type arg instruction-format))
-
 ;;; A FUNSTATE holds the state of any arguments used in a disassembly
 ;;; function. It is a 2-level alist. The outer list maps each ARG to
 ;;; a list of styles in which that arg can be rendered.
@@ -190,7 +185,6 @@
 (defun arg-or-lose (name funstate)
   (or (car (assoc name funstate :key #'arg-name :test #'eq))
       (pd-error "unknown argument ~S" name)))
-
 ;;; machinery to provide more meaningful error messages during compilation
 (defvar *current-instruction-flavor*)
 (defun pd-error (fmt &rest args)
@@ -478,7 +472,6 @@
          `(list ,@forms))
         (t
          (car forms))))
-
 ;;; DEFINE-ARG-TYPE Name {Key Value}*
 ;;;
 ;;; Define a disassembler argument type NAME (which can then be referenced in
@@ -524,7 +517,6 @@
   (setf (get name 'arg-type)
         (apply 'modify-arg (%make-arg name) nil
                (nconc (when inherit (list :type inherit)) properties))))
-
 (defun %gen-arg-forms (arg rendering funstate)
   (declare (type arg arg) (type list funstate))
   (ecase rendering
@@ -561,7 +553,6 @@
        (if (arg-use-label arg)
            `((lookup-label ,(maybe-listify numeric-forms)))
            numeric-forms)))))
-
 (declaim (inline bytes-to-bits))
 
 (defun bytes-to-bits (bytes)

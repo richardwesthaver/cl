@@ -219,7 +219,6 @@ with that condition (or with no condition) will be returned."
           (cerror cerror-arg condition)
           (funcall function condition)))))
 
-
 ;;;; Conditions.
 
 (!defstruct-with-alternate-metaclass condition
@@ -300,7 +299,6 @@ with that condition (or with no condition) will be returned."
 
 ) ; EVAL-WHEN
 
-
 ;;;; slots of CONDITION objects
 
 (defun find-slot-default (condition classoid slot &optional boundp)
@@ -343,7 +341,6 @@ with that condition (or with no condition) will be returned."
     (dolist (slot (condition-classoid-slots sclass))
       (when (eq (condition-slot-name slot) slot-name)
         (return-from find-condition-class-slot slot)))))
-
 ;;;; MAKE-CONDITION
 
 ;;; Pre-scan INITARGS to see whether any are stack-allocated.
@@ -486,7 +483,6 @@ with that condition (or with no condition) will be returned."
               (condition-assigned-slots condition))))
 
     condition))
-
 ;;;; DEFINE-CONDITION
 
 (define-load-time-global *define-condition-hooks* nil)
@@ -788,7 +784,6 @@ with that condition (or with no condition) will be returned."
     (res)))
 
 
-
 ;;;; various CONDITIONs specified by ANSI
 
 (define-condition serious-condition (condition) ())
@@ -1044,7 +1039,6 @@ with that condition (or with no condition) will be returned."
       (format stream "~2I~@[~:@_ ~:@_~:{~:(~A~): ~S~:^, ~:_~}~]~:@_ ~:@_Stream: ~S"
               (stream-error-position-info error-stream position)
               error-stream))))
-
 ;;;; special SBCL extension conditions
 
 ;;; an error apparently caused by a bug in SBCL itself
@@ -1106,7 +1100,6 @@ with that condition (or with no condition) will be returned."
 ;;; unFBOUNDPness meant they were running on an system which didn't
 ;;; support the extension.)
 (define-condition unsupported-operator (simple-error) ())
-
 ;;; (:ansi-cl :function remove)
 ;;; (:ansi-cl :section (a b c))
 ;;; (:ansi-cl :glossary "similar")
@@ -1349,7 +1342,6 @@ SB-EXT:PACKAGE-LOCKED-ERROR-SYMBOL."))
      (format stream "Unknown &KEY argument: ~S"
              (unknown-keyword-argument-name condition)))))
 
-
 ;;;; various other (not specified by ANSI) CONDITIONs
 ;;;;
 ;;;; These might logically belong in other files; they're here, after
@@ -1691,13 +1683,11 @@ the values returned by the form as a list. No associated restarts."))
      (declare (ignore condition))
      (format stream "Returning from STEP")))
   (:documentation "Condition signaled when STEP returns."))
-
 ;;; A knob for muffling warnings, mostly for use while loading files.
 (defvar *muffled-warnings* 'uninteresting-redefinition
   "A type that ought to specify a subtype of WARNING.  Whenever a
 warning is signaled, if the warning is of this type and is not
 handled by any other handler, it will be muffled.")
-
 ;;; Various STYLE-WARNING signaled in the system.
 ;; For the moment, we're only getting into the details for function
 ;; redefinitions, but other redefinitions could be done later
@@ -1857,7 +1847,6 @@ handled by any other handler, it will be muffled.")
   (:report (lambda (warning stream)
              (format stream "Overwriting ~S"
                      (redefinition-with-deftransform-transform warning)))))
-
 ;;; Various other STYLE-WARNINGS
 (define-condition dubious-asterisks-around-variable-name
     (style-warning simple-condition)
@@ -2026,7 +2015,6 @@ the usual naming convention (names like *FOO*) for special variables"
              (proclamation-mismatch-name condition)
              (proclamation-mismatch-new condition)
              (proclamation-mismatch-old condition)))))
-
 ;;;; deprecation conditions
 
 (define-condition deprecation-condition (reference-condition)
@@ -2117,7 +2105,6 @@ compile-time. An error will be signaled at run-time."))
    "This error is signaled at run-time when an attempt is made to use
 a thing that is in :FINAL deprecation, i.e. call a function or access
 a variable."))
-
 ;;;; restart definitions
 
 (define-condition abort-failure (control-error) ()
@@ -2416,7 +2403,6 @@ you did not expect to see this message, please report it."
      (format stream "Interactive interrupt at #x~X."
              (system-condition-address condition)))))
 
-
 ;;;; Condition reporting:
 
 ;;; FIXME: ANSI's definition of DEFINE-CONDITION says
@@ -2446,7 +2432,6 @@ you did not expect to see this message, please report it."
     (t
      (print-unreadable-object (object stream :type t :identity t)))))
 
-
 (define-error-wrapper assert-error (assertion &rest rest)
   (let* ((rest rest)
          (n-args-and-values (if (fixnump (car rest))

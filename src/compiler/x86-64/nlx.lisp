@@ -22,7 +22,6 @@
 (defun unwind-block-ea (tn &optional (offset 0))
   (aver (sc-is tn unwind-block))
   (ea (frame-byte-offset (- (+ -1 (tn-offset tn) unwind-block-size offset) offset)) rbp-tn))
-
 ;;;; Save and restore dynamic environment.
 (define-vop (current-stack-pointer)
   (:results (res :scs (any-reg control-stack)))
@@ -33,7 +32,6 @@
   (:results (res :scs (any-reg descriptor-reg)))
   (:generator 1
     (load-binding-stack-pointer res)))
-
 ;;;; unwind block hackery
 
 ;;; Compute the address of the catch block from its TN, then store into the
@@ -105,7 +103,6 @@
   (:generator 17
      (inst mov block (unwind-block-ea current-block unwind-block-uwp-slot))
      (store-tl-symbol-value block *current-unwind-protect-block*)))
-
 ;;;; NLX entry VOPs
 (define-vop (nlx-entry)
   ;; Note: we can't list an sc-restriction, 'cause any load vops would

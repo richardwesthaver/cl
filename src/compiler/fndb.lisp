@@ -12,7 +12,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; information for known functions:
 
 (defknown coerce (t type-specifier) t
@@ -40,7 +39,6 @@
 (defknown (upgraded-complex-part-type upgraded-array-element-type)
     (type-specifier &optional lexenv-designator) (or list symbol)
     (unsafely-flushable))
-
 ;;;; from the "Predicates" chapter:
 
 (defknown typep (t type-specifier &optional lexenv-designator) boolean
@@ -65,7 +63,6 @@
 (defknown (eq eql) (t t) boolean
   (movable foldable flushable commutative))
 (defknown (equal equalp) (t t) boolean (foldable flushable commutative recursive))
-
 ;;;; classes
 
 (sb-xc:deftype name-for-class () t) ; FIXME: disagrees w/ LEGAL-CLASS-NAME-P
@@ -81,7 +78,6 @@
 (defknown copy-structure (structure-object) structure-object
   (flushable)
   :derive-type #'result-type-first-arg)
-
 ;;;; from the "Control Structure" chapter:
 
 ;;; This is not FLUSHABLE, since it's required to signal an error if
@@ -132,7 +128,6 @@
 (defknown values (&rest t) * (movable flushable))
 (defknown values-list (list) * (movable foldable unsafely-flushable))
 (defknown reverse-values-list (list index) * (movable foldable unsafely-flushable))
-
 ;;;; from the "Macros" chapter:
 
 (defknown macro-function (symbol &optional lexenv-designator)
@@ -145,7 +140,6 @@
 (defknown compiler-macro-function (t &optional lexenv-designator)
   (or function null)
   (flushable))
-
 ;;;; from the "Declarations" chapter:
 
 (defknown proclaim (list) (values) (recursive))
@@ -170,7 +164,6 @@
 (defknown symbol-package (symbol) (or package null) (flushable))
 (defknown %symbol-package (t) (or package null) (flushable)) ;; doesn't check the type.
 (defknown keywordp (t) boolean (flushable)) ; semi-foldable, see src/compiler/typetran
-
 ;;;; from the "Packages" chapter:
 
 (defknown gentemp (&optional string package-designator) symbol)
@@ -215,7 +208,6 @@
 ;; private
 (defknown package-iter-step (sb-impl::pkg-iter)
   (values (member :internal :external :inherited nil) package symbol))
-
 ;;;; from the "Numbers" chapter:
 
 (defknown zerop (number) boolean (movable foldable flushable))
@@ -557,7 +549,6 @@
   random-state (flushable))
 
 (defknown random-state-p (t) boolean (movable foldable flushable))
-
 ;;;; from the "Characters" chapter:
 (defknown (graphic-char-p alpha-char-p standard-char-p
            upper-case-p lower-case-p both-case-p alphanumericp)
@@ -611,7 +602,6 @@
   ;; Common Lisp being able to handle any characters other than those
   ;; guaranteed by the ANSI spec.
   (movable #-sb-xc-host foldable flushable))
-
 ;;;; from the "Sequences" chapter:
 
 (defknown elt ((read-only proper-sequence) index) t (foldable unsafely-flushable))
@@ -1045,7 +1035,6 @@
   sequence
   ()
   :derive-type #'result-type-first-arg)
-
 ;;;; from the "Manipulating List Structure" chapter:
 (defknown (cdr rest)
   (list)
@@ -1243,7 +1232,6 @@
 
 (defknown (memq assq) (t proper-list) list (foldable flushable no-verify-arg-count))
 (defknown (delq delq1) (t (modifying list)) list (flushable no-verify-arg-count))
-
 ;;;; from the "Hash Tables" chapter:
 
 (defknown make-hash-table
@@ -1313,7 +1301,6 @@
 (defknown (sb-impl::signal-corrupt-hash-table
            sb-impl::signal-corrupt-hash-table-bucket)
  (t) nil ())
-
 ;;;; from the "Arrays" chapter
 
 (defknown make-array ((or index list)
@@ -1473,7 +1460,6 @@
   ;; necessary to use the result if the array is adjustable.
   array (important-result))
 ;  :derive-type 'result-type-arg1) Not even close...
-
 ;;;; from the "Strings" chapter:
 
 (defknown char (string index) character (foldable flushable))
@@ -1527,7 +1513,6 @@
   :derive-type #'result-type-first-arg)
 
 (defknown string (string-designator) string (flushable))
-
 ;;;; internal non-keyword versions of string predicates:
 
 (defknown (string<* string>* string<=* string>=* string/=*)
@@ -1557,13 +1542,11 @@
                              (inhibit-flushing index 0) (inhibit-flushing sequence-end nil))
     boolean
     (foldable flushable no-verify-arg-count))
-
 ;;;; from the "Eval" chapter:
 
 (defknown eval (t) * (recursive))
 (defknown constantp (t &optional lexenv-designator) boolean
   (foldable flushable))
-
 ;;;; from the "Streams" chapter:
 
 (defknown make-synonym-stream (symbol) synonym-stream (flushable))
@@ -1597,7 +1580,6 @@
 (defknown file-string-length (stream (or string character))
   (or unsigned-byte null)
   (flushable))
-
 ;;;; from the "Input/Output" chapter:
 
 ;;; (The I/O functions are given effects ANY under the theory that
@@ -1800,7 +1782,6 @@
 
 (defknown (y-or-n-p yes-or-no-p) (&optional (or string null function) &rest t) boolean
   ())
-
 ;;;; from the "File System Interface" chapter:
 
 ;;; (No pathname functions are FOLDABLE because they all potentially
@@ -1933,7 +1914,6 @@
 
 (defknown directory (pathname-designator &key (:resolve-symlinks t))
   list ())
-
 ;;;; from the "Conditions" chapter:
 
 (defknown (signal warn) (condition-designator-head &rest t) null)
@@ -1967,7 +1947,6 @@
 (defknown simple-reader-error (stream string &rest t) nil)
 (defknown sb-kernel:reader-eof-error (stream string) nil)
 
-
 ;;;; from the "Miscellaneous" Chapter:
 
 (defknown compile ((or symbol cons) &optional (or list function))
@@ -2063,7 +2042,6 @@
 
 (defknown constantly (t) function (movable flushable))
 (defknown complement (function) function (movable flushable))
-
 ;;;; miscellaneous extensions
 
 (defknown symbol-global-value (symbol) t ()
@@ -2094,7 +2072,6 @@
   (simple-array (unsigned-byte 8) (*))
   (flushable))
 
-
 ;;;; magical compiler frobs
 
 (defknown %rest-values (t t t t) * (always-translatable))
@@ -2297,7 +2274,6 @@
 (defknown %check-vector-sequence-bounds (vector index sequence-end)
   index
   (unwind))
-
 ;;;; SETF inverses
 
 (defknown (setf aref) (t (modifying array) &rest index) t ()
@@ -2332,7 +2308,6 @@
   :derive-type #'result-type-last-arg)
 (defknown %set-fill-pointer ((modifying complex-vector) index) index ()
   :derive-type #'result-type-last-arg)
-
 ;;;; ALIEN and call-out-to-C stuff
 
 (defknown %alien-funcall ((or string system-area-pointer) alien-type &rest t) *)

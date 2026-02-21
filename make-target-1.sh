@@ -23,10 +23,10 @@ export LANG LC_ALL
 # Load our build configuration
 . output/build-config
 
-if [ -n "$SBCL_HOST_LOCATION" ]; then
+if [ -n "$CL_HOST_LOCATION" ]; then
     echo //copying host-1 output files to target
-    rsync -a "$SBCL_HOST_LOCATION/output/" output/
-    rsync -a "$SBCL_HOST_LOCATION/src/runtime/genesis" src/runtime
+    rsync -a "$CL_HOST_LOCATION/output/" output/
+    rsync -a "$CL_HOST_LOCATION/src/runtime/genesis" src/runtime
 fi
 
 # Build the runtime system
@@ -37,7 +37,7 @@ fi
 echo //building runtime system and symbol table file
 
 make -C src/runtime clean
-make $SBCL_MAKE_JOBS -C src/runtime all
+make $CL_MAKE_JOBS -C src/runtime all
 
 # Use a little C program to grab stuff from the C header files and
 # smash it into Lisp source code.
@@ -53,7 +53,7 @@ else
 fi
 touch -r tools-for-build/grovel-headers.c output/stuff-groveled-from-headers.lisp
 
-if [ -n "$SBCL_HOST_LOCATION" ]; then
+if [ -n "$CL_HOST_LOCATION" ]; then
     echo //copying target-1 output files to host
-    rsync -a output/stuff-groveled-from-headers.lisp "$SBCL_HOST_LOCATION/output"
+    rsync -a output/stuff-groveled-from-headers.lisp "$CL_HOST_LOCATION/output"
 fi

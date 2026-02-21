@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; compiler error context determination
 
 (declaim (special *current-path*))
@@ -312,7 +311,6 @@
                         (and lexenv
                              (lexenv-handled-conditions lexenv))))
                      nil)))))))))
-
 ;;;; printing error messages
 
 ;;; We save the context information that we printed out most recently
@@ -526,7 +524,6 @@ has written, having proved that it is unreachable."))
                 "~{~{~A~^ ~}~^ => ~}"
                 #+sb-xc-host (list (list (caar context)))
                 #-sb-xc-host context)))))
-
 ;;;; condition system interface
 
 ;;; Keep track of whether any surrounding COMPILE or COMPILE-FILE call
@@ -600,7 +597,6 @@ has written, having proved that it is unreachable."))
             ;; (outside logical block, no per-line-prefix)
             (fresh-line stream))))))
 
-
 ;;;; undefined warnings
 
 (defvar *undefined-warning-limit* 3

@@ -15,7 +15,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; interface for obtaining results of constant folding
 
 ;;; Return true for an LVAR whose sole use is a reference to a
@@ -133,7 +132,6 @@
 (defun constant-ref-p (ref)
   (and (ref-p ref)
        (constant-p (ref-leaf ref))))
-
 ;;;; interface for obtaining results of type inference
 
 ;;; Our best guess for the type of this lvar's value. Note that this
@@ -289,7 +287,6 @@
          t)
         ((types-equal-or-intersect type (specifier-type '(or cons (and array (not simple-array)))))
          t)))
-
 ;;;; interface routines used by optimizers
 
 ;;; This function is called by optimizers to indicate that something
@@ -434,7 +431,6 @@
           (use-lvar cast lvar)
           cast)))))
 
-
 ;;;; IR1-OPTIMIZE
 
 (declaim (start-block ir1-optimize ir1-optimize-last-effort
@@ -672,7 +668,6 @@
 
 (declaim (end-block))
 
-
 ;;;; local call return type propagation
 
 ;;; This function is called on RETURN nodes that have their REOPTIMIZE
@@ -814,7 +809,6 @@
              (dolist (fun (tail-set-funs tails))
                (dolist (ref (leaf-refs fun))
                  (reoptimize-lvar (node-lvar ref))))))))))
-
 ;;;; IF optimization
 
 (declaim (start-block ir1-optimize-if kill-if-branch-1))
@@ -1110,7 +1104,6 @@
 
 (declaim (end-block))
 
-
 ;;;; exit IR1 optimization
 
 ;;; This function attempts to delete an exit node, returning true if
@@ -1147,7 +1140,6 @@
             (t
              (unlink-node node))))))
 
-
 ;;;; combination IR1 optimization
 
 (declaim (start-block ir1-optimize-combination maybe-terminate-block
@@ -1587,7 +1579,6 @@
                                   (leaf-source-name leaf)
                                   nil))))))))
   (values))
-
 ;;;; known function optimization
 
 ;;; Add a failed optimization note to FAILED-OPTIMZATIONS for NODE,
@@ -2124,7 +2115,6 @@
       (multiple-value-bind (single-p value) (type-singleton-p (single-value-type type))
         (when single-p
           (replace-combination-with-constant value call))))))
-
 ;;;; local call optimization
 
 (declaim (start-block ir1-optimize-set constant-reference-p delete-let
@@ -2755,7 +2745,6 @@
                 (return))))))))
 
   (values))
-
 ;;;; multiple values optimization
 
 ;;; Do stuff to notice a change to a MV combination node. There are

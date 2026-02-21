@@ -783,7 +783,6 @@
   info)
 (!set-load-form-method nlx-info (:xc :target) :ignore-it)
 
-
 ;;;; LEAF structures
 
 ;;; Variables, constants and functions are all represented by LEAF
@@ -949,7 +948,6 @@
   inlinep
   same-block-p
   (functional :test functional))
-
 ;;;; function stuff
 (!def-boolean-attribute functional-kind
   nil optional deleted external toplevel
@@ -1495,7 +1493,6 @@
 (defmacro lambda-var-compute-same-refs (var)
   `(lambda-var-attributep (lambda-var-flags ,var) compute-same-refs))
 
-
 ;;;; basic node types
 
 ;;; A REF represents a reference to a LEAF. REF-REOPTIMIZE is
@@ -1731,7 +1728,6 @@
             (:include cast) (:copier nil)
             (:constructor make-array-index-cast
                 (asserted-type type-to-check value derived-type))))
-
 ;;;; non-local exit support
 ;;;;
 ;;;; In IR1, we insert special nodes to mark potentially non-local
@@ -1809,7 +1805,6 @@
   values
   (info :test info))
 
-
 ;;;; miscellaneous IR1 structures
 
 (defstruct (undefined-warning
@@ -1839,7 +1834,6 @@
   ;; a list of (KEYS . COMPILER-ERROR-CONTEXT)
   (warnings () :type list))
 
-
 ;;; a helper for the POLICY macro, defined late here so that the
 ;;; various type tests can be inlined
 ;;; You might think that NIL as a policy becomes *POLICY*,
@@ -1864,7 +1858,6 @@
                         (lexenv thing)
                         (node (node-lexenv thing))
                         (functional (functional-lexenv thing)))))))
-
 ;;;; Freeze some structure types to speed type testing.
 
 (declaim (freeze-type node lexenv ctran lvar cblock component cleanup

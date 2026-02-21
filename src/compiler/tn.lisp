@@ -31,7 +31,6 @@
               (unless ,tn (go ,outer))
        ,inner (progn ,@body)
               (if (setq ,tn (tn-next ,tn)) (go ,inner) (go ,outer)))))
-
 (defun set-ir2-environment-live-tns (value instance)
   (setf (ir2-environment-live-tns instance) value))
 
@@ -104,7 +103,6 @@
       (delete-some #'ir2-component-wired-tns
                    #'set-ir2-component-wired-tns)))
   (values))
-
 ;;;; TN creation
 
 ;;; Create a packed TN of the specified primitive-type in the
@@ -347,7 +345,6 @@
 
     (push-in tn-next res (ir2-component-constant-tns component))
     res))
-
 ;;;; TN referencing
 
 (defmacro link-tn-ref (write-p tn ref)
@@ -450,7 +447,6 @@
   (setf (tn-ref-tn ref) tn)
   (link-tn-ref (tn-ref-write-p ref) tn ref)
   nil)
-
 ;;;; miscellaneous utilities
 
 ;;; Emit a move-like template determined at run-time, with X as the

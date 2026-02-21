@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; miscellaneous non-primitive predicates
 
 (declaim (inline streamp))
@@ -46,7 +45,6 @@
 (defun sequencep (x)
   (declare (inline extended-sequence-p))
   (or (listp x) (vectorp x) (extended-sequence-p x)))
-
 ;;;; primitive predicates. These must be supported directly by the
 ;;;; compiler.
 
@@ -167,7 +165,6 @@
 (sb-c::when-vop-existsp (:translate car-eq-if-listp)
   (defun car-eq-if-listp (value object)
     (car-eq-if-listp value object)))
-
 
 ;;; Return the specifier for the type of object. This is not simply
 ;;; (TYPE-SPECIFIER (CTYPE-OF OBJECT)) because CTYPE-OF has different
@@ -234,7 +231,6 @@
                   (if (classoid-p pname)
                       (classoid-pcl-class pname)
                       pname)))))))))
-
 ;;;; equality predicates
 
 ;;; This is real simple, 'cause the compiler takes care of it.

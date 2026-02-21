@@ -243,7 +243,6 @@ os_context_register_t *os_context_flags_addr(os_context_t *context)
 {
     return (os_context_register_t*)&(CONTEXT_FLAGS(context));
 }
-
 void arch_skip_instruction(os_context_t *context)
 {
     /* Assuming we get here via an INT3 xxx instruction, the PC now
@@ -306,7 +305,6 @@ void arch_set_pseudo_atomic_interrupted(struct thread *thread) {
 void arch_clear_pseudo_atomic_interrupted(struct thread *thread) {
     clear_pseudo_atomic_interrupted(thread);
 }
-
 /*
  * This stuff seems to get called for TRACE and debug activity.
  */
@@ -330,7 +328,6 @@ arch_remove_breakpoint(void *pc, unsigned int orig_inst)
     *((char *)pc) = orig_inst & 0xff;
     *((char *)pc + 1) = (orig_inst & 0xff00) >> 8;
 }
-
 /* When single stepping, single_stepping holds the original instruction
  * PC location. */
 unsigned int *single_stepping = NULL;
@@ -391,7 +388,6 @@ arch_handle_single_step_trap(os_context_t *context, int trap)
     handle_single_step_trap(context, trap, 0);
 }
 
-
 void
 restore_breakpoint_from_single_step(os_context_t * context)
 {

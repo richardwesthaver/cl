@@ -80,7 +80,6 @@
 (defun format-error-at (control-string offset complaint &rest args)
   (format-error-at* control-string offset complaint args))
 
-
 
 (declaim (inline directive-colonp directive-atsignp))
 (defun directive-colonp (x) (logbitp 8 (directive-bits x)))

@@ -31,8 +31,8 @@ echo //entering make-genesis-2.sh
 # though we ran GENESIS earlier, we couldn't get it to make a .core
 # file at that time; but we needed to run it earlier in order to
 # get to where we can write a .core file.)
-echo //loading and running GENESIS to create cold-sbcl.core
-echo '(load "loader.lisp") (load-sbcl-file "make-genesis-2.lisp")' | $SBCL_XC_HOST
+echo //loading and running GENESIS to create cold-cl.core
+echo '(load "loader.lisp") (load-sbcl-file "make-genesis-2.lisp")' | $CL_XC_HOST
 
 echo //testing for consistency of first and second GENESIS passes
 if ! command -v diff > /dev/null ; then

@@ -27,7 +27,6 @@
             sb-vm::complex-single-reg sb-vm::complex-double-reg
             sb-vm::tmp-tn sb-vm::wzr-tn sb-vm::zr-tn sb-vm::nsp-offset)))
 
-
 
 (defconstant-eqx +conditions+
   '((:eq . 0)
@@ -60,7 +59,6 @@
 (defun negate-condition (condition)
   (aref +condition-name-vec+
         (logxor 1 (conditional-opcode condition))))
-
 ;;;; disassembler field definitions
 
 (progn
@@ -138,7 +136,6 @@
   (define-arg-type add-sub-imm-annotation :printer #'annotate-add-sub-imm)
 
   (define-arg-type label :sign-extend t :use-label #'use-label))
-
 ;;;; primitive emitters
 
 (define-bitfield-emitter emit-word 32
@@ -200,7 +197,6 @@
                                                (- n-widetag-bits
                                                   word-shift))))))))
 
-
 ;;;; Addressing mode 1 support
 
 ;;; Addressing mode 1 has some 11 formats.  These are immediate,
@@ -276,7 +272,6 @@
              (shifter-operand-operand operand)
              (shifter-operand-register operand)))))
 
-
 ;;;; Addressing mode 2 support
 
 ;;; Addressing mode 2 ostensibly has 9 formats.  These are formed from
@@ -312,7 +307,6 @@
 
   (make-memory-operand base offset mode))
 
-
 ;;;; Data-processing instructions
 
 
@@ -2658,7 +2652,6 @@
                                     #b01111
                                     #b111)
                                 (gpr-offset rn) (fpr-offset rd)))))))
-
 (define-instruction load-from-label (segment dest label &optional lip)
   (:vop-var vop)
   (:emitter
@@ -3663,7 +3656,6 @@
   (def trn2 #b110)
   (def zip2 #b111))
 
-
 ;;; Inline constants
 (defun canonicalize-inline-constant (constant)
   (let ((first (car constant))

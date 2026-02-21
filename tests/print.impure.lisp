@@ -228,7 +228,6 @@
         (*standard-output* (make-broadcast-stream)))
     (wexercise-0-8-7-interpreted "~@W")
     (wexercise-0-8-7-compiled-with-atsign)))
-
 ;;; WRITE-TO-STRING was erroneously DEFKNOWNed as FOLDABLE
 
 ;;; This bug from PFD

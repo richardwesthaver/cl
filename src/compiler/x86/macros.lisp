@@ -35,7 +35,6 @@
      ,@body
      (unless (zerop (tn-offset ,tn))
        (inst fxch ,tn))))                ; save into new dest and restore st(0)
-
 ;;;; instruction-like macros
 
 (defmacro move (dst src)
@@ -71,7 +70,6 @@
             :disp (- (+ (* vector-data-offset n-word-bytes)
                         (* ,offset ,scale))
                      other-pointer-lowtag)))
-
 ;;;; macros to generate useful values
 
 (defmacro load-symbol (reg symbol)
@@ -154,7 +152,6 @@
   "Loads the type bits of a pointer into target independent of
    byte-ordering issues."
   `(inst mov ,target (make-ea :byte :base ,source :disp ,offset)))
-
 ;;;; error code
 (defun emit-error-break (vop kind code values)
   (assemble ()
@@ -173,7 +170,6 @@
       (emit-error-break vop error-trap (error-number-or-lose error-code) values)
       start-lab)))
 
-
 ;;;; PSEUDO-ATOMIC
 
 ;;; This is used to wrap operations which leave untagged memory lying
@@ -215,7 +211,6 @@
          ;; using the process signal mask.
          (inst break pending-interrupt-trap)
          (emit-label ,label)))))
-
 ;;;; indexed references
 
 (defmacro define-full-compare-and-swap

@@ -71,7 +71,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require :alexandria)
   (require :split-sequence))
-
 
 ;;;; KLUDGE: Redefine SB-SYS::GET-SYSTEM-INFO (used by
 ;;;; SB-EXT:CALL-WITH-TIMING below) with SB-UNIX:RUSAGE_CHILDREN
@@ -101,7 +100,6 @@
       (unless err?       ; FIXME: nonmnemonic (reversed) name for ERR?
         (error "Unix system call getrusage failed: ~A." (strerror utime)))
       (values utime stime majflt))))
-
 
 ;;;; Timing
 
@@ -222,7 +220,6 @@
               (/ (value :system-run-time-us) 1000000 time-unit)
               (and (getf timing :gc-run-time-ms)
                    (/ (value :gc-run-time-ms) 1000 time-unit))))))
-
 
 ;;; Return the maximum Relative Standard Deviation (sqrt(var) / abs(mean)).
 (defun max-rsd (means variances)
@@ -350,7 +347,6 @@
 #+nil
 (time-interleaved (list (lambda () (sleep (+ 0.075 (random 0.05))))
                         (lambda () (sleep (+ 0.175 (random 0.05))))))
-
 
 (defun blank-char-p (char)
   (member char '(#\Space #\Tab)))
@@ -430,7 +426,6 @@
                      (:commands ,(list (lambda () (sleep 0.01))
                                        (lambda () (sleep 0.02)))))
                    #'time-interleaved)
-
 
 ;;;; Command line
 

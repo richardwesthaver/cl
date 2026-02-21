@@ -59,7 +59,6 @@ extern FILE *gc_activitylog();
 os_vm_size_t large_allocation = 0;
 int n_lisp_gcs;
 
-
 /*
  * debugging
  */
@@ -175,7 +174,6 @@ struct generation generations[NUM_GENERATIONS];
 generation_index_t gencgc_oldest_gen_to_gc = HIGHEST_NORMAL_GENERATION;
 
 page_index_t next_free_page; // upper (exclusive) bound on used page range
-
 #ifdef LISP_FEATURE_SB_THREAD
 /* This lock is to prevent multiple threads from simultaneously
  * allocating new regions which overlap each other.  Note that the
@@ -196,7 +194,6 @@ void release_gc_page_table_lock() { ignore_value(mutex_release(&free_pages_lock)
 extern os_vm_size_t gencgc_alloc_granularity;
 os_vm_size_t gencgc_alloc_granularity = GENCGC_ALLOC_GRANULARITY;
 
-
 /*
  * miscellaneous heap functions
  */
@@ -232,7 +229,6 @@ count_generation_bytes_allocated (generation_index_t gen)
     }
     return result*N_WORD_BYTES;
 }
-
 
 /* The generation currently being allocated to. */
 static generation_index_t gc_alloc_generation;
@@ -1048,7 +1044,6 @@ void *collector_alloc_fallback(struct alloc_region* region, sword_t nbytes, int 
     return new_obj;
 }
 
-
 /* Free any trailing pages of the object starting at 'first_page'
  * that are currently unused due to object shrinkage.
  * Possibly assign different 'gen' and 'allocated' values.
@@ -1235,7 +1230,6 @@ copy_unboxed_object(lispobj object, sword_t nwords)
 {
     return gc_copy_object(object, nwords, unboxed_region, PAGE_TYPE_UNBOXED);
 }
-
 /* This WILL NOT reliably work for objects in a currently open allocation region,
  * because page_words_used() is not sync'ed to the free pointer until closing.
  * However it should work reliably for codeblobs, because if you can hold
@@ -2112,7 +2106,6 @@ static void pin_exact_root(lispobj obj)
     }
     pin_object(obj);
 }
-
 
 /* Return true if 'ptr' is OK to be on a write-protected page
  * of an object in 'gen'. That is, if the pointer does not point to a younger object.
@@ -2606,7 +2599,6 @@ scavenge_root_gens(generation_index_t from)
     }
 }
 
-
 /* Scavenge a newspace generation. As it is scavenged new objects may
  * be allocated to it; these will also need to be scavenged. This
  * repeats until there are no more objects unscavenged in the
@@ -2752,7 +2744,6 @@ scavenge_newspace(generation_index_t generation)
     new_areas = NULL;
     new_areas_index = 0;
 }
-
 /* Un-write-protect all the pages in from_space. This is done at the
  * start of a GC else there may be many page faults while scavenging
  * the newspace (I've seen drive the system time to 99%). These pages
@@ -2900,7 +2891,6 @@ void free_large_object(lispobj* where, lispobj* end)
     generations[g].bytes_allocated -= bytes_freed;
     bytes_allocated -= bytes_freed;
 }
-
 /* Call 'proc' with pairs of addresses demarcating ranges in the
  * specified generation.
  * Stop if any invocation returns non-zero, and return that value */
@@ -2941,7 +2931,6 @@ walk_generation(uword_t (*proc)(lispobj*,lispobj*,void*),
     return 0;
 }
 
-
 /* Write-protect all the dynamic boxed pages in the given generation. */
 static void
 write_protect_generation_pages(generation_index_t generation)
@@ -4094,7 +4083,6 @@ collect_garbage(generation_index_t last_gen)
     from_space = -1;
     new_space = 0;
 }
-
 /* Initialization of gencgc metadata is split into two steps:
  * 1. gc_init() - allocation of a fixed-address space via mmap(),
  *    failing which there's no reason to go on. (safepoint only)
@@ -4112,7 +4100,6 @@ gc_init(void)
 
 int gc_card_table_nbits;
 sword_t gc_card_table_mask;
-
 
 /* alloc() and alloc_list() are external interfaces for memory allocation.
  * They allocate to generation 0 and are not called from within the garbage
@@ -4256,7 +4243,6 @@ void mixed_region_rollback(sword_t size)
               && region->free_pointer <= region->end_addr);
 }
 #endif
-
 /*
  * shared support for the OS-dependent signal handlers which
  * catch GENCGC-related write-protect violations

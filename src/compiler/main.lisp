@@ -62,7 +62,6 @@
 (declaim (type object *compile-object*))
 
 (defvar *emit-cfasl* nil)
-
 ;;;; WITH-COMPILATION-UNIT and WITH-COMPILATION-VALUES
 
 (defmacro with-compilation-unit (options &body body)
@@ -364,7 +363,6 @@ Examples:
           (push (list* thing fmt-or-condition args)
                 (file-info-style-warning-tracker file-info)))
         (apply 'style-warn fmt-or-condition args)))))
-
 ;;;; component compilation
 
 (defparameter *max-optimize-iterations* 3 ; ARB
@@ -731,7 +729,6 @@ necessary, since type inference may take arbitrarily long to converge.")
 
   (clear-constant-info)
   (values))
-
 ;;;; clearing global data structures
 ;;;;
 ;;;; FIXME: Is it possible to get rid of this stuff, getting rid of
@@ -794,7 +791,6 @@ necessary, since type inference may take arbitrarily long to converge.")
       (progn
         (clrhash (eql-constants ir1-namespace))
         (clrhash (similar-constants ir1-namespace))))))
-
 ;;;; trace output
 
 ;;; Print out some useful info about COMPONENT to STREAM.
@@ -819,14 +815,13 @@ necessary, since type inference may take arbitrarily long to converge.")
     (print-ir2-blocks component)
     (terpri)
     (values)))
-
 ;;; Leave this as NIL if you want modern, rational, correct, behavior,
 ;;; or switch it to T for legacy (CLHS-specified) bullshit a la
 ;;;  "During a call to compile-file, *compile-file-pathname* is bound to the pathname
 ;;;   denoted by the first argument to compile-file, merged against the defaults"
 ;;; The normal build sets it to T in make-target-2, despite that I think most people would
 ;;; prefer the nonstandard behavior. The standard behavior makes stored pathnames all wrong
-;;; when files are physically moved. (Same problem as SBCL_HOME embedded into C pretty much)
+;;; when files are physically moved. (Same problem as CL_HOME embedded into C pretty much)
 (defglobal *merge-pathnames* nil)
 
 ;;; Given a pathname, return a SOURCE-INFO structure.
@@ -991,7 +986,6 @@ necessary, since type inference may take arbitrarily long to converge.")
   (let ((file-info (source-info-file-info info)))
     (values (aref (file-info-forms file-info) index)
             (aref (file-info-positions file-info) index))))
-
 ;;;; processing of top level forms
 
 ;;; This is called by top level form processing when we are ready to
@@ -1239,7 +1233,6 @@ necessary, since type inference may take arbitrarily long to converge.")
                     (convert-and-maybe-compile form path)))))))))
 
   (values))
-
 ;;;; load time value support
 ;;;;
 ;;;; (See EMIT-MAKE-LOAD-FORM.)
@@ -1434,7 +1427,6 @@ necessary, since type inference may take arbitrarily long to converge.")
                        (append (cdr circular-ref) (cdr info)))))))
          nil)))))
 
-
 ;;;; COMPILE-FILE
 
 ;;; The maximum number of top-level lambdas we put in a single top-level
@@ -1988,7 +1980,6 @@ returning its filename.
       (when (and trace-file (not (streamp trace-file)))
         (close *compiler-trace-output*)))
     (values (unless abort-p result) warnings-p failure-p))))
-
 ;;; KLUDGE: Part of the ANSI spec for this seems contradictory:
 ;;;   If INPUT-FILE is a logical pathname and OUTPUT-FILE is unsupplied,
 ;;;   the result is a logical pathname. If INPUT-FILE is a logical
@@ -2090,7 +2081,6 @@ returning its filename.
                        :directory (pathname-directory host/dev/dir)
                        :name (pick 'pathname-name (pathname-name input))
                        :type (pick 'pathname-type *fasl-file-type*))))))
-
 ;;; FIXME: find a better place for this.
 (defun always-boundp (name node)
   (if (policy node (= debug 3))

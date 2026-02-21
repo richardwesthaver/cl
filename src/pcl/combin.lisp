@@ -22,7 +22,6 @@
 ;;;; specification.
 
 (in-package "SB-PCL")
-
 (defun get-method-function (method &optional method-alist wrappers)
   (let ((fn (cadr (assoc method method-alist))))
     (if fn
@@ -541,7 +540,6 @@
             (t
              `(call-method ,(car around)
                            (,@(cdr around) (make-method ,main-method))))))))
-
 ;;; helper code for checking keywords in generic function calls.
 (defun compute-applicable-keywords (gf methods)
   (let ((any-keyp nil))
@@ -608,7 +606,6 @@
       (check-applicable-keywords
        .keyargs-start. .valid-keys. .more-context. .more-count.))
      ,effective))
-
 ;;;; the STANDARD method combination type. This is coded by hand
 ;;;; (rather than with DEFINE-METHOD-COMBINATION) for bootstrapping
 ;;;; and efficiency reasons. Note that the definition of the

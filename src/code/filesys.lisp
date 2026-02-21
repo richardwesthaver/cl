@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; Unix pathname host support
 
 ;;; FIXME: the below shouldn't really be here, but in documentation
@@ -265,7 +264,6 @@
                   nil
                   :newest)))))
 
-
 ;;;; Grabbing the kind of file when we have a native-namestring.
 (defun native-file-kind (namestring &optional resolve-symlinks)
   #+win32 (declare (ignore resolve-symlinks))
@@ -287,7 +285,6 @@
          (#.sb-unix:s-ifdir :directory)
          (#.sb-unix:s-iflnk :symlink)
          (t :special))))))
-
 ;;;; TRUENAME, PROBE-FILE, FILE-AUTHOR, FILE-WRITE-DATE.
 
 ;;; Rewritten in 12/2007 by RMK, replacing 13+ year old CMU code that
@@ -525,7 +522,6 @@ is a wild pathname."
 An error of type FILE-ERROR is signaled if no such file exists,
 or if PATHSPEC is a wild pathname."
   (query-file-system pathspec :write-date))
-
 ;;;; miscellaneous other operations
 
 (defun rename-file (file new-name)
@@ -653,7 +649,6 @@ exist or if is a file or a symbolic link."
           (recurse physical)
           (delete-dir physical)))))
 
-
 (defun sbcl-homedir-pathname ()
   sb-sys::*sbcl-homedir-pathname*)
 
@@ -674,8 +669,8 @@ exist or if is a file or a symbolic link."
                  path)))
            (try-runtime-home (path)
              (or (probe path)
-                 (probe (merge-pathnames "../lib/sbcl/" path)))))
-    (let* ((env (posix-getenv "SBCL_HOME"))
+                 (probe (merge-pathnames "../lib/cl/" path)))))
+    (let* ((env (posix-getenv "CL_HOME"))
            (env (and env (not (string= env ""))
                      (parse env))))
       (or (and env
@@ -730,7 +725,6 @@ system. HOST argument is ignored by SBCL."
     *default-pathname-defaults*
     :as-directory t)))
 
-
 ;;;; DIRECTORY
 
 (defun directory (pathspec &key (resolve-symlinks t))
@@ -1258,7 +1252,6 @@ Experimental: interface subject to change."
                 (mapcar (lambda (x) (cons (simple-intersection
                                            (car one) (car two)) x))
                         (intersect-directory-helper (cdr one) (cdr two)))))))))
-
 
 (defun directory-pathname-p (pathname)
   (and (pathnamep pathname)

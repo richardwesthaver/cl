@@ -24,7 +24,6 @@
 ;;;; specification.
 
 (in-package :sb-walker)
-
 ;;;; utilities to support tests
 
 ;;; string equality modulo deletion of consecutive whitespace (as a crude way
@@ -40,7 +39,6 @@
 (defun string=-modulo-tabspace (x y)
   (string= (string-modulo-tabspace x)
            (string-modulo-tabspace y)))
-
 ;;;; tests based on stuff at the end of the original CMU CL
 ;;;; pcl/walk.lisp file
 
@@ -1037,7 +1035,6 @@ Form: C   Context: EVAL; lexically bound
   (with-output-to-string (*standard-output*)
     (take-it-out-for-a-test-walk
      (defclass foo () ((%bar :type integer :initform 'string))))))
-
 ;;;; more tests
 
 ;;; Old PCL hung up on this.

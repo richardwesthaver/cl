@@ -64,7 +64,6 @@
 ;; conditional.
 #-arm-vfp
 (error "Don't know how to set the FPU control word layout on non-VFP systems")
-
 ;;;; Where to put the different spaces.
 
 (progn
@@ -81,7 +80,6 @@
 (setq *alien-linkage-table-predefined-entries* '(("alloc_tramp" t)
                                                  ("list_alloc_tramp" t)))
 
-
 ;;;; other miscellaneous constants
 
 (defenum (:start 8)
@@ -93,7 +91,6 @@
   single-step-around-trap
   single-step-before-trap
   error-trap)
-
 ;;;; Static symbols.
 
 ;;; These symbols are loaded into static space directly after NIL so
@@ -117,7 +114,6 @@
 
 (defconstant-eqx +static-fdefns+ `#(,@common-static-fdefns) #'equalp)
 
-
 ;;;; Assembler parameters:
 
 ;;; The number of bits per element in the assemblers code vector.

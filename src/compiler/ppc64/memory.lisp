@@ -22,7 +22,6 @@
     ;; THREAD-TN's low byte is 0.
     (inst stbx thread-base-tn card-table-base-tn (car temps))))
 
-
 ;;; Cell-Ref and Cell-Set are used to define VOPs like CAR, where the offset to
 ;;; be read or written is a property of the VOP used.
 ;;;
@@ -44,7 +43,6 @@
   (:generator 4
     (emit-gengc-barrier object nil (list t1) (vop-nth-arg 1 vop))
     (storew value object offset lowtag)))
-
 ;;;; Indexed references:
 
 ;;; Define some VOPs for indexed memory reference.

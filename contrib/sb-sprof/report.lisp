@@ -20,7 +20,6 @@
 (deftype report-sort-order ()
   '(member :descending :ascending))
 
-
 ;;;; Reporting
 
 (defun print-separator (&key (length 72) (char #\-))

@@ -14,7 +14,6 @@
 ;;;; FIXME: A lot of stupid package prefixes would go away if DISASSEM
 ;;;; would use the SB-DI package. And some more would go away if it would
 ;;;; use SB-SYS (in order to get to the SAP-FOO operators).
-
 (defstruct (instruction (:conc-name inst-)
                         (:constructor
                          make-instruction (name format-name print-name
@@ -96,7 +95,6 @@
              (setf (inst-specializers master)
                    (order-specializers (remove master insts)))
              master)))))
-
 ;;;; choosing an instruction
 
 (declaim (inline inst-matches-p choose-inst-specialization))
@@ -118,7 +116,6 @@
         (when (inst-matches-p spec chunk)
           (return spec)))
       inst))
-
 ;;;; an instruction space holds all known machine instructions in a
 ;;;; form that can be easily searched
 
@@ -174,7 +171,6 @@
     (if inst
         (values inst (+ (inst-length inst) length-adjustment) new-chunk)
         (values nil 0 chunk))))
-
 ;;;; building the instruction space
 
 ;;; Returns an instruction-space object corresponding to the list of
@@ -221,7 +217,6 @@
                                                        submask)
                                             :common-id (car bucket)))
                                          buckets))))))))))
-
 ;;;; an inst-space printer for debugging purposes
 
 (defun print-masked-binary (num mask word-size &optional (show word-size))
@@ -264,9 +259,7 @@
             (print-inst-space (ischoice-subspace choice)
                               (+ 4 indent)))
           (ispace-choices inst-space)))))
-
 ;;;; (The actual disassembly part follows.)
-
 ;;; Code object layout:
 ;;;     header-word
 ;;;     code-size (starting from first inst, in bytes)
@@ -302,7 +295,6 @@
     (ash num sb-vm:word-shift))
   ) ; EVAL-WHEN
 
-
 (defstruct (offs-hook (:copier nil))
   (offset 0 :type offset)
   (fun (missing-arg) :type function)
@@ -317,7 +309,6 @@
               (= (seg-virtual-location seg) addr)
               (seg-virtual-location seg)
               (seg-code seg)))))
-
 ;;;; operations on code-components (which hold the instructions for
 ;;;; one or more functions)
 
@@ -347,7 +338,6 @@
 (defun code-insts-offs-to-segment-offs (offset segment)
   (- offset (seg-initial-offset segment)))
 
-
 ;;; Is ADDRESS aligned on a SIZE byte boundary?
 (declaim (inline aligned-p))
 (defun aligned-p (address size)
@@ -394,7 +384,6 @@
               args)))
   (incf (dstate-next-offs dstate)
         (words-to-bytes sb-vm:simple-fun-insts-offset)))
-
 ;;; Return ADDRESS aligned *upward* to a SIZE byte boundary.
 ;;; KLUDGE: should be ALIGN-UP but old Slime uses it
 (declaim (inline align))
@@ -697,7 +686,6 @@
         (setf (dstate-filtered-arg-pool-in-use dstate) nil)
         (setf (dstate-inst-properties dstate) 0))))))
 
-
 (defun collect-labelish-operands (args cache)
   (awhen (remove-if-not #'arg-use-label args)
     (let* ((list (mapcar (lambda (arg &aux (fun (arg-use-label arg))
@@ -799,7 +787,6 @@
             (setf (gethash (car label) label-hash)
                   (format nil "L~W" max)))))
       (setf (dstate-labels dstate) labels))))
-
 (defun compute-mask-id (args)
   (let ((mask dchunk-zero)
         (id dchunk-zero))
@@ -1239,7 +1226,6 @@
         (setf ispace (sb-vm:without-arena "disassem" (build-inst-space insts))))
       (setf *disassem-inst-space* ispace))
     ispace))
-
 (defun set-location-printing-range (dstate from length)
   (setf (dstate-addr-print-len dstate) ; in characters
         ;; 4 bits per hex digit
@@ -1313,7 +1299,6 @@
     ;; move to the instruction column
     (tab0 (+ location-column-width 1 label-column-width) stream)
     ))
-
 (macrolet ((with-print-restrictions (&rest body)
              `(let ((*print-pretty* t)
                     ;; Truncating end-of-line notes is not very informative, certainly
@@ -1379,7 +1364,6 @@
       (unless (zerop offs)
         (write-string ", " stream))
       (format stream "#X~2,'0x" (sap-ref-8 sap (+ offs start-offs))))))
-
 (defvar *default-dstate-hooks*
   (list* #-(or x86 x86-64 arm64 riscv loongarch64) #'lra-hook nil))
 
@@ -1437,7 +1421,6 @@
                  :fun (let ((i i)) ; capture the _current_ I, not the final value
                         (lambda (stream dstate) (fun-header-hook i stream dstate))))
                 (seg-hooks segment)))))))
-
 ;;; A SAP-MAKER is a no-argument function that returns a SAP.
 
 (declaim (inline sap-maker))
@@ -1475,7 +1458,6 @@
            (type address address))
   (let ((sap (int-sap address)))
     (lambda () sap)))
-
 (defstruct (source-form-cache (:conc-name sfcache-)
                               (:copier nil))
   (debug-source nil :type (or null sb-di:debug-source))
@@ -1546,7 +1528,6 @@
 (defun make-memory-segment (code address &rest args)
   (declare (type address address))
   (apply #'make-segment code (memory-sap-maker address) args))
-
 ;;; just for fun
 (defun print-fun-headers (function)
   (declare (type compiled-function function))
@@ -1564,7 +1545,6 @@
               (%simple-fun-name fun)
               (%simple-fun-arglist fun)
               (%simple-fun-type fun)))))
-
 ;;; getting at the source code...
 
 (defun get-different-source-form (loc context &optional cache)
@@ -1588,7 +1568,6 @@
                 (sb-di:code-location-form-number loc))
           (setf (sfcache-last-location-retrieved cache) loc))
         (values form t))))
-
 ;;;; stuff to use debugging info to augment the disassembly
 
 (defun code-fun-map (code)
@@ -1809,7 +1788,6 @@
     (when *disassemble-annotate*
       (add-source-tracking-hooks segment debug-fun sfcache))))
 
-
 ;;; Return a list of the segments of memory containing machine code
 ;;; instructions for FUNCTION.
 (defun get-fun-segments (function)
@@ -1936,7 +1914,6 @@
                  (- (%code-text-size code) last-offset)
                  last-debug-fun)))
     (nreverse segments)))
-
 ;;; Compute labels for all the memory segments in SEGLIST and adds
 ;;; them to DSTATE. It's important to call this function with all the
 ;;; segments you're interested in, so that it can find references from
@@ -2034,7 +2011,6 @@
               (print-segment-name seg))
             (disassemble-segment seg stream dstate)))))))
 
-
 ;;;; top level functions
 
 ;;; Disassemble the machine code instructions for FUNCTION.
@@ -2177,7 +2153,6 @@
                (insts (code-instructions object)))
         (format stream "~&; Base: ~x Data: ~x~%" base (sap-int insts))))
       (disassemble-code-component thing :stream stream)))))
-
 ;;;; code to disassemble assembler segments
 
 ;;; Disassemble the machine code instructions associated with
@@ -2193,7 +2168,6 @@
                   ranges)))
     (label-segments disassem-segments dstate)
     (disassemble-segments disassem-segments stream dstate)))
-
 ;;; routines to find things in the Lisp environment
 
 ;;; an alist of (SYMBOL-SLOT-OFFSET . ACCESS-FUN-NAME) for slots
@@ -2280,7 +2254,6 @@
                      (return-from find-assembler-routine
                       (values name 0)))))))
            (values nil nil)))))
-
 ;;;; some handy function for machine-dependent code to use...
 
 (defun sap-ref-int (sap offset length byte-order)
@@ -2330,7 +2303,6 @@
            (optimize (speed 3) (safety 0)))
   (sign-extend (read-suffix length dstate) length))
 
-
 ;;;; optional routines to make notes about code
 
 ;;; Store NOTE (which can be either a string or a function with a
@@ -2581,7 +2553,6 @@
                  (return-from found symbol))))
           (return-from maybe-note-static-symbol))))
     (note (lambda (s) (prin1 symbol s)) dstate)))
-
 (defun get-internal-error-name (errnum)
   (and (array-in-bounds-p sb-c:+backend-internal-errors+ errnum)
        (cadr (svref sb-c:+backend-internal-errors+ errnum))))

@@ -95,7 +95,6 @@
          (make-values-type (mapcar #'weaken-type (values-type-required type))
                            (mapcar #'weaken-type (values-type-optional type))
                            (acond ((values-type-rest type) (weaken-type it)))))))
-
 ;;;; checking strategy determination
 
 ;;; Return the type we should test for when we really want to check

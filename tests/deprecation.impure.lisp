@@ -9,7 +9,6 @@
 ;;;; absolutely no warranty. See the COPYING and CREDITS files for
 ;;;; more information.
 
-
 ;;;; Helpers
 
 (defun test (namespace name state make-body
@@ -65,7 +64,6 @@
                                 (describe name stream))))
     ;; Check DOCUMENTATION.
     (search-string/documentation (documentation name namespace))))
-
 ;;;; DEPRECATED declaration syntax
 
 (with-test (:name (deprecated :declaration :syntax))
@@ -99,7 +97,6 @@
           (deprecated :early "1" (variable deprecated.declaration.replacement
                                   :replacement (deprecated.declaration.replacement1
                                                 deprecated.declaration.replacement2))))))
-
 ;;;; Deprecated variables
 
 (macrolet
@@ -166,7 +163,7 @@
   (define-variable-tests defconstant         definition.defconstant)
   (define-variable-tests define-symbol-macro definition.define-symbol-macro
     :symbol-value nil))
-  
+ 
 ;;;; Deprecated functions
 
 (macrolet
@@ -213,7 +210,6 @@
     :call nil :check-describe nil)
   (define-function-tests defun            definition.defun)
   (define-function-tests defmacro         definition.defmacro))
-
 ;;;; Deprecated types
 
 (macrolet
@@ -300,7 +296,6 @@
      :call                   nil
      :expected-warning-count '(eql 0))))
 
-
 ;;;; Loader deprecation warnings
 
 (defun please-dont-use-this (x)

@@ -1,6 +1,5 @@
 (in-package "SB-ROTATE-BYTE")
 
-
 ;;; 32-bit rotates
 
 (define-vop (%32bit-rotate-byte/c)
@@ -33,7 +32,6 @@
     (move result integer)
     (move rcx count :dword)
     (inst rol :dword result :cl)))
-
 ;;; 64-bit rotates
 
 (define-vop (%64bit-rotate-byte/c)

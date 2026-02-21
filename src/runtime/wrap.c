@@ -52,12 +52,10 @@
 #else
 extern char **environ;
 #endif
-
 /*
  * stuff needed by CL:DIRECTORY and other Lisp directory operations
  */
 
-
 /*
  * readlink(2) stuff
  */
@@ -144,7 +142,6 @@ sb_dirent_name(struct dirent * ent)
 {
     return ent->d_name;
 }
-
 /*
  * stat(2) stuff
  */

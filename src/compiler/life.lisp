@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; utilities
 
 ;;; Link in a GLOBAL-CONFLICTS structure for TN in BLOCK with NUMBER
@@ -65,7 +64,6 @@
         (setf (block-environment-cache block)
               (block-environment block))
         env)))
-
 ;;;; pre-pass
 
 ;;; Convert TN (currently local) to be a global TN, since we
@@ -377,7 +375,6 @@
                (init-global-conflict-kind new))))))))
 
   (values))
-
 ;;;; environment TN stuff
 
 ;;; Add a :LIVE global conflict for TN in 2BLOCK if there is none
@@ -477,7 +474,6 @@
   (setf (tn-environment tn) tn-env)
   (push tn (ir2-environment-live-tns (environment-info tn-env)))
   (values))
-
 ;;;; flow analysis
 
 ;;; For each GLOBAL-TN in BLOCK2 that is :LIVE, :READ or :READ-ONLY,
@@ -596,7 +592,6 @@
       (unless did-something (return))))
 
   (values))
-
 ;;;; post-pass
 
 ;;; Note that TN conflicts with all current live TNs. NUM is TN's LTN
@@ -826,7 +821,6 @@
   (declare (type component component))
   (do-ir2-blocks (block component)
     (conflict-analyze-1-block block)))
-
 ;;;; alias TN stuff
 
 ;;; Destructively modify OCONF to include the conflict information in CONF.
@@ -996,7 +990,6 @@
             (when (member (tn-kind tn) '(:normal :debug-environment))
               (convert-to-environment-tn tn env))))))))
 
-
 (defun lifetime-analyze (component)
   (lifetime-pre-pass component)
   (maybe-environmentalize-closure-tns component)
@@ -1004,7 +997,6 @@
   (lifetime-flow-analysis component)
   (lifetime-post-pass component)
   (merge-alias-conflicts component))
-
 ;;;; conflict testing
 
 ;;; Test for a conflict between the local TN X and the global TN Y. We

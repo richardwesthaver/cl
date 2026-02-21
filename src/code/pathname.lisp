@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; data types used by pathnames
 
 ;;; The HOST structure holds the functions that both parse the
@@ -39,7 +38,6 @@
                     (:copier nil))
   (hash 0 :type fixnum :read-only t)
   (pieces nil :type list :read-only t))
-
 ;;;; PATHNAME structures
 
 ;;; the various magic tokens that are allowed to appear in pretty much

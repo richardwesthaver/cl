@@ -23,7 +23,7 @@ set -e
 # fast.:-| It can be useful if you are trying to debug a low-level
 # problem, e.g. a problem in src/runtime/*.c or in
 # src/code/cold-init.lisp. Soon, you'll find yourself wanting to
-# test a small change in a file compiled into cold-sbcl.core without
+# test a small change in a file compiled into cold-cl.core without
 # redoing the entire rebuild-the-system-from-scratch process. You may be
 # able to avoid a complete make-host-2.sh by just letting this script
 # rebuild only files that have changed. On the other hand, it might
@@ -81,14 +81,14 @@ echo //HOST_TYPE=\"$HOST_TYPE\"
 # in make.sh, since the idiosyncrasies of SBCL command line argument
 # order dependence, the meaninglessness of duplicate --core arguments,
 # and the SBCL-vs-CMUCL dependence of --core/-core argument syntax
-# make it too messy to try deal with arbitrary SBCL_XC_HOST variants.
+# make it too messy to try deal with arbitrary CL_XC_HOST variants.
 # So you have no choice:
 case "$HOST_TYPE" in
     cmucl) LISP="lisp -batch"
            INIT="-noinit"
            CORE="-core"
            ;;
-    sbcl)  LISP="${SBCL_XC_HOST%% *}"
+    sbcl)  LISP="${CL_XC_HOST%% *}"
            INIT="--no-sysinit --no-userinit"
            CORE="--core"
            ;;
@@ -106,8 +106,8 @@ case "$HOST_TYPE" in
            exit 1
 esac
 
-SBCL_XC_HOST="$LISP ${XC_CORE:+$CORE $XC_CORE} $INIT"
-export SBCL_XC_HOST
+CL_XC_HOST="$LISP ${XC_CORE:+$CORE $XC_CORE} $INIT"
+export CL_XC_HOST
 
 # (We don't do make-host-1.sh at all. Hopefully nothing relevant has
 # changed.)

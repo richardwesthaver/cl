@@ -11,7 +11,6 @@
 
 (in-package "SB-IMPL")
 
-
 ;;; General unibyte support
 
 (defmacro define-unibyte-to-octets-functions
@@ -238,7 +237,6 @@
          ,string/crlf->name
          :char-encodable-p (,code->-name (char-code |ch|))
          :newline-variant :crlf)))
-
 ;;; ASCII
 
 (declaim (inline code->ascii-mapper))
@@ -262,7 +260,6 @@
   (ascii->string/cr-aref string->ascii/cr)
   (ascii->string/crlf-aref string->ascii/crlf)
   t)
-
 ;;; Latin-1
 
 ;;; FIXME: we need this for the CLRF definition, but having this
@@ -281,7 +278,6 @@
   (latin1->string-aref string->latin1)
   (latin1->string/cr-aref string->latin1/cr)
   (latin1->string/crlf-aref string->latin1/crlf))
-
 ;;; UTF-8
 
 ;;; to UTF-8

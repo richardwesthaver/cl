@@ -13,7 +13,6 @@
   ;; 8?
   (+ (context-register scp ra-offset) 8))
 
-
 ;;; CONTEXT-FLOAT-REGISTER
 (define-alien-routine ("os_context_float_register_addr" context-float-register-addr)
   (* unsigned) (context (* os-context-t)) (index int))
@@ -50,7 +49,6 @@
            (declare (type (complex double-float) value))
          (setf (sap-ref-double sap 0) (realpart value)
                (sap-ref-double sap 8) (imagpart value)))))))
-
 ;;; INTERNAL-ERROR-ARGS
 
 ;;; Given a (POSIX) signal context, extract the internal error
@@ -64,7 +62,6 @@
         (values #.(error-number-or-lose 'invalid-arg-count-error)
                 '(#.arg-count-sc))
         (sb-kernel::decode-internal-error-args (sap+ pc 5) trap-number))))
-
 ;;; CONTEXT-CALL-FUNCTION
 
 ;;; Undo the effects of XEP-ALLOCATE-FRAME

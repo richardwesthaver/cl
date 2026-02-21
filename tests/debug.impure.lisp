@@ -28,7 +28,6 @@
     ;; This was causing heap corruption
     (assert (zerop (sb-kernel:code-jump-table-words bpt-code-obj)))))
 
-
 ;;;; Check that we get debug arglists right.
 
 (defun zoop (zeep &key beep)
@@ -803,7 +802,6 @@
 
 ;; unconditional, in case either previous left it enabled
 (disable-debugger)
-
 ;;;; test some limitations of MAKE-LISP-OBJ
 
 ;;; Older GENCGC systems had a bug in the pointer validation used by

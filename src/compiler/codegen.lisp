@@ -13,7 +13,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; utilities used during code generation
 
 ;;; KLUDGE: the assembler can not emit backpatches comprising jump tables without
@@ -66,7 +65,6 @@
 ;;; designated by 2ENV
 (defun callee-return-pc-tn (2env)
   (ir2-environment-return-pc-pass 2env))
-
 ;;;; Fixups
 
 ;;; a fixup of some kind
@@ -136,7 +134,6 @@
       (t
        (format t "~0,8T~A~@[~0,8T~{~A~^, ~}~]~%" inst args))))
   (values))
-
 ;;;; GENERATE-CODE and support routines
 
 ;;; standard defaults for slots of SEGMENT objects

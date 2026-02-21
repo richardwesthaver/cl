@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;; Instruction-like macros.
 
 (defmacro move (dst src)
@@ -106,7 +105,6 @@
      ,@(and load-cfp-lr
             `((loadw-pair cfp-tn ocfp-save-offset ,lr lra-save-offset cfp-tn)))
      (inst ret ,lr)))
-
 ;;;; Stack TN's
 
 ;;; Move a stack TN to a register and vice-versa.
@@ -142,7 +140,6 @@
            (move ,n-reg ,n-stack))
           ((control-stack)
            (load-stack-offset ,n-reg cfp-tn ,n-stack)))))))
-
 ;;;; Storage allocation:
 
 (defun generate-stack-overflow-check (vop size)
@@ -254,7 +251,6 @@
          ,@(and store-type-code
                 `((storew ,flag-tn ,result-tn 0 ,lowtag))))
        ,@body)))
-
 ;;;; Error Code
 ;;;; BRK accepts a 16-bit immediate
 ;;;; Encode the error kind in the first byte.
@@ -312,7 +308,6 @@
                             error-trap)
                         (error-number-or-lose error-code) values)
       start-lab)))
-
 ;;;; PSEUDO-ATOMIC
 
 #+sb-safepoint
@@ -358,7 +353,6 @@
            (inst cbz ,flag-tn not-interrputed)
            (inst brk pending-interrupt-trap)
            (emit-label not-interrputed))))))
-
 ;;;; memory accessor vop generators
 
 (defmacro define-full-reffer (name type offset lowtag scs el-type

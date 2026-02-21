@@ -175,7 +175,6 @@
 byte-ordering issues."
   `(inst lbu ,target ,source ,offset))
 
-
 ;;;; Three Way Comparison
 (defun three-way-comparison (x y condition flavor not-p target)
   (ecase condition
@@ -193,7 +192,6 @@ byte-ordering issues."
                     (inst bge x y target)
                     (inst blt x y target)))))))
 
-
 (defun emit-error-break (vop kind code values)
   (assemble ()
     (when vop
@@ -216,7 +214,6 @@ byte-ordering issues."
                             error-trap)
                         (error-number-or-lose error-code) values)
       start-lab)))
-
 ;;;; PSEUDO-ATOMIC
 
 (defun set-pseudo-atomic-bit ()
@@ -606,7 +603,6 @@ and
        (inst addi lip lip (- (* ,offset n-word-bytes) ,lowtag))
        (inst ,op result operand lip :aq :rl))))
 
-
 ;;;; Stack TN's
 
 ;;; Move a stack TN to a register and vice-versa.
@@ -646,7 +642,6 @@ and
     (storew zero-tn csp-tn -1)
     (emit-label aligned)))
 
-
 ;;;; Storage allocation:
 
 (defun generate-stack-overflow-check (vop size temp)

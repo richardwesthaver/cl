@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-IMPL")
-
 ;;;; miscellaneous global variables
 
 ;;; ANSI: "the floating-point format that is to be used when reading a
@@ -40,7 +39,6 @@
 ;;; In case we get an error trying to parse a symbol, we want to rebind the
 ;;; above stuff so it's cool.
 
-
 ;;;; reader errors
 
 (define-error-wrapper reader-eof-error (stream context)
@@ -57,7 +55,6 @@
          :stream stream
          :format-control control
          :format-arguments args))
-
 ;;;; macros and functions for character tables
 
 ;;; As efficiently as possible look up the character attributes of CHAR.
@@ -183,7 +180,6 @@
   ;; depends on actual attribute numbering in readtable.lisp.
   (<= (char-syntax char (base-char-syntax-array rt) (extended-char-table rt))
       +char-attr-terminating-macro+))
-
 ;;;; constituent traits (see ANSI 2.1.4.2)
 
 ;;; There are a number of "secondary" attributes which are constant
@@ -230,7 +226,6 @@
   (if (typep char 'base-char)
       (elt +constituent-trait-table+ (char-code char))
       +char-attr-constituent+))
-
 ;;;; Readtable Operations
 
 (defun assert-not-standard-readtable (readtable operation)
@@ -460,7 +455,6 @@ standard Lisp readtable when NIL."
          (fun (subchar-function sub-char (get-charmacro-dtable-or-err disp-char rt))))
     (if (eql fun 0) nil fun)))
 
-
 ;;;; definitions to support internal programming conventions
 
 (defconstant +EOF+ 0)
@@ -486,7 +480,6 @@ standard Lisp readtable when NIL."
                   ;; promise to return a character or else signal EOF.
                   (cond ((eq char +EOF+) (error 'end-of-file :stream stream))
                         ((done-p) (return (the character char))))))))))
-
 ;;;; temporary initialization hack
 
 ;; Install the (easy) standard macro-chars into *READTABLE*.
@@ -518,7 +511,6 @@ standard Lisp readtable when NIL."
   ;; (The hairier macro-character definitions, for #\# and #\`, are
   ;; defined elsewhere, in their own source files.)
   )
-
 ;;;; implementation of the read buffer
 
 (defmacro inline-alloc-string-displaced-to (underlying)
@@ -690,7 +682,6 @@ standard Lisp readtable when NIL."
      "~A was invoked with RECURSIVE-P being true outside ~
       of a recursive read operation."
      `(,operator-name))))
-
 ;;;; READ-PRESERVING-WHITESPACE, READ-DELIMITED-LIST, and READ
 
 ;;; A list for #=, used to keep track of objects with labels assigned that
@@ -796,7 +787,6 @@ standard Lisp readtable when NIL."
           (unread-char next-char stream))))
     (if (eq result local-eof-val) eof-value result)))
 
-
 ;;;; basic readmacro definitions
 ;;;;
 ;;;; Some large, hairy subsets of readmacro definitions (backquotes
@@ -1044,7 +1034,6 @@ standard Lisp readtable when NIL."
                              +char-attr-package-delimiter+))
                (setq colon t))
              (ouch-read-buffer char read-buffer))))))
-
 ;;;; character classes
 
 ;;; Return the character class for CHAR.
@@ -1104,7 +1093,6 @@ standard Lisp readtable when NIL."
             ((= att +char-attr-invalid+)
              (simple-reader-error stream "invalid constituent: ~s" char))
             (t att))))))
-
 ;;;; token fetching
 
 (defvar *read-suppress* nil
@@ -1622,7 +1610,6 @@ extended <package-name>::<form-in-package> syntax."
     (if (neq first-char +EOF+)
         (values (internal-read-extended-token stream first-char t))
         (reader-eof-error stream "after escape"))))
-
 ;;;; number-reading functions
 
 ;; Mapping of read-base to the max input characters in a positive fixnum.
@@ -1809,7 +1796,6 @@ extended <package-name>::<form-in-package> syntax."
                           :error c :stream stream
                           :format-control "failed to build ratio")))))
       (if negativep (- num) num))))
-
 ;;;; General reader for dispatch macros
 
 (define-error-wrapper dispatch-char-error (stream sub-char ignore)
@@ -1844,7 +1830,6 @@ extended <package-name>::<form-in-package> syntax."
     ;; not stipulated, the "lossiness" could be construed as a bug.
     (invoke-cmt-entry ((subchar-function sub-char dispatch-table) #'dispatch-char-error)
                       stream sub-char numarg)))
-
 ;;;; READ-FROM-STRING
 
 (declaim (ftype (sfunction (string t t index (or null index) t) (values t index))
@@ -1878,7 +1863,6 @@ extended <package-name>::<form-in-package> syntax."
   (declare (string string))
   (maybe-note-read-from-string-signature-issue eof-error-p)
   (%read-from-string/safe string eof-error-p eof-value start end preserve-whitespace)))
-
 ;;;; PARSE-INTEGER
 
 (macrolet ((def (radix)
@@ -1964,7 +1948,6 @@ extended <package-name>::<form-in-package> syntax."
     (def 10))
   (defun parse-integer16 (string start end junk-allowed)
     (def 16)))
-
 ;;;; reader initialization code
 
 (defmethod print-object ((readtable readtable) stream)

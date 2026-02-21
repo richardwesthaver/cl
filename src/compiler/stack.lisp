@@ -13,7 +13,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;; Scan through BLOCK looking for uses of :UNKNOWN lvars that have
 ;;; their DEST outside of the block. We do some checking to verify the
 ;;; invariant that all pushes come after the last pop.
@@ -42,7 +41,6 @@
 
       (setf (ir2-block-pushed 2block) (pushed))))
   (values))
-
 ;;;; Annotation graph walk:
 
 ;;; Compute the live sets of unknown-values and stack LVARs on the
@@ -117,7 +115,6 @@
         (stack-simulation-walk succ stack))))
 
   (values))
-
 ;;; Do a forward walk in the flow graph and insert calls to
 ;;; %DYNAMIC-EXTENT-START whenever we mess up the run-time stack by
 ;;; stack allocating an object. BLOCK is the block that is currently
@@ -175,7 +172,6 @@
       (stack-mess-up-walk succ stack)))
 
   (values))
-
 ;;; This is called when we discover that the stack of unknown-values
 ;;; or stack lvars at the end of BLOCK1 is different from that at the
 ;;; start of BLOCK2 (its successor).
@@ -242,7 +238,6 @@
           (setf (ir2-block-end-stack 2block) start-stack)))))
 
   (values))
-
 ;;;; stack analysis
 
 ;;; Return a list of all the blocks containing genuine uses of one of

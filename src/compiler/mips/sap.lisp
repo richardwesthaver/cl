@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Moves and coercions:
 
 ;;; Move a tagged SAP to an untagged representation.
@@ -74,7 +73,6 @@
 ;;; descriptor passing location.
 (define-move-vop move-arg :move-arg
   (sap-reg) (descriptor-reg))
-
 ;;;; SAP-INT and INT-SAP
 
 ;;; The function SAP-INT is used to generate an integer corresponding
@@ -102,7 +100,6 @@
   (:policy :fast-safe)
   (:generator 1
     (move sap int)))
-
 ;;;; POINTER+ and POINTER-
 (define-vop (pointer+)
   (:translate sap+)
@@ -142,7 +139,6 @@
   (:result-types signed-num)
   (:generator 1
     (inst subu res ptr1 ptr2)))
-
 ;;;; mumble-SYSTEM-REF and mumble-SYSTEM-SET
 (macrolet ((def-system-ref-and-set
                (ref-name set-name sc type size &optional signed)
@@ -293,7 +289,6 @@
     single-reg single-float :single)
   (def-system-ref-and-set sap-ref-double %set-sap-ref-double
     double-reg double-float :double))
-
 ;;; Noise to convert normal lisp data objects into SAPs.
 (define-vop (vector-sap)
   (:translate vector-sap)

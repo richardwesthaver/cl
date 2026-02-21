@@ -10,7 +10,6 @@
 ;;;; files for more information.
 
 (in-package "SB-C")
-
 ;;;; reading variable length integers
 ;;;;
 ;;;; The debug info representation makes extensive use of 32-bit
@@ -78,7 +77,6 @@
                             vector)
      finally (return i)))
 
-
 ;;;; packed strings
 ;;;;
 ;;;; A packed string is a variable length integer length followed by
@@ -104,7 +102,6 @@
     (dotimes (i len)
       (write-var-integer (char-code (schar string i)) vec)))
   (values))
-
 ;;;; packed bit vectors
 
 ;;; Read the specified number of BYTES out of VEC at INDEX and convert

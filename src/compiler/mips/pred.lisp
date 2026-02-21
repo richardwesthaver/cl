@@ -1,6 +1,5 @@
 (in-package "SB-VM")
 
-
 ;;;; The Branch VOP.
 
 ;;; The unconditional branch, emitted when we can't drop through to the desired
@@ -12,7 +11,6 @@
     (inst b dest)
     (inst nop)))
 
-
 ;;;; Generic conditional VOPs
 
 ;;; The generic conditional branch, emitted immediately after test
@@ -28,7 +26,6 @@
   (declare (ignore dst-tn))
   nil)
 
-
 ;;;; Conditional VOPs:
 
 (define-vop (if-eq)

@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;; Make a fixnum out of NUM. (I.e. shift by two bits if it will fit.)
 (defun fixnumize (num)
   (if (fixnump num)
@@ -31,7 +30,6 @@
           (displacement-bounds lowtag element-size data-offset)
         (<= min offset max))))
 
-
 ;;;; routines for dealing with static symbols
 
 ;;; the distance from tagged ptr to NIL to tagged ptr to static SYMBOL, in bytes
@@ -85,7 +83,6 @@
   (ecase alien-linkage-table-growth-direction
     (:up   (floor (- addr alien-linkage-space-start) alien-linkage-table-entry-size))
     (:down (1- (floor (- space-end addr) space-end))))))
-
 
 ;;;; interfaces to IR2 conversion
 

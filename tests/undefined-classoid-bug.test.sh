@@ -9,7 +9,7 @@ FILES='"undefined-classoid-bug-1.lisp" "undefined-classoid-bug-2.lisp"'
 FASLS='"undefined-classoid-bug-1.fasl" "undefined-classoid-bug-2.fasl"'
 
 for f in $FILES; do
-    (cd "$SBCL_PWD"; cp `eval "echo $f"` "$TEST_DIRECTORY");
+    (cd "$CL_PWD"; cp `eval "echo $f"` "$TEST_DIRECTORY");
 done
 
 run_sbcl <<EOF

@@ -11,7 +11,6 @@
 ;;;; files for more information.
 
 (in-package "SB-VM")
-
 ;;;; Data object ref/set stuff.
 
 ;;; PPC64 can't use the NIL-as-CONS + NIL-as-symbol trick *and* avoid using
@@ -92,7 +91,6 @@
     EXIT
     (inst isync)))
 
-
 ;;;; Symbol hacking VOPs:
 
 (define-vop (%compare-and-swap-symbol-value)
@@ -300,7 +298,6 @@
     NULL
     (inst li res 0)
     DONE))
-
 ;;;; Fdefinition (fdefn) objects.
 
 #+sb-xc-host ; not needed post-build
@@ -368,7 +365,6 @@
     (inst cmpdi value 0)
     (let ((err-lab (generate-error-code vop 'undefined-fun-error obj-temp)))
       (inst beq err-lab))))
-
 ;;;; Binding and Unbinding.
 
 ;;; BIND -- Establish VAL as a binding for SYMBOL.  Save the old value and
@@ -428,7 +424,6 @@
       DONE))
 
 
-
 ;;;; Closure indexing.
 
 (define-vop (closure-index-ref word-index-ref)
@@ -465,14 +460,12 @@
   (:info offset)
   (:generator 4
     (storew cfp-tn object (+ closure-info-offset offset) fun-pointer-lowtag)))
-
 ;;;; Value Cell hackery.
 
 (define-vop (value-cell-set cell-set)
   (:variant value-cell-value-slot other-pointer-lowtag))
 
 
-
 ;;;; Instance hackery:
 
 (define-vop ()
@@ -512,7 +505,6 @@
   (:result-types unsigned-num)
   (:translate %raw-instance-cas/word))
 
-
 ;;;; Code object frobbing.
 
 (define-vop (code-header-ref word-index-ref)
@@ -543,7 +535,6 @@
         (inst stb temp object byte))
       (inst addi temp index (- other-pointer-lowtag))
       (inst stdx value object temp))))
-
 ;;;; raw instance slot accessors
 
 (defun offset-for-raw-slot (index &optional (displacement 0))

@@ -40,7 +40,7 @@ fi
 
 . ./subr.sh
 
-echo /running tests on \'$SBCL_RUNTIME --core $SBCL_CORE $SBCL_ARGS\'
+echo /running tests on \'$CL_RUNTIME --core $CL_CORE $CL_ARGS\'
 
 tenfour () {
     if [ $1 = $EXIT_TEST_WIN ]; then
