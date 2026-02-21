@@ -1,6 +1,6 @@
 #if !defined(_INCLUDE_THREAD_H_)
 #define _INCLUDE_THREAD_H_
-
+#endif
 #include <sys/types.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -295,7 +295,7 @@ int check_pending_thruptions(os_context_t *ctx);
 
 extern void create_main_lisp_thread(lispobj);
 
-#if defined LISP_FEATURE_SB_THREAD
+#elif defined LISP_FEATURE_SB_THREAD
 extern pthread_mutex_t all_threads_lock;
 #endif
 
