@@ -11,8 +11,8 @@ test_run_cl() (
     set -e
     args='--noinform --no-userinit --no-sysinit --disable-debugger --quit'
     #set -x # uncomment for eyeball debugging
-    ## There are three ways run-sbcl.sh can fail or set things up badly.
-    # (1) run-sbcl.sh will refuse to run because there are no build
+    ## There are three ways run-cl.sh can fail or set things up badly.
+    # (1) run-cl.sh will refuse to run because there are no build
     # artifacts relative to $run_cl_path.
     "$1" $args
     # (2) CL will start, but if CL_HOME is wrong, will be unable to
@@ -41,51 +41,51 @@ test_run_cl() (
 )
 
 # Sanity check: test the file in our build tree a couple of ways.
-echo "testing run-sbcl.sh with an absolute path"
-test_run_cl "$PWD"/../run-sbcl.sh
+echo "testing run-cl.sh with an absolute path"
+test_run_cl "$PWD"/../run-cl.sh
 
-echo "testing run-sbcl.sh with a relative path"
-test_run_cl ../run-sbcl.sh
+echo "testing run-cl.sh with a relative path"
+test_run_cl ../run-cl.sh
 
-# Next, test a couple ways that run-sbcl.sh could be invoked via a
-# symlink. We'll need an absolute path to run-sbcl.sh in our build
+# Next, test a couple ways that run-cl.sh could be invoked via a
+# symlink. We'll need an absolute path to run-cl.sh in our build
 # tree in order to construct symlinks that point to it.
 if expr "$0" : "^[^/].*" > /dev/null; then
     test_file_directory_path="$(cd ./$(dirname "$0") && pwd)"
 fi
-# Now we can derive an absolute path to run-sbcl.sh relative to this
+# Now we can derive an absolute path to run-cl.sh relative to this
 # file.
-run_cl_path="$test_file_directory_path/../run-sbcl.sh"
+run_cl_path="$test_file_directory_path/../run-cl.sh"
 
 # Now we're going to frob the file system, so let's do it properly.
 # (for some definition of "properly?")
 use_test_subdirectory_in_source_tree
 
-# 9d5be5e953 (lp#1242643) addressed the possibility that run-sbcl.sh
+# 9d5be5e953 (lp#1242643) addressed the possibility that run-cl.sh
 # was a symlink into the repo. Let's exercise it, 8 years later.
-echo "testing run-sbcl.sh when it's a symlink to an absolute path"
-ln -s "$run_cl_path" ./run-sbcl-absolute-symlink.sh
-test_run_cl ./run-sbcl-absolute-symlink.sh
-rm ./run-sbcl-absolute-symlink.sh
+echo "testing run-cl.sh when it's a symlink to an absolute path"
+ln -s "$run_cl_path" ./run-cl-absolute-symlink.sh
+test_run_cl ./run-cl-absolute-symlink.sh
+rm ./run-cl-absolute-symlink.sh
 
-# Test whether we can run-sbcl.sh through a symlink to a relative
+# Test whether we can run-cl.sh through a symlink to a relative
 # path.
-echo "testing run-sbcl.sh when it's a symlink to a relative path"
+echo "testing run-cl.sh when it's a symlink to a relative path"
 # good god, what does this sed command even do?
-ln -s $(pwd | sed 's|^/||; s|[^/][^/]*|..|g')/"$run_cl_path" ./run-sbcl-relative-symlink.sh
-test_run_cl ./run-sbcl-relative-symlink.sh
-rm ./run-sbcl-relative-symlink.sh
+ln -s $(pwd | sed 's|^/||; s|[^/][^/]*|..|g')/"$run_cl_path" ./run-cl-relative-symlink.sh
+test_run_cl ./run-cl-relative-symlink.sh
+rm ./run-cl-relative-symlink.sh
 
-# Test whether we can run-sbcl.sh named using a path to the build
+# Test whether we can run-cl.sh named using a path to the build
 # directory that contains a space.
-echo "testing run-sbcl.sh named by a path containing spaces"
+echo "testing run-cl.sh named by a path containing spaces"
 ln -s `dirname $run_cl_path` ./'a b'
-# Prior to 4a30189fbc, run-sbcl.sh would start the runtime using the
+# Prior to 4a30189fbc, run-cl.sh would start the runtime using the
 # core file path ./a b/output/cl.core, but unquoted.
 # After 4a30189fbc, the path to the core file will be
 # ${PWD}/a b/output/cl.core, still unquoted.
 # 546416b34d changed the core file path handling to ensure
 # it's always quoted.
-test_run_cl "./a b/run-sbcl.sh"
+test_run_cl "./a b/run-cl.sh"
 
 exit $EXIT_TEST_WIN

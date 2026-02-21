@@ -1301,10 +1301,10 @@
 ;;; Let's say you want a core with contiguous text space containing the code
 ;;; of a quicklisp system.
 
-;;; $ run-sbcl.sh
+;;; $ run-cl.sh
 ;;; * (ql:quickload :one-more-re-nightmare-tests)
 ;;; * (save-lisp-and-die "step1.core")
-;;; $ run-sbcl.sh
+;;; $ run-cl.sh
 ;;; * (load "tools-for-build/editcore")
 ;;; * (sb-editcore:move-dynamic-code-to-text-space "step1.core" "step2.core")
 ;;; Now "step2.core" has a text space and you can run split-core on it
@@ -1792,7 +1792,7 @@
                                                 lowtag))))))))
 
 ;;; Gather all the objects in the order we want to reallocate them in.
-;;; This relies on MAPHASH in SBCL iterating in insertion order.
+;;; This relies on MAPHASH in CL iterating in insertion order.
 (defun visit-everything (spacemap initfun linkage-info static-constants
                          &optional print
                          &aux (seen (make-visited-table))

@@ -226,7 +226,7 @@
 ("raw-slots-interleaved.impure" 771)
 ("random.pure" 935)
 ("save.impure" 102)
-("run-sbcl.test" 757)
+("run-cl.test" 757)
 ("room.test" 1028)
 ("save-coalesce-ctype.test" 579)
 ("gc-slow.impure" 10493)

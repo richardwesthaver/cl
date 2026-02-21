@@ -73,36 +73,29 @@ fi
 # Load our build configuration
 . output/build-config
 
-HOST_TYPE="${1:-sbcl}"
+HOST_TYPE="${1:-cl}"
 
 echo //HOST_TYPE=\"$HOST_TYPE\"
 
 # We don't try to be general about this in this script the way we are
-# in make.sh, since the idiosyncrasies of SBCL command line argument
+# in make.sh, since the idiosyncrasies of CL command line argument
 # order dependence, the meaninglessness of duplicate --core arguments,
 # and the SBCL-vs-CMUCL dependence of --core/-core argument syntax
 # make it too messy to try deal with arbitrary CL_XC_HOST variants.
 # So you have no choice:
 case "$HOST_TYPE" in
-    cmucl) LISP="lisp -batch"
-           INIT="-noinit"
-           CORE="-core"
-           ;;
-    sbcl)  LISP="${CL_XC_HOST%% *}"
-           INIT="--no-sysinit --no-userinit"
-           CORE="--core"
-           ;;
-    clisp) LISP="clisp"
-           INIT="-norc"
-           CORE="-M"
-           ;;
-    openmcl)
-           LISP="openmcl"
-           INIT="-b"
-           CORE="-I"
-           ;;
+    cl)  LISP="${CL_XC_HOST%% *}"
+         INIT="--no-sysinit --no-userinit"
+         CORE="--core"
+         ;;
+
+    sbcl)
+      LISP="openmcl"
+      INIT="--no-sysinit --no-userinit"
+      CORE="--core"
+      ;;
     *)     echo unknown host type: "$HOST_TYPE"
-           echo should be one of "sbcl", "cmucl", or "clisp"
+           echo should be "cl" or "sbcl"
            exit 1
 esac
 
@@ -122,7 +115,7 @@ $LISP $CORE output/after-xc.core $INIT <<'EOF'
 EOF
 # (This ^ used to be
 #   for f in $*; do echo "(target-compile-stem \"$f\")"; done \
-#     | sbcl --core output/after-xc.core || exit 1
+#     | cl --core output/after-xc.core || exit 1
 # and perhaps we do something like this again, allowing explicit
 # rebuild-this-stem requests on the command line to supplement
 # the rebuild-obviously-outdated-stems logic above.)

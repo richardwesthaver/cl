@@ -4,15 +4,15 @@
 #
 # Currently the only option with any effect is `--coverage`, which
 # will collect coverage information from running the tests if the host
-# SBCL is built with :sb-cover-for-internals.
+# CL is built with :sb-cover-for-internals.
 
 if [ ! -e ansi-test ]; then
-   git clone --depth 1 https://github.com/sbcl/ansi-test.git
+   git clone --depth 1 https://github.com/cl/ansi-test.git
 fi
 
 cd ansi-test
 rm -fr sandbox/scratch
-../../run-sbcl.sh --disable-ldb --lose-on-corruption \
+../../run-cl.sh --disable-ldb --lose-on-corruption \
                   --no-userinit --no-sysinit \
                   --load gclload1.lsp --load gclload2.lsp \
                   --eval '(setf *default-pathname-defaults* (truename #P"sandbox/"))' \

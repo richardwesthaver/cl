@@ -2,15 +2,15 @@
 
 # TODO:
 #
-# - add --sbcl-args
+# - add --cl-args
 #
-# - add --sbcl-tests (corresponding to bench_run_tests)
+# - add --cl-tests (corresponding to bench_run_tests)
 #
-# - add --sbcl-xxx (corresponding to bench_binary)
+# - add --cl-xxx (corresponding to bench_binary)
 
 base=`dirname "$0"`
 
-# SBCL runtime and toplevel options go before and after this,
+# CL runtime and toplevel options go before and after this,
 # respectively.
 common_args=("--disable-ldb" "--noinform" "--end-runtime-options"
              "--disable-debugger" "--noprint")
@@ -39,9 +39,9 @@ deltist_args+=("--warmup" "1"
                "--shuffle-benchmarks" "0"
                "--skip-high-rse" "1")
 
-sbcl_args=(${common_args[@]} "--quit")
+cl_args=(${common_args[@]} "--quit")
 
-sbcl_test_args=(${common_args[@]} "--no-sysinit" "--no-userinit")
+cl_test_args=(${common_args[@]} "--no-sysinit" "--no-userinit")
 
 # Print relevant information about the benchmarking environment.
 echo "Benchmarking environment"
@@ -78,62 +78,62 @@ if [ -f /sys/devices/platform/thinkpad_acpi/dytc_lapmode ]; then
     fi
 fi
 
-# Describe the SBCL versions being compared
+# Describe the CL versions being compared
 echo
 if [ $# = 0 ]; then
-    echo "No SBCLs to compare. Usage:"
-    echo "$0 [ <deltist-options>* -- ] <sbcl-binary-or-repository-dir>*"
+    echo "No CLs to compare. Usage:"
+    echo "$0 [ <deltist-options>* -- ] <cl-binary-or-repository-dir>*"
     exit 0
 fi
-sbcls=()
-all_sbcls_have_tests=1
-echo "SBCLs to compare:"
-for sbcl in "$@"; do
-    if [ -d "${sbcl}" ]; then
-        if [ -x "${sbcl}/run-sbcl.sh" ]; then
-            sbcl="${sbcl}/run-sbcl.sh"
+cls=()
+all_cls_have_tests=1
+echo "CLs to compare:"
+for cl in "$@"; do
+    if [ -d "${cl}" ]; then
+        if [ -x "${cl}/run-cl.sh" ]; then
+            cl="${cl}/run-cl.sh"
         fi
     fi
-    echo -n "- ${sbcl}: version: "
-    "${sbcl}" --version
+    echo -n "- ${cl}: version: "
+    "${cl}" --version
     # Print the uncommitted changes in the checkout
-    dir=`dirname "${sbcl}"`
+    dir=`dirname "${cl}"`
     if [ -d "${dir}" -a -d "${dir}/.git/" ]; then
         # Exclude xfloat-math.lisp-expr, xperfecthash63.lisp-expr and
         # similar.
         git -C "${dir}" --no-pager diff HEAD -- . ':(exclude)x*.lisp-expr'
         echo
     fi
-    # Note if there are SBCLs to compare without a tests/ dir.
+    # Note if there are CLs to compare without a tests/ dir.
     if [ ! -d "${dir}/tests/" ]; then
-        all_sbcls_have_tests=0
+        all_cls_have_tests=0
     fi
-    sbcls+=("${sbcl}")
+    cls+=("${cl}")
 done
 
-if [ "${all_sbcls_have_tests}" != 1 ]; then
-    echo "Not all SBCLs have a tests/ directory."\
+if [ "${all_cls_have_tests}" != 1 ]; then
+    echo "Not all CLs have a tests/ directory."\
          "Skipping run-test.sh based tests."
 fi
 
 bench_binary () {
-    for sbcl in ${sbcls[@]}; do
-        echo "'${sbcl}' ${sbcl_args[@]} $@"
+    for cl in ${cls[@]}; do
+        echo "'${cl}' ${cl_args[@]} $@"
     done
     echo
 }
 
 bench_run_tests () {
-    if [ "${all_sbcls_have_tests}" = 1 ]; then
+    if [ "${all_cls_have_tests}" = 1 ]; then
         # FIXME: We run the test in each dir, which may be different
         # or may not even exist. The alternative of running the same
-        # test file with different SBCLs may fail because these are
+        # test file with different CLs may fail because these are
         # testing internals. Still, it's useful to compare very
-        # similar SBCLs this way.
-        for sbcl in ${sbcls[@]}; do
-            dir=`dirname "${sbcl}"`
+        # similar CLs this way.
+        for cl in ${cls[@]}; do
+            dir=`dirname "${cl}"`
             echo "sh -c 'cd \"${dir}/tests/\" &&"\
-                 "env \"TEST_CL_ARGS=${sbcl_test_args[@]}\""\
+                 "env \"TEST_CL_ARGS=${cl_test_args[@]}\""\
                  "sh run-tests.sh $1'"
         done
         echo
@@ -143,7 +143,7 @@ bench_run_tests () {
 # Pipe benchmarks definitions (one command per line, separated by
 # blank lines) to Deltist (--benchmark-file "" means stdin).
 (
-    a_test_dir="$(dirname "${sbcls[0]}")/tests/"
+    a_test_dir="$(dirname "${cls[0]}")/tests/"
     # Exclude some tests that hang, are SLEEP-heavy or very noisy
     # (from scheduling and heap layout), or change between versions.
     for i in `ls -1 ${a_test_dir}/*.pure.lisp | xargs -n 1 basename`; do

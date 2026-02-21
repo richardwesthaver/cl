@@ -15,7 +15,7 @@ case `uname` in
         fi
         echo ";; Using -j$1"
         echo "LOGDIR=$logdir" >$logdir/Makefile
-        ../run-sbcl.sh --script genmakefile.lisp >>$logdir/Makefile
+        ../run-cl.sh --script genmakefile.lisp >>$logdir/Makefile
         exec make -k -j $1 -f $logdir/Makefile
         ;;
 esac

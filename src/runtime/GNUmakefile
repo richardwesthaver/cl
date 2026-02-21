@@ -97,7 +97,7 @@ else
 LDB_TARGET = ldb
 endif
 
-targets: $(TARGET) $(OBJTARGET) $(LDB_TARGET) sbcl.mk
+targets: $(TARGET) $(OBJTARGET) $(LDB_TARGET) cl.mk
 
 LDB_OBJS = $(filter-out main.o interr.o runtime.o monitor.o thread.o stop-the-world.o safepoint.o,$(OBJS))
 ldb: $(LIBCL)
@@ -142,10 +142,10 @@ libcl.so: $(PIC_OBJS)
 
 SHRINKWRAP_DEPS = ../../output/cl.core ../../tools-for-build/elftool.lisp
 shrinkwrap-cl.s shrinkwrap-cl-core.o: $(SHRINKWRAP_DEPS)
-	../../run-sbcl.sh --script ../../tools-for-build/elftool.lisp split \
+	../../run-cl.sh --script ../../tools-for-build/elftool.lisp split \
 	--dynamic-space-size 256 ../../output/cl.core shrinkwrap-cl.s
 pie-shrinkwrap-cl.s pie-shrinkwrap-cl-core.o: $(SHRINKWRAP_DEPS)
-	../../run-sbcl.sh --script ../../tools-for-build/elftool.lisp split --pie \
+	../../run-cl.sh --script ../../tools-for-build/elftool.lisp split --pie \
 		../../output/cl.core pie-shrinkwrap-cl.s
 # "Commas ... cannot appear in the text of an argument as written"
 # There can not be any space after the comma on the next line,
@@ -168,11 +168,11 @@ semiwrap-cl: shrinkwrap-cl.s $(LIBCL)
 # to get in there so using the same link options as for the ordinary "cl"
 # is just easiest.
 embedcore-cl: $(LIBCL)
-	../../run-sbcl.sh --eval '(save-lisp-and-die "wrappedcore.o" :executable :elf-object)'
+	../../run-cl.sh --eval '(save-lisp-and-die "wrappedcore.o" :executable :elf-object)'
 	$(CC) -no-pie $(filter-out -Wl$(comma)--export-dynamic, $(LINKFLAGS)) \
  $(CFLAGS) -o $@ wrappedcore.o $^ $(LIBS)
 
-sbcl.mk: Config
+cl.mk: Config
 	( echo 'CC=$(CC)' ; \
 	  echo 'LD=$(LD)' ; \
 	  echo 'CFLAGS=$(CFLAGS)' ; \
@@ -196,7 +196,7 @@ TAGS tags: $(SRCS) $(HEADERS) $(INC)
 
 clean:
 	-rm -f *.[do] ../../tlsf-bsd/tlsf/tlsf.o $(TARGET) *.tmp libcl.a \
- ldb unit-tests libcl.a shrinkwrap-cl* sbcl.mk core
+ ldb unit-tests libcl.a shrinkwrap-cl* cl.mk core
 
 %.d: %.c
 	@$(CC) $(DEPEND_FLAGS) $(CPPFLAGS) $< > $@.tmp; \

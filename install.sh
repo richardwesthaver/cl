@@ -112,8 +112,8 @@ cp output/cl.core "$BUILD_ROOT$CL_HOME"/cl.core
 test -f src/runtime/libcl.so && \
     cp src/runtime/libcl.so "$BUILD_ROOT$INSTALL_ROOT"/lib/
 
-cp src/runtime/sbcl.mk "$BUILD_ROOT$CL_HOME"/sbcl.mk
-for i in $(grep '^LIBCL=' src/runtime/sbcl.mk | cut -d= -f2-) ; do
+cp src/runtime/cl.mk "$BUILD_ROOT$CL_HOME"/cl.mk
+for i in $(grep '^LIBCL=' src/runtime/cl.mk | cut -d= -f2-) ; do
     cp "src/runtime/$i" "$BUILD_ROOT$CL_HOME/$i"
 done
 

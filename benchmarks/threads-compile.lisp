@@ -13,7 +13,7 @@ The statistics:
  2. average GC wait time per thread
  3. total CPU time per thread
 
-./run-sbcl.sh --dynamic-space-size 4GB
+./run-cl.sh --dynamic-space-size 4GB
 * (load "src/cold/chill")
 * (load (compile-file "benchmarks/threads-compile"))
 

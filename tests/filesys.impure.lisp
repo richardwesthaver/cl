@@ -10,10 +10,10 @@
   ;; which I've never been able to recreate by trial and error:
   ;; (1) it gets "NIL is not a (OR PATHNAME STRING ...)"
   ;;     which presumably means it was looking for a pathname-designator
-  ;; (2) Somehow the REDUCE expression winds up with "run-sbcl.sh" in its
+  ;; (2) Somehow the REDUCE expression winds up with "run-cl.sh" in its
   ;;     output where the DIRECTORY expression does not.
   ;;     So the fact is that something is *changing* the directory up 1 level,
-  ;;     otherwise there is no way that run-sbcl.sh appears. But what?
+  ;;     otherwise there is no way that run-cl.sh appears. But what?
   (let ((contents (directory "*/")))
     (if contents
       (assert (equal (directory "*/**/*.*")

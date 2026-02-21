@@ -1,6 +1,6 @@
-(cd ../../src/runtime ; make -s libsbcl.a)
+(cd ../../src/runtime ; make -s libcl.a)
 
-lisp="../../run-sbcl.sh $SBCL_ARGS"
+lisp="../../run-cl.sh $CL_ARGS"
 m_arg=`$lisp --eval '(progn #+x86 (princ " -m32"))' --quit`
 libs=`$lisp --eval '(progn #+sb-core-compression (princ " -lzstd"))' --quit`
 
@@ -9,7 +9,7 @@ libs=`$lisp --eval '(progn #+sb-core-compression (princ " -lzstd"))' --quit`
 # contents of 'wrap.o' and 'largefile.o' get pulled in.
 cc=${CC:-cc}
 CFLAGS=${CFLAGS:-}
-${cc} -o test-sbcl $CFLAGS ${m_arg} -g \
+${cc} -o test-cl $CFLAGS ${m_arg} -g \
   -Wl,-ufstat_wrapper -Wl,-uget_timezone -Wl,-ulseek_largefile -Wl,-uspawn \
-  -Wl,--export-dynamic -no-pie fake-mman.c ../../src/runtime/libsbcl.a \
+  -Wl,--export-dynamic -no-pie fake-mman.c ../../src/runtime/libcl.a \
   -ldl -lpthread -lm ${libs}

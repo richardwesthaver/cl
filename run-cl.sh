@@ -1,5 +1,5 @@
 #!/bin/sh
-# A simple shell-script to run the freshly build SBCL without
+# A simple shell-script to run the freshly build CL without
 # installing it.
 
 # This software is part of the SBCL system. See the README file for
@@ -54,7 +54,7 @@ for arg in "$@"; do
           CORE_DEFINED=yes
           ;;
         --help)
-          echo "usage: run-sbcl.sh cl-options*"
+          echo "usage: run-cl.sh cl-options*"
           echo
           echo "Runs CL from the build directory or binary tarball without need for"
           echo "installation. Except for --help, accepts all the same command-line options"

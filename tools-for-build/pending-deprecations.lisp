@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Use like this
 ;;;;
-;;;;   ./run-sbcl.sh --noinform --no-userinit               \
+;;;;   ./run-cl.sh --noinform --no-userinit               \
 ;;;;     --script tools-for-build/pending-deprecations.lisp \
 ;;;;     [-- -a]
 ;;;;
@@ -62,8 +62,8 @@
         (mapcar #'parse-integer (split #\. without-fourth))
       (if (or (= a 0)
               (and (= a 1) (= b 0) (< c 50)))
-          (format nil "sbcl_~A_~A_~A" a b c)
-          (format nil "sbcl-~A" without-fourth)))))
+          (format nil "cl_~A_~A_~A" a b c)
+          (format nil "cl-~A" without-fourth)))))
 
 (defun tag-time (tag)
   (let* ((range     (format nil "~A^..~:*~A" tag))

@@ -1,5 +1,5 @@
 #!/bin/sh
-./run-sbcl.sh --noprint --disable-debugger $* <<\EOF
+./run-cl.sh --noprint --disable-debugger $* <<\EOF
 (defvar *configs-to-build* (cdr *posix-argv*))
 
 (defparameter *jobs*

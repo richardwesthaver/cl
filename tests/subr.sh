@@ -15,7 +15,7 @@
 # the absolute (POSIX) pathname naming the SBCL runtime, core, and
 # home; but this runs afoul of the Bourne shell's repeated
 # tokenization of its inputs, so now we use some shell functions.
-. ../sbcl-pwd.sh
+. ../cl-pwd.sh
 cl_pwd
 
 # Make the shell bomb out whenever an unset shell variable is used.

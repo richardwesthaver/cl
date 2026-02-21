@@ -14,7 +14,7 @@ tar -cf $b-binary.tar \
     $b/output/cl.core $b/src/runtime/cl $b/output/prefix.def \
     $b/src/runtime/cl.mk \
     `grep '^LIBCL=' $b/src/runtime/cl.mk | cut -d= -f2- | while read lib; do echo $b/src/runtime/$lib; done` \
-    $b/install.sh $b/sbcl-pwd.sh $b/run-sbcl.sh \
+    $b/install.sh $b/cl-pwd.sh $b/run-cl.sh \
     $b/pubring.pgp \
     $b/contrib/asdf-module.mk \
     $b/obj/cl-home

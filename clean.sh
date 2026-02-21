@@ -5,7 +5,7 @@ set -e
 # In most cases, we can remove the directories, too.
 #
 # Preserving the skeletons of some directories might or might not not be relevant.
-rm -rf obj/* src/runtime/genesis/ src/runtime/sbcl.mk src/runtime/*.dSYM
+rm -rf obj/* src/runtime/genesis/ src/runtime/cl.mk src/runtime/*.dSYM
 
 if [ -z "$CL_LEAVE_OUTPUT" ]
 then
@@ -35,7 +35,7 @@ done
 
 # Within all directories, remove things which don't look like source
 # files. Some explanations:
-#   sbcl
+#   cl
 #     the runtime environment, created by compiling C code
 #   Config, target
 #     architecture-dependent or OS-dependent symlinks
@@ -104,7 +104,7 @@ find . \( \
         -name 'last-random-state.lisp-expr' -o \
         -name 'test.log' -o \
         -name 'a.out' -o \
-        -name 'sbcl' -o \
+        -name 'cl' -o \
         -name 'depend' -o \
         -name 'TAGS' -o \
         -name 'tags' -o \
