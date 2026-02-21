@@ -35,29 +35,29 @@ case "$CL_MACHINE_TYPE" in
   (eval x)
   (sb-ext:exit :code $EXIT_LISP_WIN))
 EOF
-        run_sbcl_with_args --dynamic-space-size 5GB $CL_ARGS \
+        run_cl_with_args --dynamic-space-size 5GB $CL_ARGS \
             --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
             --load $tmpscript
         check_status_maybe_lose "bug 881445" $?
         ;;
 esac
 
-run_sbcl --eval '(sb-ext:exit)'
+run_cl --eval '(sb-ext:exit)'
 check_status_maybe_lose "simple exit" $? 0 "ok"
 
-run_sbcl --eval '(sb-ext:exit :code 42)'
+run_cl --eval '(sb-ext:exit :code 42)'
 check_status_maybe_lose "exit with code" $? 42 "ok"
 
-run_sbcl --eval '(progn (defvar *exit-code* 100) (push (lambda () (exit :code (decf *exit-code*))) *exit-hooks*) #+sb-thread (sb-thread:make-thread (lambda () (exit :code 13))) #-sb-thread (exit :code 13))'
+run_cl --eval '(progn (defvar *exit-code* 100) (push (lambda () (exit :code (decf *exit-code*))) *exit-hooks*) #+sb-thread (sb-thread:make-thread (lambda () (exit :code 13))) #-sb-thread (exit :code 13))'
 check_status_maybe_lose "exit with code" $? 99 "ok"
 
-run_sbcl --eval '(unwind-protect (sb-ext:exit :code 13 :abort t) (sb-ext:exit :code 7 :abort t))'
+run_cl --eval '(unwind-protect (sb-ext:exit :code 13 :abort t) (sb-ext:exit :code 7 :abort t))'
 check_status_maybe_lose "exit with abort" $? 13 "ok"
 
-run_sbcl --eval '(unwind-protect (sb-ext:exit :code 0 :abort t) (sb-ext:exit :code 7 :abort t))'
+run_cl --eval '(unwind-protect (sb-ext:exit :code 0 :abort t) (sb-ext:exit :code 7 :abort t))'
 check_status_maybe_lose "exit with abort and code 0" $? 0 "ok"
 
-run_sbcl --eval '(unwind-protect (sb-ext:exit :code 0 :abort nil) (sb-ext:exit :code 7))'
+run_cl --eval '(unwind-protect (sb-ext:exit :code 0 :abort nil) (sb-ext:exit :code 7))'
 check_status_maybe_lose "exit with abort and code 0" $? 7 "ok"
 
 exit $EXIT_TEST_WIN

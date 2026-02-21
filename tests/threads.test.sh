@@ -14,19 +14,19 @@
 . ./subr.sh
 use_test_subdirectory
 
-run_sbcl --eval '(sb-thread:return-from-thread t :allow-exit t)'
+run_cl --eval '(sb-thread:return-from-thread t :allow-exit t)'
 check_status_maybe_lose "return from main thread" $? 0 "ok"
 
-run_sbcl --eval '(sb-thread:abort-thread :allow-exit t)'
+run_cl --eval '(sb-thread:abort-thread :allow-exit t)'
 check_status_maybe_lose "abort main thread" $? 1 "ok"
 
-run_sbcl --eval '#+sb-thread (sb-thread:join-thread (sb-thread:make-thread (lambda () (sb-ext:exit :code 77)))) #-sb-thread (sb-ext:exit :code 77)'
+run_cl --eval '#+sb-thread (sb-thread:join-thread (sb-thread:make-thread (lambda () (sb-ext:exit :code 77)))) #-sb-thread (sb-ext:exit :code 77)'
 check_status_maybe_lose "exit from normal thread" $? 77 "ok"
 
 flag="condition-wait-sigcont.tmp"
 touch $flag
 
-# $! is not set correctly when calling run_sbcl, do it directly
+# $! is not set correctly when calling run_cl, do it directly
 "$CL_RUNTIME" --core "$CL_CORE" $CL_ARGS \
     --load "$CL_PWD/condition-wait-sigcont.lisp" &
 sb_pid=$!

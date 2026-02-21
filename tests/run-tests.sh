@@ -25,7 +25,7 @@ Options:
   --break-on-failure            Break into the debugger when a test fails
                                 unexpectedly.
   --break-on-expected-failure   Break into the debugger when any test fails.
-  --report-skipped-tests        Include tests :skipped-on target SBCL in
+  --report-skipped-tests        Include tests :skipped-on target CL in
                                 the test report.
   --no-color                    Disable coloring of results.
   --slow                        Enable slow tests.
@@ -51,7 +51,7 @@ tenfour () {
     fi
 }
 set +u
-run_sbcl \
+run_cl \
     --eval '(with-compilation-unit () (load "run-tests.lisp"))' \
     --eval '(run-tests::run-all)' $*
 

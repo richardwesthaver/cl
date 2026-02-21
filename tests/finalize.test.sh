@@ -6,7 +6,7 @@
 # Ptr 0x1001100ebf @ 503c10a8 (lispobj 503c1083,pg-1) sees junk
 # Ptr 0x100110102f @ 503c1128 (lispobj 503c1103,pg-1) sees junk
 # ...
-run_sbcl <<EOF
+run_cl <<EOF
   (setf (extern-alien "verify_gens" char) 0)
   ;; simple-streams causes invalidation of many layouts
   ;; that are at low addresses, like for FUNDAMENTAL-STREAM

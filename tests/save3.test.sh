@@ -5,11 +5,11 @@ use_test_subdirectory
 tmpcore=$TEST_FILESTEM.core
 
 # This test has to do with incorrect GC of funcallable instances
-run_sbcl <<EOF
+run_cl <<EOF
   (require :sb-bsd-sockets)
   (save-lisp-and-die "$tmpcore")
 EOF
-run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit \
+run_cl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit \
     --eval "(require :sb-posix)" --quit
 check_status_maybe_lose "SAVE-LISP-AND-DIE" $? 0 "(saved core ran)"
 
@@ -21,7 +21,7 @@ check_status_maybe_lose "SAVE-LISP-AND-DIE" $? 0 "(saved core ran)"
 # the card dirty bit when reassigning the CLOS slot vector.
 # We need to simulate a GC interrupt after altering the layout,
 # but prior to affecting the slot vector.
-run_sbcl <<EOF
+run_cl <<EOF
   (defclass subgf (standard-generic-function) (a)
     (:metaclass sb-mop:funcallable-standard-class))
   (defgeneric myfun (a)
@@ -39,7 +39,7 @@ run_sbcl <<EOF
       (gc)))
   (save-lisp-and-die "$tmpcore" :toplevel #'assign-layout)
 EOF
-run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit
+run_cl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit
 check_status_maybe_lose "SET-FIN-LAYOUT" $? 0 "(saved core ran)"
 
 exit $EXIT_TEST_WIN

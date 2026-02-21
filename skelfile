@@ -18,5 +18,6 @@
               (write (version *skel-project*) :stream f)))
  (build () (run-program "./make.sh" '("--dynamic-space-size=8Gb" "--fancy") :output t))
  (all-cores () (run-program *shell* '("build-all-cores.sh") :output t))
- (install () (with-sudo "./install.sh")))
+ (install () (with-sudo "./install.sh"))
+ (clean () #$./clean.sh$#))
 

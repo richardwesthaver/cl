@@ -13,7 +13,7 @@
 
 . ./subr.sh
 
-run_sbcl --eval '(exit :code (or #+unix 0 2))'
+run_cl --eval '(exit :code (or #+unix 0 2))'
 if [ $? -eq 2 ] ; then echo $0: SKIPPING ; exit $EXIT_TEST_WIN ; fi
 
 use_test_subdirectory
@@ -27,7 +27,7 @@ cat >$testfilename <<EOF
   (in-package :cl-user)
   (defparameter *loaded* :yes)
 EOF
-run_sbcl <<EOF
+run_cl <<EOF
   (in-package :cl-user)
   (setf (logical-pathname-translations "TEST")
         (list (list "**;*.*.*" "$testdir/**/*.*")))
@@ -71,7 +71,7 @@ check_status_maybe_lose "LOAD/COMPILE" $?
 # was removed from UNIX-STAT. Let's make sure that it works now.
 #
 # Set up an empty directory to work with.
-testdir="${TMPDIR:-/tmp}/sbcl-mkdir-test-$$"
+testdir="${TMPDIR:-/tmp}/cl-mkdir-test-$$"
 if ! rm -rf "$testdir" ; then
   echo "$testdir already exists and could not be deleted"
   exit 1;
@@ -80,7 +80,7 @@ mkdir "$testdir"
 cd "$testdir"
 #
 # Provoke failure.
-run_sbcl <<EOF
+run_cl <<EOF
 (let ((rel-name #p"foo/bar/")
       (abs-name (merge-pathnames #p"baz/quux/" (truename "."))))
   (and

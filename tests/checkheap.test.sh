@@ -3,7 +3,7 @@
 . ./subr.sh
 
 # figure out if immobile-space is supported
-run_sbcl <<EOF
+run_cl <<EOF
 (unless (member :immobile-space sb-impl:+internal-features+) (sb-sys:os-exit 1))
 EOF
 status=$?
@@ -12,7 +12,7 @@ then
   use_test_subdirectory
   stdout=$TEST_DIRECTORY/$TEST_FILESTEM.out
   stderr=$TEST_DIRECTORY/$TEST_FILESTEM.err
-  run_sbcl >$stdout 2>$stderr <<EOF
+  run_cl >$stdout 2>$stderr <<EOF
 ;; Immobile pages have physical protection, so it's unlikely that it would be wrong.
 ;; However, the verifier was never actually checking.
 (assert (= (sb-kernel:generation-of '*posix-argv*) sb-vm:+pseudo-static-generation+))

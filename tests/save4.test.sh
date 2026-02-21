@@ -5,7 +5,7 @@ use_test_subdirectory
 tmpcore=$TEST_FILESTEM.core
 
 # test for lp#1983248 - gc_close_region on an unopen region
-run_sbcl <<EOF
+run_cl <<EOF
 (defparameter *keepme* (make-array 15500 :fill-pointer 0))
 (let ((s (find-symbol "*COMPILE-TO-MEMORY-SPACE*" "SB-C")))
   (when s

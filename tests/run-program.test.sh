@@ -27,7 +27,7 @@ export PATH
 test `ulimit -n` -ge 1050 || ulimit -S -n `ulimit -H -n`
 
 # This should probably be broken up into separate pieces.
-run_sbcl --eval "(defvar *exit-ok* $EXIT_LISP_WIN)" <<'EOF'
+run_cl --eval "(defvar *exit-ok* $EXIT_LISP_WIN)" <<'EOF'
 (defmacro our-run-program (name &rest rest)
   #+unix `(run-program ,name ,@rest)
   #-unix `(run-program ,(subseq name (1+ (position #\/ name :from-end t)))

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# testing ROOM in a fresh SBCL.
+# testing ROOM in a fresh CL.
 
 # This software is part of the SBCL system. See the README file for
 # more information.
@@ -15,7 +15,7 @@
 
 . ./subr.sh
 
-run_sbcl <<EOF
+run_cl <<EOF
   (dotimes (i 10)
     (dotimes (j 10)
       (let ((*standard-output* (make-string-output-stream))) (room)))

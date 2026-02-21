@@ -23,7 +23,7 @@ use_test_subdirectory
 mkdir -p inscrutable/f00
 echo '(defun zook (x) (declare (integer x)) (length x))' > inscrutable/f00/f00_xyz_bad
 ln -s inscrutable/f00/f00_xyz_bad good.lisp
-run_sbcl --eval '(setq *default-pathname-defaults* #P"")' \
+run_cl --eval '(setq *default-pathname-defaults* #P"")' \
   --eval '(compile-file "good.lisp" :verbose t)' --quit >stdout.out 2>stderr.out
 egrep -q 'compiling file ".*good' stdout.out
 stdout_ok=$?

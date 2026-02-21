@@ -21,7 +21,7 @@ use_test_subdirectory
 # Until sbcl-0.pre8, all --eval arguments were parsed before any of
 # them were executed, making it impossible for --eval forms to refer
 # to packages created by --eval forms.
-run_sbcl --eval "(defpackage :foo)" --eval "(print 'foo::bar)" \
+run_cl --eval "(defpackage :foo)" --eval "(print 'foo::bar)" \
   < /dev/null > $TEST_FILESTEM
 if [ "`grep -c FOO::BAR $TEST_FILESTEM`" != 1 ] ; then
     echo failed DEFPACKAGE-then-PRINT from --eval form
@@ -29,14 +29,14 @@ if [ "`grep -c FOO::BAR $TEST_FILESTEM`" != 1 ] ; then
 fi
 
 # --quit
-run_sbcl --eval "(defpackage :foo)" --eval "(print 'foo::bar)" --quit \
+run_cl --eval "(defpackage :foo)" --eval "(print 'foo::bar)" --quit \
     > $TEST_FILESTEM
 if [ "`grep -c FOO::BAR $TEST_FILESTEM`" != 1 ] ; then
     echo failed DEFPACKAGE-then-PRINT with --quit
     exit $EXIT_LOSE
 fi
 # --quit gets delayed
-run_sbcl --eval "(defpackage :foo)" --quit --eval "(print 'foo::bar)" \
+run_cl --eval "(defpackage :foo)" --quit --eval "(print 'foo::bar)" \
     > $TEST_FILESTEM
 if [ "`grep -c FOO::BAR $TEST_FILESTEM`" != 1 ] ; then
     echo failed DEFPACKAGE-then-PRINT with delayed --quit
@@ -44,7 +44,7 @@ if [ "`grep -c FOO::BAR $TEST_FILESTEM`" != 1 ] ; then
 fi
 
 # --non-interactive
-run_sbcl --eval "(defpackage :foo)" \
+run_cl --eval "(defpackage :foo)" \
     --non-interactive \
     --eval "(print 'foo::bar)" \
     > $TEST_FILESTEM
@@ -53,14 +53,14 @@ if [ "`grep -c FOO::BAR $TEST_FILESTEM`" != 1 ] ; then
     exit $EXIT_LOSE
 fi
 
-# disable the use of --disable-debugger through run_sbcl for the rest of
+# disable the use of --disable-debugger through run_cl for the rest of
 # this file
 CL_ARGS="--noinform --no-sysinit --no-userinit --noprint"
 
 # --non-interactive with error
 #
 # (This test would hang if --non-interactive did not work properly.)
-run_sbcl --eval "(defpackage :foo)" \
+run_cl --eval "(defpackage :foo)" \
     --non-interactive \
     --eval "(print 'foo::bar)" \
     --eval '(error "fail-safe")' \

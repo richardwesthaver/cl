@@ -13,7 +13,7 @@ set -e
 #  (sb-kernel:%make-lisp-obj sb-vm:instance-pointer-lowtag)
 # as that cons is indistinguishable from a forwarded cons in 32-bit builds,
 # where INSTANCE_POINTER_LOWTAG is 1 and forwarding_pointer_p(x) is '*x == 1'
-run_sbcl <<EOF
+run_cl <<EOF
   (defvar *x* (list (sb-kernel:%make-lisp-obj sb-vm:fun-pointer-lowtag)
                     (sb-kernel:%make-lisp-obj
                      (logior #x100 sb-vm:instance-pointer-lowtag))))

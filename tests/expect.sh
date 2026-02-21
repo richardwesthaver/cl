@@ -19,7 +19,7 @@ expect_load_error ()
 {
     # Test compiling and loading.
     f="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (compile-file "$f")
         ;;; But loading the file should fail.
         (multiple-value-bind (value0 value1) (ignore-errors (load *))
@@ -32,7 +32,7 @@ EOF
 
     # Test loading into the interpreter.
     f="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (multiple-value-bind (value0 value1) (ignore-errors (load "$f"))
             (assert (null value0))
             ;(format t "VALUE1=~S (~A)~%" value1 value1)
@@ -46,7 +46,7 @@ expect_clean_cload ()
 {
     expect_clean_compile $1
     f="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (multiple-value-bind (value0 value1) 
             (ignore-errors (load (compile-file-pathname "$f")))
           (assert value0)
@@ -61,7 +61,7 @@ EOF
 expect_clean_compile ()
 {
     f="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (multiple-value-bind (pathname warnings-p failure-p)
             (compile-file "$f")
           (declare (ignore pathname))
@@ -75,7 +75,7 @@ EOF
 expect_warned_compile ()
 {
     f="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (multiple-value-bind (pathname warnings-p failure-p)
             (compile-file "$f")
           (declare (ignore pathname))
@@ -89,7 +89,7 @@ EOF
 expect_failed_compile ()
 {
     f="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (multiple-value-bind (pathname warnings-p failure-p)
             (compile-file "$f")
           (declare (ignore pathname warnings-p))
@@ -102,7 +102,7 @@ EOF
 expect_aborted_compile ()
 {
     f="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (let* ((lisp "$f")
                (fasl (compile-file-pathname lisp)))
           (multiple-value-bind (pathname warnings-p failure-p)
@@ -120,7 +120,7 @@ fail_on_condition_during_compile ()
 {
     c="$1"
     f="$2"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (handler-bind (($c #'error))
           (compile-file "$f")
           (sb-ext:exit :code $EXIT_LISP_WIN))
@@ -132,7 +132,7 @@ expect_condition_during_compile ()
 {
     c="$1"
     f="$2"
-    run_sbcl <<EOF
+    run_cl <<EOF
         (handler-bind (($c (lambda (c)
                              (declare (ignore c))
                              (sb-ext:exit :code $EXIT_LISP_WIN))))

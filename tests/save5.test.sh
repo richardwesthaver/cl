@@ -5,7 +5,7 @@ use_test_subdirectory
 tmpcore=$TEST_FILESTEM.core
 
 # In sbcl-0.9.8 saving cores with callbacks didn't work on gencgc platforms
-run_sbcl <<EOF
+run_cl <<EOF
   (defun bar ()
     (format t "~&Callbacks not supported, skipping~%")
     (exit :code 42))
@@ -15,7 +15,7 @@ run_sbcl <<EOF
     (defun bar () (exit :code (alien-funcall (sb-alien:alien-callable-function 'foo)))))
   (save-lisp-and-die "$tmpcore")
 EOF
-run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit --noprint \
+run_cl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit --noprint \
     --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
     <<EOF
   (bar)

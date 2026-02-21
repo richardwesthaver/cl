@@ -39,7 +39,7 @@ CLOBBER_INTERNAL_FEATURES="(handler-bind ((simple-error #'continue))
 ### Because SAVE-LISP-AND-DIE coalesces strings, this test provides confidence
 ### that no string anywhere in the heap is STRING= to a package name.
 
-run_sbcl <<EOF
+run_cl <<EOF
 #+cheneygc (exit) ; not much can be done for cheney to make this pass
 #+sb-devel (exit) ; doesn't pass either
 
@@ -79,7 +79,7 @@ EOF
 ### name of a system package. Also no uses of undesired symbols
 ### in lieu of strings. i.e. no (FIND-PACKAGE 'sb-vm)
 
-run_sbcl <<\EOF
+run_cl <<\EOF
 
 ;; This test should pass everywhere now
 #+sb-devel (exit)

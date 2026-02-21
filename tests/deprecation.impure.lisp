@@ -163,7 +163,7 @@
   (define-variable-tests defconstant         definition.defconstant)
   (define-variable-tests define-symbol-macro definition.define-symbol-macro
     :symbol-value nil))
- 
+
 ;;;; Deprecated functions
 
 (macrolet

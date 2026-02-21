@@ -1,16 +1,9 @@
 #!/bin/false
 # Not a shell script, but something intended to be sourced from shell scripts
 
-# This ensures that CL_PWD is a path understandable to SBCL.
+# This ensures that CL_PWD is a path understandable to CL.
 
-sbcl_pwd() {
-    case "${OSTYPE:-}" in
-        cygwin)
-            CL_PWD="`cygpath -m \"$(pwd)\"`" ;;
-        msys)
-            CL_PWD="`pwd -W`" ;;
-        *)
-            CL_PWD="`pwd`" ;;
-    esac
-    export CL_PWD
+cl_pwd() {
+  CL_PWD="`pwd`"
+  export CL_PWD
 }

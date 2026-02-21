@@ -7,7 +7,7 @@ set -e
 mkdir subdir1
 echo '(defvar *hi* "hi")' > subdir1/file1.lisp
 
-run_sbcl <<EOF
+run_cl <<EOF
   (setq *default-pathname-defaults*
     (merge-pathnames (make-pathname :directory '(:relative "subdir1"))))
   (load "file1") ; should merge the dir and default the .lisp type

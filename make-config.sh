@@ -19,7 +19,7 @@ set -e
 
 print_help="no"
 
-CL_PREFIX="/usr/"
+CL_PREFIX="/usr"
 CL_XC_HOST="sbcl --no-userinit --no-sysinit"
 
 # Parse command-line options.
@@ -160,20 +160,20 @@ Options:
 
   --prefix=<path>      Specify the install location.
 
-      Script install.sh installs SBCL under the specified prefix
-      path: runtime as prefix/bin/sbcl, additional files under
-      prefix/lib/sbcl, and documentation under prefix/share.
+      Script install.sh installs CL under the specified prefix
+      path: runtime as prefix/bin/cl, additional files under
+      prefix/lib/cl, and documentation under prefix/share.
 
       This option also affects the binaries: built-in default for
-      CL_HOME is: prefix/lib/sbcl/
+      CL_HOME is: prefix/lib/cl/
 
-      Default prefix is: /usr/local
+      Default prefix is: /usr
 
   --dynamic-space-size=<size> Default dynamic-space size for target.
 
-      This specifies the default dynamic-space size for the SBCL
+      This specifies the default dynamic-space size for the CL
       being built. If you need to control the dynamic-space size
-      of the host SBCL, use the --xc-host option.
+      of the host CL, use the --xc-host option.
 
       If not provided, the default is platform-specific. <size> is
       taken to be megabytes unless explicitly suffixed with Gb in

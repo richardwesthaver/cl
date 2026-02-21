@@ -28,4 +28,4 @@ fi
 . ./subr.sh
 
 set +u
-run_sbcl --script find-tests.lisp $*
+run_cl --script find-tests.lisp $*

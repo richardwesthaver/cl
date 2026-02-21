@@ -27,7 +27,7 @@ cat > $tmpfilename <<EOF
         (exit :code $EXIT_LISP_WIN)
         (exit :code $EXIT_LOSE))
 EOF
-run_sbcl --disable-debugger --load $tmpfilename <<EOF
+run_cl --disable-debugger --load $tmpfilename <<EOF
 Bivalent *STANDARD-INPUT*
 EOF
 check_status_maybe_lose bivalent-standard-input $?
@@ -39,7 +39,7 @@ cat > $tmpfilename <<EOF
     (terpri *standard-output*)
     (exit :code $EXIT_LISP_WIN)
 EOF
-run_sbcl --disable-debugger --load $tmpfilename > $tmpfilename.out
+run_cl --disable-debugger --load $tmpfilename > $tmpfilename.out
 check_status_maybe_lose bivalent-standard-output $?
 test_output=`cat $tmpfilename.out`
 rm -f $tmpfilename.out
@@ -55,7 +55,7 @@ cat > $tmpfilename <<EOF
     (terpri *error-output*)
     (exit :code $EXIT_LISP_WIN)
 EOF
-run_sbcl --disable-debugger --load $tmpfilename 2> $tmpfilename.out
+run_cl --disable-debugger --load $tmpfilename 2> $tmpfilename.out
 check_status_maybe_lose bivalent-error-output $?
 test_output=`cat $tmpfilename.out`
 rm -f $tmpfilename.out
@@ -64,7 +64,7 @@ if [ 'Bivalent *ERROR-OUTPUT*' != "$test_output" ]; then
     exit $EXIT_LOSE
 fi
 
-run_sbcl <<EOF
+run_cl <<EOF
   (setf sb-ext:*default-external-format* '(:utf-8 :newline :crlf))
   (sb-ext:save-lisp-and-die "$tmpcore")
 EOF
@@ -73,7 +73,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-run_sbcl_with_core "$tmpcore" --disable-ldb  --noinform --no-sysinit --no-userinit --disable-debugger \
+run_cl_with_core "$tmpcore" --disable-ldb  --noinform --no-sysinit --no-userinit --disable-debugger \
                    --eval '(sb-ext:quit :unix-status 52)'
 check_status_maybe_lose "stdstream external format setting" $? 52 "(loading worked)"
 

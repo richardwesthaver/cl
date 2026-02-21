@@ -7,7 +7,7 @@ tmpcore=$TEST_FILESTEM.core
 echo "::: Running :SAVE-CORE-MEM-SIZES"
 # executable core used as "--core" option should not save the memory sizes
 # that were originally saved, but the sizes in the process doing the save.
-run_sbcl_with_args --noinform --control-stack-size 384KB --dynamic-space-size 260MB \
+run_cl_with_args --noinform --control-stack-size 384KB --dynamic-space-size 260MB \
     --disable-debugger --no-userinit --no-sysinit --noprint <<EOF
   (save-lisp-and-die "$tmpcore" :executable t :save-runtime-options t)
 EOF
@@ -23,7 +23,7 @@ if [ $? -ne 0 ]; then
 fi
 echo "::: Success"
 
-run_sbcl_with_args --noinform --control-stack-size 384KB --dynamic-space-size 260MB \
+run_cl_with_args --noinform --control-stack-size 384KB --dynamic-space-size 260MB \
     --disable-debugger --no-userinit --no-sysinit --noprint <<EOF
   (save-lisp-and-die "$tmpcore" :executable t :save-runtime-options :accept-runtime-options)
 EOF
@@ -58,7 +58,7 @@ fi
 echo "::: Success"
 
 echo "::: Running :DYNAMIC-SPACE-SIZE-ARG"
-run_sbcl_with_core "$tmpcore" --noinform --control-stack-size 640KB \
+run_cl_with_core "$tmpcore" --noinform --control-stack-size 640KB \
     --tls-limit 5000 \
     --dynamic-space-size 260MB --no-userinit --no-sysinit --noprint <<EOF
   (assert (eql (extern-alien "thread_control_stack_size" unsigned) (* 640 1024)))

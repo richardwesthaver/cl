@@ -17,7 +17,7 @@ use_test_subdirectory
 
 tmpcore="init-hook-test.core"
 
-run_sbcl <<EOF
+run_cl <<EOF
   (push 'check-no-threads sb-ext:*init-hooks*)
   (defun check-no-threads ()
     (sb-sys:os-exit (if (sb-thread::thread-p sb-impl::*finalizer-thread*) 1 0)))
@@ -27,7 +27,7 @@ if [ $? -ne 0 ]; then
     echo "failure saving core"
     exit 1
 fi
-run_sbcl_with_core "$tmpcore" --noinform --disable-debugger
+run_cl_with_core "$tmpcore" --noinform --disable-debugger
 check_status_maybe_lose "init-hooks execution order" $? 0 "(passed)"
 
 exit $EXIT_TEST_WIN

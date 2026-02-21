@@ -23,7 +23,7 @@ tmperr=$TEST_FILESTEM.lisp-err
 # Test that under --lose-on-corruption and --disable-ldb, in case of
 # corruption, (a) the process exits non-zero, (b) all
 # lose-on-corruption diagnostics go to stderr, and (c) not stdout.
-run_sbcl --noinform --lose-on-corruption --disable-ldb --eval '(labels ((foo () (list (foo)))) (foo))' >$tmpout 2>$tmperr
+run_cl --noinform --lose-on-corruption --disable-ldb --eval '(labels ((foo () (list (foo)))) (foo))' >$tmpout 2>$tmperr
 # default_lossage_handler() calls exit(1).
 check_status_maybe_lose "--script exit after corruption" $? 1 "(ok)"
 [ -s $tmperr ]

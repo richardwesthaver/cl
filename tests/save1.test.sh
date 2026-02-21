@@ -12,7 +12,7 @@ tmpcore=$TEST_FILESTEM.core
 #   -- Eric Marsden, <http://tunes.org/~nef/logs/lisp/02.09.15>
 #
 # diagnosed and fixed by Dan Barlow in sbcl-0.7.7.29
-run_sbcl <<EOF
+run_cl <<EOF
   (defun foo (x) (+ x 11))
   (setq *features* (union *features* sb-impl:+internal-features+))
   ;; The basic smoke test includes a test that immobile-space defragmentation
@@ -29,17 +29,17 @@ run_sbcl <<EOF
   ;;
   (save-lisp-and-die "$tmpcore")
 EOF
-run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit --noprint \
+run_cl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit --noprint \
     --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
     <<EOF
   (exit :code (foo 10))
 EOF
 check_status_maybe_lose "Basic SAVE-LISP-AND-DIE" $? 21 "(saved core ran)"
 
-run_sbcl <<EOF
+run_cl <<EOF
   (save-lisp-and-die "$tmpcore" :purify nil)
 EOF
-run_sbcl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit --noprint <<EOF
+run_cl_with_core "$tmpcore" --noinform --no-userinit --no-sysinit --noprint <<EOF
   #-(and darwin arm64) ;; darwin-jit
   (unless (zerop (- (sb-sys:sap-int sb-vm:*read-only-space-free-pointer*) sb-vm:read-only-space-start))
     (exit :code 1))

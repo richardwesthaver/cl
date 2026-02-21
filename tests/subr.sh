@@ -16,7 +16,7 @@
 # home; but this runs afoul of the Bourne shell's repeated
 # tokenization of its inputs, so now we use some shell functions.
 . ../sbcl-pwd.sh
-sbcl_pwd
+cl_pwd
 
 # Make the shell bomb out whenever an unset shell variable is used.
 # Note that scripts may toggle this if necessary.

@@ -12,14 +12,14 @@ for f in $FILES; do
     (cd "$CL_PWD"; cp `eval "echo $f"` "$TEST_DIRECTORY");
 done
 
-run_sbcl <<EOF
+run_cl <<EOF
 (let ((files (list $FILES)))
   (mapc #'load files)
   (mapc #'compile-file files))
 (exit :code 52)
 EOF
 
-run_sbcl <<EOF
+run_cl <<EOF
 (mapc #'load (list $FASLS))
 (exit :code $EXIT_LISP_WIN)
 EOF

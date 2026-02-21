@@ -1,7 +1,7 @@
 # If this test were in a .lisp file then the FILE-INFO would hold on
 # to all function names and so we couldn't show that GC works.
 . ./subr.sh
-run_sbcl <<EOF
+run_cl <<EOF
 ;; This test fails on mark-region. It appears to smash weak vectors more lazily,
 ;; which doesn't make sense unless the weak vector is actually livening its contents
 ;; because the symbol G is most certainly in the youngest generation and eligible

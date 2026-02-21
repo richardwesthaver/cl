@@ -19,7 +19,7 @@ use_test_subdirectory
 
 tmpcore="init-test.core"
 
-run_sbcl <<EOF
+run_cl <<EOF
   (require :sb-introspect)
   (defun custom-userinit-pathname ()
      "$CL_PWD/custom-userinit.lisp")
@@ -33,7 +33,7 @@ if [ $? -ne 0 ]; then
     echo "failure saving core"
     exit 1
 fi
-run_sbcl_with_core "$tmpcore" --noinform --disable-debugger \
+run_cl_with_core "$tmpcore" --noinform --disable-debugger \
     --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
     <<EOF
   (assert (string= (custom-sysinit-pathname)

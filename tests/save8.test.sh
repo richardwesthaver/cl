@@ -9,7 +9,7 @@ tmpcore=$TEST_FILESTEM.core
 # (Sadly, saved finalizers mean nothing to gencgc since it will never
 # actually free the object which the finalizer watches)
 
-run_sbcl <<EOF
+run_cl <<EOF
   (defvar *x* (cons 1 2))
   (finalize *x* (lambda () (print 'ran)))
   (save-lisp-and-die "$tmpcore" :executable t)
@@ -19,7 +19,7 @@ set -e
 echo "Saved finalizer smoke test: PASS"
 
 # Assert that >1 finalizer on an object are correctly saved/restored.
-run_sbcl <<EOF
+run_cl <<EOF
 (defvar *x* "hi")
 (defun a () (print 1))
 (defun b () (print 2))
@@ -30,7 +30,7 @@ run_sbcl <<EOF
 (save-lisp-and-die "$tmpcore")
 EOF
 # this would crash in finalizers-reinit
-run_sbcl_with_core "$tmpcore" --noinform --disable-ldb --no-userinit --no-sysinit --noprint <<EOF
+run_cl_with_core "$tmpcore" --noinform --disable-ldb --no-userinit --no-sysinit --noprint <<EOF
 (sb-sys:with-pinned-objects (*x*)
   (let ((list (sb-lockless:so-data
                (sb-lockless:so-find sb-impl::**finalizer-store**
@@ -48,7 +48,7 @@ echo "One obj, three finalizers: PASS"
 # and placed in the triggered list do not act as though they were saved.
 # i.e. They're ineligible for running on restart, but also - as a design choice -
 # not run during saving of the core even when the object died.
-run_sbcl <<EOF
+run_cl <<EOF
 (progn (sb-ext:finalize (make-array 1) (lambda () (format t "RAN~%")) :dont-save t) nil)
 (save-lisp-and-die "$tmpcore" :executable t)
 EOF

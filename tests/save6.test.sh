@@ -9,7 +9,7 @@ tmpcore2=${TEST_FILESTEM}_b.core
 
 # Regression test for https://bugs.launchpad.net/sbcl/+bug/411925
 # saving runtime options _from_ executable cores
-run_sbcl <<EOF
+run_cl <<EOF
   (save-lisp-and-die "$tmpcore" :executable t)
 EOF
 chmod u+x "$tmpcore"

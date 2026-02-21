@@ -4,7 +4,7 @@ set -e
 . ./subr.sh
 create_test_subdirectory
 
-run_sbcl <<EOF
+run_cl <<EOF
 ;; technically this is "skipped" if not fasteval, but we don't have "skipped"
 ;; as a status code from shell tests.
 (when (member :sb-devel *features*)
@@ -22,13 +22,13 @@ run_sbcl <<EOF
          :interpret)
         (t
          :compile)))
-(defvar *sbcl-local-target-features-file* "../local-target-features.lisp-expr")
-(defvar *sbcl-backend-subfeatures-file* "../customize-backend-subfeatures.lisp")
+(defvar *cl-local-target-features-file* "../local-target-features.lisp-expr")
+(defvar *cl-backend-subfeatures-file* "../customize-backend-subfeatures.lisp")
 (load "../src/cold/shared.lisp")
 (load "../src/cold/set-up-cold-packages.lisp")
 (load "../tools-for-build/corefile.lisp")
 (in-package "SB-COLD")
-(defvar *target-sbcl-version* (read-from-file "../version.lisp-expr"))
+(defvar *target-cl-version* (read-from-file "../version.lisp-expr"))
 (in-host-compilation-mode
  (lambda (&aux (sb-xc:*features* (cons :c-headers-only sb-xc:*features*))
                (*load-verbose* t))

@@ -13,7 +13,7 @@
 
 . ./subr.sh
 
-run_sbcl --eval '(exit :code (or #+unix 0 2))'
+run_cl --eval '(exit :code (or #+unix 0 2))'
 if [ $? -eq 2 ] ; then echo $0: SKIPPING ; exit $EXIT_TEST_WIN ; fi
 
 use_test_subdirectory
@@ -46,7 +46,7 @@ EOF
 `
 # FIXME: the following tests probably can't succeed at all if the
 # testdir name contains wildcard characters or quotes.
-run_sbcl <<EOF
+run_cl <<EOF
   (in-package :cl-user)
   (let* ((directory (directory "./*.*"))
          (truenames (sort directory #'string< :key #'pathname-name)))
@@ -68,7 +68,7 @@ EOF
 check_status_maybe_lose "DIRECTORY/TRUENAME part 1" $?
 
 cd "$CL_PWD"
-run_sbcl <<EOF
+run_cl <<EOF
   (in-package :cl-user)
   (let* ((directory (directory "$testdir/*.*"))
          (truenames (sort directory #'string< :key #'pathname-name)))
@@ -112,7 +112,7 @@ touch animal/vertebrate/mammal/rodent/rat
 touch animal/vertebrate/mammal/ruminant/cow
 touch animal/vertebrate/snake/python
 touch plant/kingsfoil plant/pipeweed
-run_sbcl <<EOF
+run_cl <<EOF
 (in-package :cl-user)
 (defun absolutify (pathname)
   "Convert a possibly-relative pathname to absolute."
@@ -231,7 +231,7 @@ touch a/z/foo.bar
 touch a/z/foo.dummy
 ln -s ../a/z c/z
 
-run_sbcl <<EOF
+run_cl <<EOF
 (setf (logical-pathname-translations "foo")
       (list (list "**;*.txt.*" (merge-pathnames "foo/**/*.txt"))
             (list "**;*.*.*" (merge-pathnames "**/*.*"))))
@@ -269,12 +269,12 @@ check_status_maybe_lose "DIRECTORY/PATTERNS" $?
 # Test whether ENSURE-DIRECTORIES-EXIST can create a directory whose
 # name contains a wildcard character (it used to get itself confused
 # internally).
-run_sbcl --eval '(ensure-directories-exist "foo\\*bar/baz.txt")' --eval '(sb-ext:exit)'
+run_cl --eval '(ensure-directories-exist "foo\\*bar/baz.txt")' --eval '(sb-ext:exit)'
 test -d foo*bar
 check_status_maybe_lose "ENSURE-DIRECTORIES-EXIST part 1" $? \
     0 "(directory exists)"
 
-run_sbcl --eval '(ensure-directories-exist "foo\\?bar/baz.txt")' --eval '(sb-ext:exit)'
+run_cl --eval '(ensure-directories-exist "foo\\?bar/baz.txt")' --eval '(sb-ext:exit)'
 test -d foo?bar
 check_status_maybe_lose "ENSURE-DIRECTORIES-EXIST part 2" $? \
     0 "(directory exists)"
@@ -284,7 +284,7 @@ use_test_subdirectory
 mkdir    sub
 touch    deltest
 touch    sub/deltest
-run_sbcl --eval '(let ((*default-pathname-defaults* (truename "sub")))
+run_cl --eval '(let ((*default-pathname-defaults* (truename "sub")))
                    (delete-file "deltest")
                    (sb-ext:exit))'
 test -f deltest && test ! -f sub/deltest
@@ -298,7 +298,7 @@ mkdir sub
 touch sub/one
 touch foo
 ln -s foo link
-run_sbcl --eval '(let ((*default-pathname-defaults* (truename "sub")))
+run_cl --eval '(let ((*default-pathname-defaults* (truename "sub")))
                    (rename-file "one" "two"))' \
          --eval '(rename-file "one" "three")' \
          --eval '(rename-file "link" "bar")'
@@ -332,7 +332,7 @@ touch    one/one/two
 touch    one/two
 ln -s dont_delete_me will_fail
 
-run_sbcl --eval '(sb-ext:delete-directory "simple_test_subdir1")' \
+run_cl --eval '(sb-ext:delete-directory "simple_test_subdir1")' \
          --eval '(sb-ext:delete-directory "simple_test_subdir2/")' \
          --eval '(sb-ext:delete-directory "deep" :recursive t)' \
          --eval '(let ((*default-pathname-defaults* (truename "one")))

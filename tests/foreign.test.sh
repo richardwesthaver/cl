@@ -29,10 +29,10 @@ build_so() (
   if [ $# -eq 2 ]
   then
     echo building $1.so from $2
-    /bin/sh ${run_compiler} -sbcl-pic -sbcl-shared "$2" -o "$1.so"
+    /bin/sh ${run_compiler} -cl-pic -cl-shared "$2" -o "$1.so"
   else
     echo building $1.so
-    /bin/sh ${run_compiler} -sbcl-pic -sbcl-shared "$1.c" -o "$1.so"
+    /bin/sh ${run_compiler} -cl-pic -cl-shared "$1.c" -o "$1.so"
   fi
 )
 
@@ -248,7 +248,7 @@ set +e
 
 test_compile() {
     x="$1"
-    run_sbcl <<EOF
+    run_cl <<EOF
 (progn (load (compile-file "$TEST_FILESTEM.$x.lisp" :verbose nil) :verbose nil)
 (sb-ext:exit :code $EXIT_LISP_WIN))
 EOF
@@ -261,7 +261,7 @@ echo # blank line
 
 test_use() {
     echo 'Testing' $1 '...'
-    run_sbcl --load $TEST_FILESTEM.$1.fasl --load $TEST_FILESTEM.test.lisp
+    run_cl --load $TEST_FILESTEM.$1.fasl --load $TEST_FILESTEM.test.lisp
     check_status_maybe_lose "use $1" $? 22 "(load-shared-object not supported)"
 }
 
@@ -272,7 +272,7 @@ echo # blank line
 test_save() {
     echo testing save $1
     x="$1"
-    run_sbcl --load $TEST_FILESTEM.$1.fasl <<EOF
+    run_cl --load $TEST_FILESTEM.$1.fasl <<EOF
 (eval-when (:compile-toplevel :load-toplevel :execute)
  (setq *features* (union *features* sb-impl:+internal-features+)))
 (save-lisp-and-die "$TEST_FILESTEM.$x.core")
@@ -290,7 +290,7 @@ options="--noinform --no-sysinit --no-userinit"
 test_start() {
     if [ -f $TEST_FILESTEM.$1.core ] ; then
         echo testing start $1
-        run_sbcl_with_core $TEST_FILESTEM.$1.core $options \
+        run_cl_with_core $TEST_FILESTEM.$1.core $options \
             --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
             --load $TEST_FILESTEM.test.lisp
         check_status_maybe_lose "start $1" $?
@@ -306,7 +306,7 @@ echo # blank line
 if [ -f $TEST_FILESTEM.fast.core ] ; then
 # missing object file
     echo Building core for missing shared-object-file test
-    run_sbcl_with_core $TEST_FILESTEM.fast.core $options --noprint \
+    run_cl_with_core $TEST_FILESTEM.fast.core $options --noprint \
         --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
         <<EOF
   (setf *invoke-debugger-hook*
@@ -326,7 +326,7 @@ fi
 
 rm $TEST_FILESTEM-b.so $TEST_FILESTEM-b2.so
 if [ -f $TEST_FILESTEM.missing.core ] ; then
-    run_sbcl_with_core $TEST_FILESTEM.missing.core $options --noprint \
+    run_cl_with_core $TEST_FILESTEM.missing.core $options --noprint \
         --eval "(setf sb-ext:*evaluator-mode* :${TEST_CL_EVALUATOR_MODE:-compile})" \
         <<EOF
   (assert (= 22 (summish 10 11)))
@@ -353,7 +353,7 @@ EOF
 
 build_so $TEST_FILESTEM.addr.heap
 
-run_sbcl <<EOF
+run_cl <<EOF
   (load-shared-object (truename "$TEST_FILESTEM.addr.heap.so"))
   (define-alien-type foo (struct foo (x int) (y int)))
 
@@ -365,7 +365,7 @@ run_sbcl <<EOF
 EOF
 check_status_maybe_lose "ADDR of a heap-allocated object" $?
 
-run_sbcl <<EOF
+run_cl <<EOF
   (define-alien-type inner (struct inner (var (unsigned 32))))
   (define-alien-type outer (struct outer (one inner) (two inner)))
 

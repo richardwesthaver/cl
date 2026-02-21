@@ -6,11 +6,11 @@ tmpcore=$TEST_FILESTEM.core
 tmpoutput=$TEST_FILESTEM.txt
 
 # test suppression of banner in executable cores
-run_sbcl <<EOF
+run_cl <<EOF
   (save-lisp-and-die "$tmpcore" :executable t)
 EOF
 chmod u+x "$tmpcore"
-# FIXME: Shouldn't this test use "run_sbcl_with_core" ?
+# FIXME: Shouldn't this test use "run_cl_with_core" ?
 ./"$tmpcore" > "$tmpoutput" --no-userinit --no-sysinit --noprint <<EOF
   (exit :code 71)
 EOF

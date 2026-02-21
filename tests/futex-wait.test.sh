@@ -2,7 +2,7 @@
 
 . ./subr.sh
 
-run_sbcl <<EOF
+run_cl <<EOF
  ;; The desired output differs by many factors, but an arbitrary slop allowance
  ;; could let the old bug creep back in.
  #+(and linux sb-thread) (exit :code #+(or x86 x86-64) (+ 90 #+mark-region-gc 30)
