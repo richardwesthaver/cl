@@ -1,4 +1,4 @@
-;;; This is ASDF 3.3.1
+;;; This is ASDF 3.3.7
 (eval-when (:compile-toplevel :load-toplevel :execute) (require :uiop))
 ;;;; -------------------------------------------------------------------------
 ;;;; Handle upgrade as forward- and backward-compatibly as possible
@@ -14,7 +14,8 @@
    #:*post-upgrade-cleanup-hook* #:cleanup-upgraded-asdf
    ;; There will be no symbol left behind!
    #:with-asdf-deprecation
-   #:intern*)
+   #:intern*
+   #:asdf-install-warning)
   (:import-from :uiop/package #:intern* #:find-symbol*))
 (in-package :asdf/upgrade)
 
@@ -59,6 +60,9 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
     (when *verbose-out* (apply 'format *verbose-out* format-string format-args)))
   ;; Private hook for functions to run after ASDF has upgraded itself from an older variant:
   (defvar *post-upgrade-cleanup-hook* ())
+  ;; Private variable for post upgrade cleanup to communicate if an upgrade has
+  ;; actually occured.
+  (defvar *asdf-upgraded-p*)
   ;; Private function to detect whether the current upgrade counts as an incompatible
   ;; data schema upgrade implying the need to drop data.
   (defun upgrading-p (&optional (oldest-compatible-version *oldest-forward-compatible-asdf-version*))
@@ -96,7 +100,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.3.1")
+         (asdf-version "3.3.7")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -109,31 +113,32 @@ previously-loaded version of ASDF."
 ;;; Upon upgrade, specially frob some functions and classes that are being incompatibly redefined
 (when-upgrading ()
   (let* ((previous-version (first *previous-asdf-versions*))
-         (redefined-functions ;; List of functions that changes incompatibly since 2.27:
-          ;; gf signature changed (should NOT happen), defun that became a generic function,
-          ;; method removed that will mess up with new ones (especially :around :before :after,
-          ;; more specific or call-next-method'ed method) and/or semantics otherwise modified. Oops.
+         (redefined-functions ;; List of functions that changed incompatibly since 2.27:
+          ;; gf signature changed, defun that became a generic function (but not way around),
+          ;; method removed that will mess up with new ones
+          ;; (especially :around :before :after, more specific or call-next-method'ed method)
+          ;; and/or semantics otherwise modified. Oops.
           ;; NB: it's too late to do anything about functions in UIOP!
-          ;; If you introduce some critical incompatibility there, you must change the function name.
+          ;; If you introduce some critical incompatibility there, you MUST change the function name.
           ;; Note that we don't need do anything about functions that changed incompatibly
           ;; from ASDF 2.26 or earlier: we wholly punt on the entire ASDF package in such an upgrade.
-          ;; Also note that we don't include the defgeneric=>defun, because they are
-          ;; done directly with defun* and need not trigger a punt on data.
+          ;; Also, the strong constraints apply most importantly for functions called from
+          ;; the continuation of compiling or loading some of the code in ASDF or UIOP.
           ;; See discussion at https://gitlab.common-lisp.net/asdf/asdf/merge_requests/36
-          `(,@(when (version<= previous-version "3.1.2") '(#:component-depends-on #:input-files)) ;; crucial methods *removed* before 3.1.2
-            ,@(when (version<= previous-version "3.1.7.20") '(#:find-component))))
+          ;; and at https://gitlab.common-lisp.net/asdf/asdf/-/merge_requests/141
+          `(,@(when (version< previous-version "2.31") '(#:normalize-version)) ;; pathname became &key
+            ,@(when (version< previous-version "3.1.2") '(#:component-depends-on #:input-files)) ;; crucial methods *removed* before 3.1.2
+            ,@(when (version< previous-version "3.1.7.20") '(#:find-component)))) ;; added &key registered
          (redefined-classes
-          ;; redefining the classes causes interim circularities
           ;; with the old ASDF during upgrade, and many implementations bork
-          #-clozure ()
-          #+clozure
-          '((#:compile-concatenated-source-op (#:operation) ())
-            (#:compile-bundle-op (#:operation) ())
-            (#:concatenate-source-op (#:operation) ())
-            (#:dll-op (#:operation) ())
-            (#:lib-op (#:operation) ())
-            (#:monolithic-compile-bundle-op (#:operation) ())
-            (#:monolithic-concatenate-source-op (#:operation) ()))))
+          (when (or #+(or clozure mkcl) t)
+            '((#:compile-concatenated-source-op (#:operation) ())
+              (#:compile-bundle-op (#:operation) ())
+              (#:concatenate-source-op (#:operation) ())
+              (#:dll-op (#:operation) ())
+              (#:lib-op (#:operation) ())
+              (#:monolithic-compile-bundle-op (#:operation) ())
+              (#:monolithic-concatenate-source-op (#:operation) ())))))
     (loop :for name :in redefined-functions
       :for sym = (find-symbol* name :asdf nil)
       :do (when sym (fmakunbound sym)))
@@ -141,11 +146,11 @@ previously-loaded version of ASDF."
                            (if (consp x) (values (car x) (cadr x)) (values x :asdf))
                          (find-symbol* s p nil)))
              (asyms (l) (mapcar #'asym l)))
-      (loop* :for (name superclasses slots) :in redefined-classes
-             :for sym = (find-symbol* name :asdf nil)
-             :when (and sym (find-class sym))
-             :do (eval `(defclass ,sym ,(asyms superclasses) ,(asyms slots)))))))
-
+      (loop :for (name superclasses slots) :in redefined-classes
+            :for sym = (find-symbol* name :asdf nil)
+            :when (and sym (find-class sym))
+              :do #+ccl (eval `(defclass ,sym ,(asyms superclasses) ,(asyms slots)))
+                  #-ccl (setf (find-class sym) nil))))) ;; mkcl
 
 ;;; Self-upgrade functions
 (with-upgradability ()
@@ -155,6 +160,8 @@ previously-loaded version of ASDF."
     (let ((new-version (asdf-version)))
       (unless (equal old-version new-version)
         (push new-version *previous-asdf-versions*)
+        (when (boundp '*asdf-upgraded-p*)
+          (setf *asdf-upgraded-p* t))
         (when old-version
           (if (version<= new-version old-version)
               (error (compatfmt "~&~@<; ~@;Downgraded ASDF from version ~A to version ~A~@:>~%")
@@ -169,13 +176,28 @@ previously-loaded version of ASDF."
             (call-functions (reverse *post-upgrade-cleanup-hook*)))
           t))))
 
+  (define-condition asdf-install-warning (simple-condition warning)
+    ((format-control
+      :initarg :format-control)
+     (format-arguments
+      :initarg :format-arguments
+      :initform nil))
+    (:documentation "Warning class for issues related to upgrading or loading ASDF.")
+    (:report (lambda (c s)
+               (format s "WARNING: ~?"
+                       (slot-value c 'format-control)
+                       (slot-value c 'format-arguments)))))
+
+
   (defun upgrade-asdf ()
     "Try to upgrade of ASDF. If a different version was used, return T.
    We need do that before we operate on anything that may possibly depend on ASDF."
     (let ((*load-print* nil)
-          (*compile-print* nil))
+          (*compile-print* nil)
+          (*asdf-upgraded-p* nil))
       (handler-bind (((or style-warning) #'muffle-warning))
-        (symbol-call :asdf :load-system :asdf :verbose nil))))
+        (symbol-call :asdf :load-system :asdf :verbose nil))
+      *asdf-upgraded-p*))
 
   (defmacro with-asdf-deprecation ((&rest keys &key &allow-other-keys) &body body)
     `(with-upgradability ()
@@ -319,7 +341,8 @@ previously-loaded version of ASDF."
               (clear-configuration-and-retry ()
                 :report (lambda (s)
                           (format s (compatfmt "~@<Retry ASDF operation after resetting the configuration.~@:>")))
-                (clrhash (session-cache *asdf-session*))
+                (unless (null *asdf-session*)
+                  (clrhash (session-cache *asdf-session*)))
                 (clear-configuration)))))))
 
   ;; Syntactic sugar for call-with-asdf-session
@@ -458,9 +481,9 @@ or NIL for top-level components (a.k.a. systems)"))
   (defmethod component-parent ((component null)) nil)
 
   ;; Deprecated: Backward compatible way of computing the FILE-TYPE of a component.
-  ;; TODO: find users, have them stop using that, remove it for ASDF4.
-  (defgeneric source-file-type (component system)
-    (:documentation "DEPRECATED. Use the FILE-TYPE of a COMPONENT instead."))
+  (with-asdf-deprecation (:style-warning "3.4")
+   (defgeneric source-file-type (component system)
+     (:documentation "DEPRECATED. Use the FILE-TYPE of a COMPONENT instead.")))
 
   (define-condition duplicate-names (system-definition-error)
     ((name :initarg :name :reader duplicate-names-name))
@@ -640,13 +663,19 @@ typically but not necessarily representing the files in a subdirectory of the bu
     ;; We ought to be able to extract this from the component alone with FILE-TYPE.
     ;; TODO: track who uses it in Quicklisp, and have them not use it anymore;
     ;; maybe issue a WARNING (then eventually CERROR) if the two methods diverge?
-    (parse-unix-namestring
-     (or (and (slot-boundp component 'relative-pathname)
-              (slot-value component 'relative-pathname))
-         (component-name component))
-     :want-relative t
-     :type (source-file-type component (component-system component))
-     :defaults (component-parent-pathname component)))
+    (let (#+abcl
+          (parent
+            (component-parent-pathname component)))
+      (parse-unix-namestring
+       (or (and (slot-boundp component 'relative-pathname)
+                (slot-value component 'relative-pathname))
+           (component-name component))
+       :want-relative
+       #-abcl t
+       ;; JAR-PATHNAMES always have absolute directories
+       #+abcl (not (ext:pathname-jar-p parent))
+       :type (source-file-type component (component-system component))
+       :defaults (component-parent-pathname component))))
 
   (defmethod source-file-type ((component parent-component) (system parent-component))
     :directory)
@@ -797,6 +826,7 @@ Use of INITARGS is not supported at this time."
    #:system-source-file #:system-source-directory #:system-relative-pathname
    #:system-description #:system-long-description
    #:system-author #:system-maintainer #:system-licence #:system-license
+   #:system-version
    #:definition-dependency-list #:definition-dependency-set #:system-defsystem-depends-on
    #:system-depends-on #:system-weakly-depends-on
    #:component-build-pathname #:build-pathname
@@ -818,8 +848,10 @@ Use of INITARGS is not supported at this time."
 If no system is found, then signal an error if ERROR-P is true (the default), or else return NIL.
 A system designator is usually a string (conventionally all lowercase) or a symbol, designating
 the same system as its downcased name; it can also be a system object (designating itself)."))
+
   (defgeneric system-source-file (system)
     (:documentation "Return the source file in which system is defined."))
+
   ;; This is bad design, but was the easiest kluge I found to let the user specify that
   ;; some special actions create outputs at locations controled by the user that are not affected
   ;; by the usual output-translations.
@@ -838,6 +870,7 @@ NB: This interface is subject to change. Please contact ASDF maintainers if you 
 (with no argument) when running an image dumped from the COMPONENT.
 
 NB: This interface is subject to change. Please contact ASDF maintainers if you use it."))
+
   (defmethod component-entry-point ((c component))
     nil))
 
@@ -862,19 +895,21 @@ a SYSTEM is redefined and its class is modified."))
   (defclass system (module proto-system)
     ;; Backward-compatibility: inherit from module. ASDF4: only inherit from parent-component.
     (;; {,long-}description is now inherited from component, but we add the legacy accessors
-     (description :accessor system-description)
-     (long-description :accessor system-long-description)
-     (author :accessor system-author :initarg :author :initform nil)
-     (maintainer :accessor system-maintainer :initarg :maintainer :initform nil)
-     (licence :accessor system-licence :initarg :licence
-              :accessor system-license :initarg :license :initform nil)
-     (homepage :accessor system-homepage :initarg :homepage :initform nil)
-     (bug-tracker :accessor system-bug-tracker :initarg :bug-tracker :initform nil)
-     (mailto :accessor system-mailto :initarg :mailto :initform nil)
-     (long-name :accessor system-long-name :initarg :long-name :initform nil)
+     (description :writer (setf system-description))
+     (long-description :writer (setf system-long-description))
+     (author :writer (setf system-author) :initarg :author :initform nil)
+     (maintainer :writer (setf system-maintainer) :initarg :maintainer :initform nil)
+     (licence :writer (setf system-licence) :initarg :licence
+              :writer (setf system-license) :initarg :license
+              :initform nil)
+     (homepage :writer (setf system-homepage) :initarg :homepage :initform nil)
+     (bug-tracker :writer (setf system-bug-tracker) :initarg :bug-tracker :initform nil)
+     (mailto :writer (setf system-mailto) :initarg :mailto :initform nil)
+     (long-name :writer (setf system-long-name) :initarg :long-name :initform nil)
      ;; Conventions for this slot aren't clear yet as of ASDF 2.27, but whenever they are, they will be enforced.
      ;; I'm introducing the slot before the conventions are set for maximum compatibility.
-     (source-control :accessor system-source-control :initarg :source-control :initform nil)
+     (source-control :writer (setf system-source-control) :initarg :source-control :initform nil)
+
      (builtin-system-p :accessor builtin-system-p :initform nil :initarg :builtin-system-p)
      (build-pathname
       :initform nil :initarg :build-pathname :accessor component-build-pathname)
@@ -914,21 +949,35 @@ a SYMBOL (designing its name, downcased), or a STRING (designing itself)."
       (t (sysdef-error (compatfmt "~@<Invalid component designator: ~3i~_~A~@:>") name))))
 
   (defun primary-system-name (system-designator)
-    "Given a system designator NAME, return the name of the corresponding primary system,
-after which the .asd file is named. That's the first component when dividing the name
-as a string by / slashes. A component designates its system."
+    "Given a system designator NAME, return the name of the corresponding
+primary system, after which the .asd file in which it is defined is named.
+If given a string or symbol (to downcase), do it syntactically
+ by stripping anything from the first slash on.
+If given a component, do it semantically by extracting
+the system-primary-system-name of its system from its source-file if any,
+falling back to the syntactic criterion if none."
     (etypecase system-designator
       (string (if-let (p (position #\/ system-designator))
                 (subseq system-designator 0 p) system-designator))
       (symbol (primary-system-name (coerce-name system-designator)))
-      (component (primary-system-name (coerce-name (component-system system-designator))))))
+      (component (let* ((system (component-system system-designator))
+                        (source-file (physicalize-pathname (system-source-file system))))
+                   (if source-file
+                       (and (equal (pathname-type source-file) "asd")
+                            (pathname-name source-file))
+                       (primary-system-name (component-name system)))))))
 
   (defun primary-system-p (system)
     "Given a system designator SYSTEM, return T if it designates a primary system, or else NIL.
-Also return NIL if system is neither a SYSTEM nor a string designating one."
-    (typecase system
+If given a string, do it syntactically and return true if the name does not contain a slash.
+If given a symbol, downcase to a string then fallback to previous case (NB: for NIL return T).
+If given a component, do it semantically and return T if it's a SYSTEM and its primary-system-name
+is the same as its component-name."
+    (etypecase system
       (string (not (find #\/ system)))
-      (system (primary-system-p (coerce-name system)))))
+      (symbol (primary-system-p (coerce-name system)))
+      (component (and (typep system 'system)
+                      (equal (component-name system) (primary-system-name system))))))
 
   (defun coerce-filename (name)
     "Coerce a system designator NAME into a string suitable as a filename component.
@@ -936,6 +985,36 @@ The (current) transformation is to replace characters /:\\ each by --,
 the former being forbidden in a filename component.
 NB: The onus is unhappily on the user to avoid clashes."
     (frob-substrings (coerce-name name) '("/" ":" "\\") "--")))
+
+
+;;; System virtual slot readers, recursing to the primary system if needed.
+(with-upgradability ()
+  (defvar *system-virtual-slots* '(long-name description long-description
+                                   author maintainer mailto
+                                   homepage source-control
+                                   licence version bug-tracker)
+    "The list of system virtual slot names.")
+  (defun system-virtual-slot-value (system slot-name)
+    "Return SYSTEM's virtual SLOT-NAME value.
+If SYSTEM's SLOT-NAME value is NIL and SYSTEM is a secondary system, look in
+the primary one."
+    (or (slot-value system slot-name)
+        (unless (primary-system-p system)
+          (slot-value (find-system (primary-system-name system))
+                      slot-name))))
+  (defmacro define-system-virtual-slot-reader (slot-name)
+    (let ((name (intern (strcat (string :system-) (string slot-name)))))
+      `(progn
+         (fmakunbound ',name) ;; These were gf from defgeneric before 3.3.2.11
+         (declaim (notinline ,name))
+         (defun ,name (system) (system-virtual-slot-value system ',slot-name)))))
+  (defmacro define-system-virtual-slot-readers ()
+    `(progn ,@(mapcar (lambda (slot-name)
+                        `(define-system-virtual-slot-reader ,slot-name))
+                *system-virtual-slots*)))
+  (define-system-virtual-slot-readers)
+  (defun system-license (system)
+    (system-virtual-slot-value system 'licence)))
 
 
 ;;;; Pathnames
@@ -953,7 +1032,7 @@ NB: The onus is unhappily on the user to avoid clashes."
 in which the system specification (.asd file) is located."
     (pathname-directory-pathname (system-source-file system-designator)))
 
-  (defun* (system-relative-pathname) (system name &key type)
+  (defun system-relative-pathname (system name &key type)
     "Given a SYSTEM, and a (Unix-style relative path) NAME of a file (or directory) of given TYPE,
 return the absolute pathname of a corresponding file under that system's source code pathname."
     (subpathname (system-source-directory system) name :type type))
@@ -1429,7 +1508,7 @@ Use it in FORMAT control strings as ~/asdf-action:format-action/"
 
 ;;;; Detection of circular dependencies
 (with-upgradability ()
-  (defun (action-valid-p) (operation component)
+  (defun action-valid-p (operation component)
     "Is this action valid to include amongst dependencies?"
     ;; If either the operation or component was resolved to nil, the action is invalid.
     ;; :if-feature will invalidate actions on components for which the features don't apply.
@@ -1439,7 +1518,8 @@ Use it in FORMAT control strings as ~/asdf-action:format-action/"
   (define-condition circular-dependency (system-definition-error)
     ((actions :initarg :actions :reader circular-dependency-actions))
     (:report (lambda (c s)
-               (format s (compatfmt "~@<Circular dependency: ~3i~_~S~@:>")
+               (format s (compatfmt "~@<Circular dependency of ~s on: ~3i~_~S~@:>")
+                       (first (circular-dependency-actions c))
                        (circular-dependency-actions c)))))
 
   (defun call-while-visiting-action (operation component fun)
@@ -1914,16 +1994,17 @@ Note that it will NOT be called around the performing of LOAD-OP."))
             (when warnings-file
               (unless (equal (pathname-type warnings-file) (warnings-file-type))
                 (setf warnings-file nil)))
-            (call-with-around-compile-hook
-             c #'(lambda (&rest flags)
-                   (apply 'compile-file* input-file
-                          :output-file output-file
-                          :external-format (component-external-format c)
-                          :warnings-file warnings-file
-                          (append
-                           #+clisp (list :lib-file lib-file)
-                           #+(or clasp ecl mkcl) (list :object-file object-file)
-                           flags)))))
+            (let ((*package* (find-package* '#:common-lisp-user)))
+             (call-with-around-compile-hook
+              c #'(lambda (&rest flags)
+                    (apply 'compile-file* input-file
+                           :output-file output-file
+                           :external-format (component-external-format c)
+                           :warnings-file warnings-file
+                           (append
+                            #+clisp (list :lib-file lib-file)
+                            #+(or clasp ecl mkcl) (list :object-file object-file)
+                            flags))))))
         (check-lisp-compile-results output warnings-p failure-p
                                     "~/asdf-action::format-action/" (list (cons o c))))))
   (defun report-file-p (f)
@@ -2007,7 +2088,8 @@ an OPERATION and a COMPONENT."
     "Perform the loading of a FASL associated to specified action (O . C),
 an OPERATION and a COMPONENT."
     (if-let (fasl (first (input-files o c)))
-      (load* fasl)))
+            (let ((*package* (find-package '#:common-lisp-user)))
+              (load* fasl))))
   (defmethod perform ((o load-op) (c cl-source-file))
     (perform-lisp-load-fasl o c))
   (defmethod perform ((o load-op) (c static-file))
@@ -2388,7 +2470,13 @@ unless identically to toplevel"
     (reverse (plan-actions-r plan)))
 
   (defgeneric record-dependency (plan operation component)
-    (:documentation "Record an action as a dependency in the current plan"))
+    (:documentation "Record that, within PLAN, performing OPERATION on COMPONENT depends on all
+of the (OPERATION . COMPONENT) actions in the current ASDF session's VISITING-ACTION-LIST.
+
+You can get a single action which dominates the set of dependencies corresponding to this call with
+(first (visiting-action-list *asdf-session*))
+since VISITING-ACTION-LIST is a stack whose top action depends directly on its second action,
+and whose second action depends directly on its third action, and so forth."))
 
   ;; No need to record a dependency to build a full graph, just accumulate nodes in order.
   (defmethod record-dependency ((plan sequential-plan) (o operation) (c component))
@@ -2561,17 +2649,17 @@ to be meaningful, or could it just as well have been done in another Lisp image?
 
 ;;;; Visiting dependencies of an action and computing action stamps
 (with-upgradability ()
-  (defun* (map-direct-dependencies) (operation component fun)
+  (defun map-direct-dependencies (operation component fun)
     "Call FUN on all the valid dependencies of the given action in the given plan"
-    (loop* :for (dep-o-spec . dep-c-specs) :in (component-depends-on operation component)
-      :for dep-o = (find-operation operation dep-o-spec)
-      :when dep-o
-      :do (loop :for dep-c-spec :in dep-c-specs
-            :for dep-c = (and dep-c-spec (resolve-dependency-spec component dep-c-spec))
-            :when (action-valid-p dep-o dep-c)
-            :do (funcall fun dep-o dep-c))))
+    (loop :for (dep-o-spec . dep-c-specs) :in (component-depends-on operation component)
+          :for dep-o = (find-operation operation dep-o-spec)
+          :when dep-o
+            :do (loop :for dep-c-spec :in dep-c-specs
+                      :for dep-c = (and dep-c-spec (resolve-dependency-spec component dep-c-spec))
+                      :when (action-valid-p dep-o dep-c)
+                        :do (funcall fun dep-o dep-c))))
 
-  (defun* (reduce-direct-dependencies) (operation component combinator seed)
+  (defun reduce-direct-dependencies (operation component combinator seed)
     "Reduce the direct dependencies to a value computed by iteratively calling COMBINATOR
 for each dependency action on the dependency's operation and component and an accumulator
 initialized with SEED."
@@ -2580,7 +2668,7 @@ initialized with SEED."
      #'(lambda (dep-o dep-c) (setf seed (funcall combinator dep-o dep-c seed))))
     seed)
 
-  (defun* (direct-dependencies) (operation component)
+  (defun direct-dependencies (operation component)
     "Compute a list of the direct dependencies of the action within the plan"
     (reverse (reduce-direct-dependencies operation component #'acons nil)))
 
@@ -2589,6 +2677,24 @@ initialized with SEED."
   ;; so they need not refer to the state of the filesystem,
   ;; and the stamps could be cryptographic checksums rather than timestamps.
   ;; Such a change remarkably would only affect COMPUTE-ACTION-STAMP.
+  (define-condition dependency-not-done (warning)
+    ((op
+      :initarg :op)
+     (component
+      :initarg :component)
+     (dep-op
+      :initarg :dep-op)
+     (dep-component
+      :initarg :dep-component)
+     (plan
+      :initarg :plan
+      :initform nil))
+    (:report (lambda (condition stream)
+               (with-slots (op component dep-op dep-component plan) condition
+                 (format stream "Computing just-done stamp ~@[in plan ~S~] for action ~S, but dependency ~S wasn't done yet!"
+                         plan
+                         (action-path (make-action op component))
+                         (action-path (make-action dep-op dep-component)))))))
 
   (defmethod compute-action-stamp (plan (o operation) (c component) &key just-done)
     ;; Given an action, figure out at what time in the past it has been done,
@@ -2622,10 +2728,10 @@ initialized with SEED."
                       (just-done
                        ;; It's OK to lose some ASDF action stamps during self-upgrade
                        (unless (equal "asdf" (primary-system-name dc))
-                         (warn "Computing just-done stamp in plan ~S for action ~S, but dependency ~S wasn't done yet!"
-                               plan
-                               (action-path (make-action o c))
-                               (action-path (make-action do dc))))
+                         (warn 'dependency-not-done
+                               :plan plan
+                               :op o :component c
+                               :dep-op do :dep-component dc))
                        status)
                       (t
                        (return (values nil nil))))))
@@ -2846,7 +2952,7 @@ Update the VISITED-ACTIONS table with the known status, but don't add anything t
         :do (collect-action-dependencies plan (action-operation action) (action-component action)))
       (plan-actions plan)))
 
-  (defun* (required-components) (system &rest keys &key (goal-operation 'load-op) &allow-other-keys)
+  (defun required-components (system &rest keys &key (goal-operation 'load-op) &allow-other-keys)
     "Given a SYSTEM and a GOAL-OPERATION (default LOAD-OP), traverse the dependencies and
 return a list of the components involved in building the desired action."
     (with-asdf-session (:override t)
@@ -3258,7 +3364,7 @@ the implementation's REQUIRE rather than by internal ASDF mechanisms."))
   (defmethod component-depends-on ((o define-op) (s system))
     `(;;NB: 1- ,@(system-defsystem-depends-on s)) ; Should be already included in the below.
       ;; 2- We don't call-next-method to avoid other methods
-      ,@(loop* :for (o . c) :in (definition-dependency-list s) :collect (list o c))))
+      ,@(loop :for (o . c) :in (definition-dependency-list s) :collect (list o c))))
 
   (defmethod component-depends-on ((o operation) (s system))
     `(,@(when (and (not (typep o 'define-op))
@@ -3272,11 +3378,9 @@ the implementation's REQUIRE rather than by internal ASDF mechanisms."))
   ;; TODO: could this file be refactored so that locate-system is merely
   ;; the cache-priming call to input-files here?
   (defmethod input-files ((o define-op) (s system))
-    (assert (equal (coerce-name s) (primary-system-name s)))
     (if-let ((asd (system-source-file s))) (list asd)))
 
   (defmethod perform ((o define-op) (s system))
-    (assert (equal (coerce-name s) (primary-system-name s)))
     (nest
      (if-let ((pathname (first (input-files o s)))))
      (let ((readtable *readtable*) ;; save outer syntax tables. TODO: proper syntax-control
@@ -3333,8 +3437,9 @@ Do NOT try to load a .asd file directly with CL:LOAD. Always use ASDF:LOAD-ASD."
   (defvar *old-asdf-systems* (make-hash-table :test 'equal))
 
   ;; (Private) function to check that a system that was found isn't an asdf downgrade.
-  ;; Returns T if everything went right, NIL if the system was an ASDF of the same or older version,
-  ;; that shall not be loaded. Also issue a warning if it was a strictly older version of ASDF.
+  ;; Returns T if everything went right, NIL if the system was an ASDF at an older version,
+  ;; or UIOP of the same or older version, that shall not be loaded.
+  ;; Also issue a warning if it was a strictly older version of ASDF.
   (defun check-not-old-asdf-system (name pathname)
     (or (not (member name '("asdf" "uiop") :test 'equal))
         (null pathname)
@@ -3345,9 +3450,12 @@ Do NOT try to load a .asd file directly with CL:LOAD. Always use ASDF:LOAD-ASD."
                              (read-file-form version-pathname :at (if asdfp '(0) '(2 2 2)))))
                (old-version (asdf-version)))
           (cond
-            ;; Don't load UIOP of the exact same version: we already loaded it as part of ASDF.
-            ((and (equal old-version version) (equal name "uiop")) nil)
-            ((version<= old-version version) t) ;; newer or same version: Good!
+            ;; Same version is OK for ASDF, to allow loading from modified source.
+            ;; However, do *not* load UIOP of the exact same version:
+            ;; it was already loaded it as part of ASDF and would only be double-loading.
+            ;; Be quiet about it, though, since it's a normal situation.
+            ((equal old-version version) asdfp)
+            ((version< old-version version) t) ;; newer version: Good!
             (t ;; old version: bad
              (ensure-gethash
               (list (namestring pathname) version) *old-asdf-systems*
@@ -3385,21 +3493,25 @@ Do NOT try to load a .asd file directly with CL:LOAD. Always use ASDF:LOAD-ASD."
 
   (defun locate-system (name)
     "Given a system NAME designator, try to locate where to load the system from.
-Returns five values: FOUNDP FOUND-SYSTEM PATHNAME PREVIOUS PREVIOUS-TIME
+Returns six values: FOUNDP FOUND-SYSTEM PATHNAME PREVIOUS PREVIOUS-TIME PREVIOUS-PRIMARY
 FOUNDP is true when a system was found,
 either a new unregistered one or a previously registered one.
 FOUND-SYSTEM when not null is a SYSTEM object that may be REGISTER-SYSTEM'ed.
 PATHNAME when not null is a path from which to load the system,
 either associated with FOUND-SYSTEM, or with the PREVIOUS system.
 PREVIOUS when not null is a previously loaded SYSTEM object of same name.
-PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded."
+PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
+PREVIOUS-PRIMARY when not null is the primary system for the PREVIOUS system."
     (with-asdf-session () ;; NB: We don't cache the results. We once used to, but it wasn't useful,
       ;; and keeping a negative cache was a bug (see lp#1335323), which required
       ;; explicit invalidation in clear-system and find-system (when unsucccessful).
       (let* ((name (coerce-name name))
              (previous (registered-system name)) ; load from disk if absent or newer on disk
-             (primary (registered-system (primary-system-name name)))
-             (previous-time (and previous primary (component-operation-time 'define-op primary)))
+             (previous-primary-name (and previous (primary-system-name previous)))
+             (previous-primary-system (and previous-primary-name
+                                           (registered-system previous-primary-name)))
+             (previous-time (and previous-primary-system
+                                 (component-operation-time 'define-op previous-primary-system)))
              (found (search-for-system-definition name))
              (found-system (and (typep found 'system) found))
              (pathname (ensure-pathname
@@ -3412,37 +3524,38 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
         (unless (check-not-old-asdf-system name pathname)
           (check-type previous system) ;; asdf is preloaded, so there should be a previous one.
           (setf found-system nil pathname nil))
-        (values foundp found-system pathname previous previous-time))))
+        (values foundp found-system pathname previous previous-time previous-primary-system))))
+
+  ;; TODO: make a prepare-define-op node for this
+  ;; so we can properly cache the answer rather than recompute it.
+  (defun definition-dependencies-up-to-date-p (system)
+    (check-type system system)
+    (or (not (primary-system-p system))
+        (handler-case
+            (loop :with plan = (make-instance *plan-class*)
+              :for action :in (definition-dependency-list system)
+              :always (action-up-to-date-p
+                       plan (action-operation action) (action-component action))
+              :finally
+              (let ((o (make-operation 'define-op)))
+                (multiple-value-bind (stamp done-p)
+                    (compute-action-stamp plan o system)
+                  (return (and (timestamp<= stamp (component-operation-time o system))
+                               done-p)))))
+          (system-out-of-date () nil))))
 
   ;; Main method for find-system: first, make sure the computation is memoized in a session cache.
   ;; Unless the system is immutable, use locate-system to find the primary system;
   ;; reconcile the finding (if any) with any previous definition (in a previous session,
   ;; preloaded, with a previous configuration, or before filesystem changes), and
   ;; load a found .asd if appropriate. Finally, update registration table and return results.
-
-  (defun definition-dependencies-up-to-date-p (system)
-    (check-type system system)
-    (assert (primary-system-p system))
-    (handler-case
-        (loop :with plan = (make-instance *plan-class*)
-          :for action :in (definition-dependency-list system)
-          :always (action-up-to-date-p
-                   plan (action-operation action) (action-component action))
-          :finally
-          (let ((o (make-operation 'define-op)))
-            (multiple-value-bind (stamp done-p)
-                (compute-action-stamp plan o system)
-              (return (and (timestamp<= stamp (component-operation-time o system))
-                           done-p)))))
-      (system-out-of-date () nil)))
-
   (defmethod find-system ((name string) &optional (error-p t))
     (nest
      (with-asdf-session (:key `(find-system ,name)))
      (let ((name-primary-p (primary-system-p name)))
        (unless name-primary-p (find-system (primary-system-name name) nil)))
      (or (and *immutable-systems* (gethash name *immutable-systems*) (registered-system name)))
-     (multiple-value-bind (foundp found-system pathname previous previous-time)
+     (multiple-value-bind (foundp found-system pathname previous previous-time previous-primary)
          (locate-system name)
        (assert (eq foundp (and (or found-system pathname previous) t))))
      (let ((previous-pathname (system-source-file previous))
@@ -3453,18 +3566,18 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
          (setf (system-source-file system) pathname))
        (if-let ((stamp (get-file-stamp pathname)))
          (let ((up-to-date-p
-                (and previous
+                (and previous previous-primary
                      (or (pathname-equal pathname previous-pathname)
                          (and pathname previous-pathname
                               (pathname-equal
                                (physicalize-pathname pathname)
                                (physicalize-pathname previous-pathname))))
                      (timestamp<= stamp previous-time)
-                     ;; TODO: check that all dependencies are up-to-date.
-                     ;; This necessitates traversing them without triggering
-                     ;; the adding of nodes to the plan.
-                     (or (not name-primary-p)
-                         (definition-dependencies-up-to-date-p previous)))))
+                     ;; Check that all previous definition-dependencies are up-to-date,
+                     ;; traversing them without triggering the adding of nodes to the plan.
+                     ;; TODO: actually have a prepare-define-op, extract its timestamp,
+                     ;; and check that it is less than the stamp of the previous define-op ?
+                     (definition-dependencies-up-to-date-p previous-primary))))
            (unless up-to-date-p
              (restart-case
                  (signal 'system-out-of-date :name name)
@@ -3501,11 +3614,16 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
   (:import-from :asdf/find-system #:define-op)
   (:export
    #:defsystem #:register-system-definition
-   #:class-for-type #:*default-component-class*
+   #:*default-component-class*
    #:determine-system-directory #:parse-component-form
    #:non-toplevel-system #:non-system-system #:bad-system-name
+   #:*known-systems-with-bad-secondary-system-names*
+   #:known-system-with-bad-secondary-system-names-p
    #:sysdef-error-component #:check-component-input
-   #:explain))
+   #:explain
+   ;; for extending the component types
+   #:compute-component-children
+   #:class-for-type))
 (in-package :asdf/parse-defsystem)
 
 ;;; Pathname
@@ -3533,20 +3651,33 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
        nil)))))
 
 
+(when-upgrading (:version "3.3.4.17")
+  ;; This turned into a generic function in 3.3.4.17
+  (fmakunbound 'class-for-type))
+
 ;;; Component class
 (with-upgradability ()
   ;; What :file gets interpreted as, unless overridden by a :default-component-class
   (defvar *default-component-class* 'cl-source-file)
 
-  (defun class-for-type (parent type)
-      (or (coerce-class type :package :asdf/interface :super 'component :error nil)
-          (and (eq type :file)
-               (coerce-class
-                (or (loop :for p = parent :then (component-parent p) :while p
-                      :thereis (module-default-component-class p))
-                    *default-component-class*)
-                :package :asdf/interface :super 'component :error nil))
-          (sysdef-error "don't recognize component type ~S" type))))
+  (defgeneric class-for-type (parent type-designator)
+    (:documentation
+     "Return a CLASS object to be used to instantiate components specified by TYPE-DESIGNATOR in the context of PARENT."))
+
+  (defmethod class-for-type ((parent null) type)
+    "If the PARENT is NIL, then TYPE must designate a subclass of SYSTEM."
+    (or (coerce-class type :package :asdf/interface :super 'system :error nil)
+        (sysdef-error "don't recognize component type ~S in the context of no parent" type)))
+
+  (defmethod class-for-type ((parent parent-component) type)
+    (or (coerce-class type :package :asdf/interface :super 'component :error nil)
+        (and (eq type :file)
+             (coerce-class
+              (or (loop :for p = parent :then (component-parent p) :while p
+                          :thereis (module-default-component-class p))
+                  *default-component-class*)
+              :package :asdf/interface :super 'component :error nil))
+        (sysdef-error "don't recognize component type ~S" type))))
 
 
 ;;; Check inputs
@@ -3617,7 +3748,8 @@ Please only define ~S and secondary systems with a name starting with ~S (e.g. ~
   ;; Given a form used as :version specification, in the context of a system definition
   ;; in a file at PATHNAME, for given COMPONENT with given PARENT, normalize the form
   ;; to an acceptable ASDF-format version.
-  (defun* (normalize-version) (form &key pathname component parent)
+  (fmakunbound 'normalize-version) ;; signature changed between 2.27 and 2.31
+  (defun normalize-version (form &key pathname component parent)
     (labels ((invalid (&optional (continuation "using NIL instead"))
                (warn (compatfmt "~@<Invalid :version specifier ~S~@[ for component ~S~]~@[ in ~S~]~@[ from file ~S~]~@[, ~A~]~@:>")
                      form component parent pathname continuation))
@@ -3656,7 +3788,7 @@ Please only define ~S and secondary systems with a name starting with ~S (e.g. ~
 ;;; "inline methods"
 (with-upgradability ()
   (defparameter* +asdf-methods+
-    '(perform-with-restarts perform explain output-files operation-done-p))
+      '(perform-with-restarts perform explain output-files operation-done-p))
 
   (defun %remove-component-inline-methods (component)
     (dolist (name +asdf-methods+)
@@ -3669,19 +3801,55 @@ Please only define ~S and secondary systems with a name starting with ~S (e.g. ~
            (component-inline-methods component)))
     (component-inline-methods component) nil)
 
+  (defparameter *standard-method-combination-qualifiers*
+    '(:around :before :after))
+
+;;; Find inline method definitions of the form
+;;;
+;;;   :perform (test-op :before (operation component) ...)
+;;;
+;;; in REST (which is the plist of all DEFSYSTEM initargs) and define the specified methods.
   (defun %define-component-inline-methods (ret rest)
-    (loop* :for (key value) :on rest :by #'cddr
-           :for name = (and (keywordp key) (find key +asdf-methods+ :test 'string=))
-           :when name :do
-           (destructuring-bind (op &rest body) value
-             (loop :for arg = (pop body)
-                   :while (atom arg)
-                   :collect arg :into qualifiers
-                   :finally
-                      (destructuring-bind (o c) arg
-                        (pushnew
-                         (eval `(defmethod ,name ,@qualifiers ((,o ,op) (,c (eql ,ret))) ,@body))
-                         (component-inline-methods ret)))))))
+    ;; find key-value pairs that look like inline method definitions in REST. For each identified
+    ;; definition, parse it and, if it is well-formed, define the method.
+    (loop :for (key value) :on rest :by #'cddr
+          :for name = (and (keywordp key) (find key +asdf-methods+ :test 'string=))
+          :when name :do
+            ;; parse VALUE as an inline method definition of the form
+            ;;
+            ;;   (OPERATION-NAME [QUALIFIER] (OPERATION-PARAMETER COMPONENT-PARAMETER) &rest BODY)
+            (destructuring-bind (operation-name &rest rest) value
+              (let ((qualifiers '()))
+                ;; ensure that OPERATION-NAME is a symbol.
+                (unless (and (symbolp operation-name) (not (null operation-name)))
+                  (sysdef-error "Ill-formed inline method: ~S. The first element is not a symbol ~
+                              designating an operation but ~S."
+                                value operation-name))
+                ;; ensure that REST starts with either a cons (potential lambda list, further checked
+                ;; below) or a qualifier accepted by the standard method combination. Everything else
+                ;; is ill-formed. In case of a valid qualifier, pop it from REST so REST now definitely
+                ;; has to start with the lambda list.
+                (cond
+                  ((consp (car rest)))
+                  ((not (member (car rest)
+                                *standard-method-combination-qualifiers*))
+                   (sysdef-error "Ill-formed inline method: ~S. Only a single of the standard ~
+                               qualifiers ~{~S~^ ~} is allowed, not ~S."
+                                 value *standard-method-combination-qualifiers* (car rest)))
+                  (t
+                   (setf qualifiers (list (pop rest)))))
+                ;; REST must start with a two-element lambda list.
+                (unless (and (listp (car rest))
+                             (length=n-p (car rest) 2)
+                             (null (cddar rest)))
+                  (sysdef-error "Ill-formed inline method: ~S. The operation name ~S is not followed by ~
+                              a lambda-list of the form (OPERATION COMPONENT) and a method body."
+                                value operation-name))
+                ;; define the method.
+                (destructuring-bind ((o c) &rest body) rest
+                  (pushnew
+                   (eval `(defmethod ,name ,@qualifiers ((,o ,operation-name) (,c (eql ,ret))) ,@body))
+                   (component-inline-methods ret)))))))
 
   (defun %refresh-component-inline-methods (component rest)
     ;; clear methods, then add the new ones
@@ -3717,7 +3885,20 @@ Please only define ~S and secondary systems with a name starting with ~S (e.g. ~
 system names contained using COERCE-NAME. Return the result."
     (mapcar 'parse-dependency-def dd-list))
 
-  (defun* (parse-component-form) (parent options &key previous-serial-component)
+  (defgeneric compute-component-children (component components serial-p)
+    (:documentation
+     "Return a list of children for COMPONENT.
+
+COMPONENTS is a list of the explicitly defined children descriptions.
+
+SERIAL-P is non-NIL if each child in COMPONENTS should depend on the previous
+children."))
+
+  (defun stable-union (s1 s2 &key (test #'eql) (key 'identity))
+   (append s1
+     (remove-if #'(lambda (e2) (member (funcall key e2) (funcall key s1) :test test)) s2)))
+
+  (defun parse-component-form (parent options &key previous-serial-components)
     (destructuring-bind
         (type name &rest rest &key
                                 (builtin-system-p () bspp)
@@ -3769,18 +3950,10 @@ system names contained using COERCE-NAME. Return the result."
         ;; A better fix is required.
         (setf (slot-value component 'version) version)
         (when (typep component 'parent-component)
-          (setf (component-children component)
-                (loop
-                  :with previous-component = nil
-                  :for c-form :in components
-                  :for c = (parse-component-form component c-form
-                                                 :previous-serial-component previous-component)
-                  :for name = (component-name c)
-                  :collect c
-                  :when serial :do (setf previous-component name)))
+          (setf (component-children component) (compute-component-children component components serial))
           (compute-children-by-name component))
-        (when previous-serial-component
-          (push previous-serial-component depends-on))
+        (when previous-serial-components
+          (setf depends-on (stable-union depends-on previous-serial-components :test #'equal)))
         (when weakly-depends-on
           ;; ASDF4: deprecate this feature and remove it.
           (appendf depends-on
@@ -3792,8 +3965,37 @@ system names contained using COERCE-NAME. Return the result."
           (error "The system definition for ~S uses deprecated ~
             ASDF option :IF-COMPONENT-DEP-FAILS. ~
             Starting with ASDF 3, please use :IF-FEATURE instead"
-           (coerce-name (component-system component))))
+                 (coerce-name (component-system component))))
         component)))
+
+  (defmethod compute-component-children ((component parent-component) components serial-p)
+    (loop
+      :with previous-components = nil ; list of strings
+      :for c-form :in components
+      :for c = (parse-component-form component c-form
+                                     :previous-serial-components previous-components)
+      :for name :of-type string = (component-name c)
+      :when serial-p
+        ;; if this is an if-feature component, we need to make a serial link
+        ;; from previous components to following components -- otherwise should
+        ;; the IF-FEATURE component drop out, the chain of serial dependencies will be
+        ;; broken.
+        :unless (component-if-feature c)
+          :do (setf previous-components nil)
+        :end
+        :and
+          :do (push name previous-components)
+      :end
+      :collect c))
+
+  ;; the following are all systems that Stas Boukarev maintains and refuses to fix,
+  ;; hoping instead to make my life miserable. Instead, I just make ASDF ignore them.
+  (defparameter* *known-systems-with-bad-secondary-system-names*
+    (list-to-hash-set '("cl-ppcre" "cl-interpol")))
+  (defun known-system-with-bad-secondary-system-names-p (asd-name)
+    ;; Does .asd file with name ASD-NAME contain known exceptions
+    ;; that should be screened out of checking for BAD-SYSTEM-NAME?
+    (gethash asd-name *known-systems-with-bad-secondary-system-names*))
 
   (defun register-system-definition
       (name &rest options &key pathname (class 'system) (source-file () sfp)
@@ -3812,8 +4014,11 @@ system names contained using COERCE-NAME. Return the result."
      (let* ((asd-name (and source-file
                            (equal "asd" (fix-case (pathname-type source-file)))
                            (fix-case (pathname-name source-file))))
+            ;; note that PRIMARY-NAME is a *syntactically* primary name
             (primary-name (primary-system-name name)))
-       (when (and asd-name (not (equal asd-name primary-name)))
+       (when (and asd-name
+                  (not (equal asd-name primary-name))
+                  (not (known-system-with-bad-secondary-system-names-p asd-name)))
          (warn (make-condition 'bad-system-name :source-file source-file :name name))))
      (let* (;; NB: handle defsystem-depends-on BEFORE to create the system object,
             ;; so that in case it fails, there is no incomplete object polluting the build.
@@ -3846,7 +4051,7 @@ system names contained using COERCE-NAME. Return the result."
          (error 'non-system-system :name name :class-name (class-name class)))
        (unless (eq (type-of system) class)
          (reset-system-class system class)))
-     (parse-component-form nil (list* :module name :pathname directory component-options))))
+     (parse-component-form nil (list* :system name :pathname directory component-options))))
 
   (defmacro defsystem (name &body options)
     `(apply 'register-system-definition ',name ',options)))
@@ -3874,12 +4079,9 @@ system names contained using COERCE-NAME. Return the result."
 (in-package :asdf/bundle)
 
 (with-upgradability ()
-  (defclass bundle-op (operation)
-    ;; NB: use of instance-allocated slots for operations is DEPRECATED
-    ;; and only supported in a temporary fashion for backward compatibility.
-    ;; Supported replacement: Define slots on program-system instead.
-    ((bundle-type :initform :no-output-file :reader bundle-type :allocation :class))
+  (defclass bundle-op (operation) ()
     (:documentation "base class for operations that bundle outputs from multiple components"))
+  (defgeneric bundle-type (bundle-op))
 
   (defclass monolithic-op (operation) ()
     (:documentation "A MONOLITHIC operation operates on a system *and all of its
@@ -3920,10 +4122,11 @@ itself."))
   (defclass link-op (bundle-op) ()
     (:documentation "Abstract operation for linking files together"))
 
-  (defclass gather-operation (bundle-op)
-    ((gather-operation :initform nil :allocation :class :reader gather-operation)
-     (gather-type :initform :no-output-file :allocation :class :reader gather-type))
+  (defclass gather-operation (bundle-op) ()
     (:documentation "Abstract operation for gathering many input files from a system"))
+  (defgeneric gather-operation (gather-operation))
+  (defmethod gather-operation ((o gather-operation)) nil)
+  (defgeneric gather-type (gather-operation))
 
   (defun operation-monolithic-p (op)
     (typep op 'monolithic-op))
@@ -3960,11 +4163,12 @@ itself."))
       `((,go ,@deps) ,@(call-next-method))))
 
   ;; Create a single fasl for the entire library
-  (defclass basic-compile-bundle-op (bundle-op basic-compile-op)
-    ((gather-type :initform #-(or clasp ecl mkcl) :fasl #+(or clasp ecl mkcl) :object
-                  :allocation :class)
-     (bundle-type :initform :fasb :allocation :class))
+  (defclass basic-compile-bundle-op (bundle-op basic-compile-op) ()
     (:documentation "Base class for compiling into a bundle"))
+  (defmethod bundle-type ((o basic-compile-bundle-op)) :fasb)
+  (defmethod gather-type ((o basic-compile-bundle-op))
+    #-(or clasp ecl mkcl) :fasl
+    #+(or clasp ecl mkcl) :object)
 
   ;; Analog to prepare-op, for load-bundle-op and compile-bundle-op
   (defclass prepare-bundle-op (sideway-operation)
@@ -3973,9 +4177,7 @@ itself."))
       :allocation :class))
     (:documentation "Operation class for loading the bundles of a system's dependencies"))
 
-  (defclass lib-op (link-op gather-operation non-propagating-operation)
-    ((gather-type :initform :object :allocation :class)
-     (bundle-type :initform :lib :allocation :class))
+  (defclass lib-op (link-op gather-operation non-propagating-operation) ()
     (:documentation "Compile the system and produce a linkable static library (.a/.lib)
 for all the linkable object files associated with the system. Compare with DLL-OP.
 
@@ -3984,6 +4186,8 @@ written in C or another language with a compiler producing linkable object files
 On CLASP, ECL, MKCL, these object files _also_ include the contents of Lisp files
 themselves. In any case, this operation will produce what you need to further build
 a static runtime for your system, or a dynamic library to load in an existing runtime."))
+  (defmethod bundle-type ((o lib-op)) :lib)
+  (defmethod gather-type ((o lib-op)) :object)
 
   ;; What works: on ECL, CLASP(?), MKCL, we link the many .o files from the system into the .so;
   ;; on other implementations, we combine (usually concatenate) the .fasl files into one.
@@ -4007,11 +4211,11 @@ faster and more resource efficient."))
   ;; we'd have to have the monolithic-op not inherit from the main op,
   ;; but instead inherit from a basic-FOO-op as with basic-compile-bundle-op above.
 
-  (defclass dll-op (link-op gather-operation non-propagating-operation)
-    ((gather-type :initform :object :allocation :class)
-     (bundle-type :initform :dll :allocation :class))
+  (defclass dll-op (link-op gather-operation non-propagating-operation) ()
     (:documentation "Compile the system and produce a dynamic loadable library (.so/.dll)
 for all the linkable object files associated with the system. Compare with LIB-OP."))
+  (defmethod bundle-type ((o dll-op)) :dll)
+  (defmethod gather-type ((o dll-op)) :object)
 
   (defclass deliver-asd-op (basic-compile-op selfward-operation)
     ((selfward-operation
@@ -4040,27 +4244,25 @@ for all the linkable object files associated with the system. Compare with LIB-O
     ((selfward-operation :initform 'monolithic-compile-bundle-op :allocation :class))
     (:documentation "Load a single fasl for the system and its dependencies."))
 
-  (defclass monolithic-lib-op (lib-op monolithic-bundle-op non-propagating-operation)
-    ((gather-type :initform :object :allocation :class))
+  (defclass monolithic-lib-op (lib-op monolithic-bundle-op non-propagating-operation) ()
     (:documentation "Compile the system and produce a linkable static library (.a/.lib)
 for all the linkable object files associated with the system or its dependencies. See LIB-OP."))
 
-  (defclass monolithic-dll-op (dll-op monolithic-bundle-op non-propagating-operation)
-    ((gather-type :initform :object :allocation :class))
+  (defclass monolithic-dll-op (dll-op monolithic-bundle-op non-propagating-operation) ()
     (:documentation "Compile the system and produce a dynamic loadable library (.so/.dll)
 for all the linkable object files associated with the system or its dependencies. See LIB-OP"))
 
   (defclass image-op (monolithic-bundle-op selfward-operation
                       #+(or clasp ecl mkcl) link-op #+(or clasp ecl mkcl) gather-operation)
-    ((bundle-type :initform :image :allocation :class)
-     (gather-operation :initform 'lib-op :allocation :class)
-     #+(or clasp ecl mkcl) (gather-type :initform :static-library :allocation :class)
-     (selfward-operation :initform '(#-(or clasp ecl mkcl) load-op) :allocation :class))
+    ((selfward-operation :initform '(#-(or clasp ecl mkcl) load-op) :allocation :class))
     (:documentation "create an image file from the system and its dependencies"))
+  (defmethod bundle-type ((o image-op)) :image)
+  #+(or clasp ecl mkcl) (defmethod gather-operation ((o image-op)) 'lib-op)
+  #+(or clasp ecl mkcl) (defmethod gather-type ((o image-op)) :static-library)
 
-  (defclass program-op (image-op)
-    ((bundle-type :initform :program :allocation :class))
+  (defclass program-op (image-op) ()
     (:documentation "create an executable file from the system and its dependencies"))
+  (defmethod bundle-type ((o program-op)) :program)
 
   ;; From the ASDF-internal bundle-type identifier, get a filesystem-usable pathname type.
   (defun bundle-pathname-type (bundle-type)
@@ -4073,7 +4275,8 @@ for all the linkable object files associated with the system or its dependencies
        (compile-file-type)) ; on image-based platforms, used as input and output
       ((eql :fasb) ;; the type of a fasl
        #-(or clasp ecl mkcl) (compile-file-type) ; on image-based platforms, used as input and output
-       #+(or clasp ecl mkcl) "fasb") ; on C-linking platforms, only used as output for system bundles
+       #+(or ecl mkcl) "fasb"
+       #+clasp "fasp") ; on C-linking platforms, only used as output for system bundles
       ((member :image)
        #+allegro "dxl"
        #+(and clisp os-windows) "exe"
@@ -4081,7 +4284,9 @@ for all the linkable object files associated with the system or its dependencies
       ;; NB: on CLASP and ECL these implementations, we better agree with
       ;; (compile-file-type :type bundle-type))
       ((eql :object) ;; the type of a linkable object file
-       (os-cond ((os-unix-p) "o")
+       (os-cond ((os-unix-p)
+                 #+clasp "fasp" ;(core:build-extension cmp:*default-object-type*)
+                 #-clasp "o")
                 ((os-windows-p) (if (featurep '(:or :mingw32 :mingw64)) "o" "obj"))))
       ((member :lib :static-library) ;; the type of a linkable library
        (os-cond ((os-unix-p) "a")
@@ -4104,7 +4309,7 @@ for all the linkable object files associated with the system or its dependencies
                                      "--all-systems"
                                      ;; These use a different type .fasb or .a instead of .fasl
                                      #-(or clasp ecl mkcl) "--system"))))
-                          (format nil "~A~@[~A~]" (component-name c) suffix))))
+                          (format nil "~A~@[~A~]" (coerce-filename (component-name c)) suffix))))
               (type (bundle-pathname-type bundle-type)))
           (values (list (subpathname (component-pathname c) name :type type))
                   (eq (class-of o) (coerce-class (component-build-operation c)
@@ -4275,14 +4480,26 @@ or of opaque libraries shipped along the source code."))
 ;;;
 (with-upgradability ()
   (defmethod output-files ((o deliver-asd-op) (s system))
-    (list (make-pathname :name (component-name s) :type "asd"
+    (list (make-pathname :name (coerce-filename (component-name s)) :type "asd"
                          :defaults (component-pathname s))))
 
+  ;; because of name collisions between the output files of different
+  ;; subclasses of DELIVER-ASD-OP, we cannot trust the file system to
+  ;; tell us if the output file is up-to-date, so just treat the
+  ;; operation as never being done.
+  (defmethod operation-done-p ((o deliver-asd-op) (s system))
+    (declare (ignorable o s))
+    nil)
+
+  (defun space-for-crlf (s)
+    (substitute-if #\space #'(lambda (x) (find x +crlf+)) s))
+
   (defmethod perform ((o deliver-asd-op) (s system))
+    "Write an ASDF system definition for loading S as a delivered system."
     (let* ((inputs (input-files o s))
            (fasl (first inputs))
            (library (second inputs))
-           (asd (first (output-files o s)))
+           (asd (output-file o s))
            (name (if (and fasl asd) (pathname-name asd) (return-from perform)))
            (version (component-version s))
            (dependencies
@@ -4294,7 +4511,7 @@ or of opaque libraries shipped along the source code."))
                                                        :keep-operation 'basic-load-op))
                  (while-collecting (x) ;; resolve the sideway-dependencies of s
                    (map-direct-dependencies
-                    'load-op s
+                    'prepare-op s
                     #'(lambda (o c)
                         (when (and (typep o 'load-op) (typep c 'system))
                           (x c)))))))
@@ -4308,12 +4525,16 @@ which is probably not what you want; you probably need to tweak your output tran
                              :if-does-not-exist :create)
         (format s ";;; Prebuilt~:[~; monolithic~] ASDF definition for system ~A~%"
                 (operation-monolithic-p o) name)
-        (format s ";;; Built for ~A ~A on a ~A/~A ~A~%"
-                (lisp-implementation-type)
-                (lisp-implementation-version)
-                (software-type)
-                (machine-type)
-                (software-version))
+        ;; this can cause bugs in cases where one of the functions returns a multi-line
+        ;; string
+        (let ((description-string (format nil ";;; Built for ~A ~A on a ~A/~A ~A"
+                    (lisp-implementation-type)
+                    (lisp-implementation-version)
+                    (software-type)
+                    (machine-type)
+                    (software-version))))
+          ;; ensure the whole thing is on one line
+          (println (space-for-crlf description-string) s))
         (let ((*package* (find-package :asdf-user)))
           (pprint `(defsystem ,name
                      :class prebuilt-system
@@ -4329,7 +4550,7 @@ which is probably not what you want; you probably need to tweak your output tran
     (let* ((input-files (input-files o c))
            (fasl-files (remove (compile-file-type) input-files :key #'pathname-type :test-not #'equalp))
            (non-fasl-files (remove (compile-file-type) input-files :key #'pathname-type :test #'equalp))
-           (output-files (output-files o c))
+           (output-files (output-files o c)) ; can't use OUTPUT-FILE fn because possibility it's NIL
            (output-file (first output-files)))
       (assert (eq (not input-files) (not output-files)))
       (when input-files
@@ -4378,15 +4599,24 @@ which is probably not what you want; you probably need to tweak your output tran
                      :static-library (resolve-symlinks* pathname))))
 
   (defun linkable-system (x)
-    (or (if-let (s (find-system x))
+    (or ;; If the system is available as source, use it.
+        (if-let (s (find-system x))
           (and (output-files 'lib-op s) s))
+        ;; If an ASDF upgrade is available from source, but not a UIOP upgrade to that,
+        ;; then use the asdf/driver system instead of
+        ;; the UIOP that was disabled by check-not-old-asdf-system.
+        (if-let (s (and (equal (coerce-name x) "uiop")
+                        (output-files 'lib-op "asdf")
+                        (find-system "asdf/driver")))
+          (and (output-files 'lib-op s) s))
+        ;; If there was no source upgrade, look for modules provided by the implementation.
         (if-let (p (system-module-pathname (coerce-name x)))
           (make-prebuilt-system x p))))
 
   (defmethod component-depends-on :around ((o image-op) (c system))
     (let* ((next (call-next-method))
            (deps (make-hash-table :test 'equal))
-           (linkable (loop* :for (do . dcs) :in next :collect
+           (linkable (loop :for (do . dcs) :in next :collect
                        (cons do
                              (loop :for dc :in dcs
                                :for dep = (and dc (resolve-dependency-spec c dc))
@@ -4447,8 +4677,8 @@ which is probably not what you want; you probably need to tweak your output tran
 ;;;
 (with-upgradability ()
   ;; Base classes for both regular and monolithic concatenate-source operations
-  (defclass basic-concatenate-source-op (bundle-op)
-    ((bundle-type :initform "lisp" :allocation :class)))
+  (defclass basic-concatenate-source-op (bundle-op) ())
+  (defmethod bundle-type ((o basic-concatenate-source-op)) "lisp")
   (defclass basic-load-concatenated-source-op (basic-load-op selfward-operation) ())
   (defclass basic-compile-concatenated-source-op (basic-compile-op selfward-operation) ())
   (defclass basic-load-compiled-concatenated-source-op (basic-load-op selfward-operation) ())
@@ -4493,10 +4723,11 @@ into a single file"))
           :append
           (when (typep c 'cl-source-file)
             (let ((e (component-encoding c)))
-              (unless (equal e encoding)
+              (unless (or (equal e encoding)
+                          (and (equal e :ASCII) (equal encoding :UTF-8)))
                 (let ((a (assoc e other-encodings)))
                   (if a (push (component-find-path c) (cdr a))
-                      (push (list a (component-find-path c)) other-encodings)))))
+                      (push (list e (component-find-path c)) other-encodings)))))
             (unless (equal around-compile (around-compile-hook c))
               (push (component-find-path c) other-around-compile))
             (input-files (make-operation 'compile-op) c)) :into inputs
@@ -4539,7 +4770,9 @@ into a single file"))
    #:package-inferred-system #:sysdef-package-inferred-system-search
    #:package-system ;; backward compatibility only. To be removed.
    #:register-system-packages
-   #:*defpackage-forms* #:*package-inferred-systems* #:package-inferred-system-missing-package-error))
+   #:*defpackage-forms* #:*package-inferred-systems*
+   #:package-inferred-system-missing-package-error
+   #:package-inferred-system-unknown-defpackage-option-error))
 (in-package :asdf/package-inferred-system)
 
 (with-upgradability ()
@@ -4590,20 +4823,73 @@ every such file"))
                                      trying to define package-inferred-system ~A from file ~A~>")
                        (error-system c) (error-pathname c)))))
 
-  (defun package-dependencies (defpackage-form)
+  (define-condition package-inferred-system-unknown-defpackage-option-error (system-definition-error)
+    ((system :initarg :system :reader error-system)
+     (pathname :initarg :pathname :reader error-pathname)
+     (option :initarg :clause-head :reader error-option)
+     (arguments :initarg :clause-rest :reader error-arguments))
+    (:report (lambda (c s)
+               (format s (compatfmt "~@<Don't know how to infer package dependencies ~
+                                     for non-standard option ~S ~
+                                     while trying to define package-inferred-system ~A ~
+                                     from file ~A~>")
+                       (cons (error-option c)
+                             (error-arguments c))
+                       (error-system c)
+                       (error-pathname c)))))
+
+  (defun package-dependencies (defpackage-form &optional system pathname)
     "Return a list of packages depended on by the package
 defined in DEFPACKAGE-FORM.  A package is depended upon if
-the DEFPACKAGE-FORM uses it or imports a symbol from it."
+the DEFPACKAGE-FORM uses it or imports a symbol from it.
+
+SYSTEM should be the name of the system being defined, and
+PATHNAME should be the file which contains the DEFPACKAGE-FORM.
+These will be used to report errors when encountering an unknown defpackage argument."
     (assert (defpackage-form-p defpackage-form))
     (remove-duplicates
      (while-collecting (dep)
-       (loop* :for (option . arguments) :in (cddr defpackage-form) :do
-              (ecase option
-                ((:use :mix :reexport :use-reexport :mix-reexport)
-                 (dolist (p arguments) (dep (string p))))
-                ((:import-from :shadowing-import-from)
-                 (dep (string (first arguments))))
-                ((:nicknames :documentation :shadow :export :intern :unintern :recycle)))))
+       (loop :for (option . arguments) :in (cddr defpackage-form) :do
+         (case option
+           ((:use :mix :reexport :use-reexport :mix-reexport)
+            (dolist (p arguments) (dep (string p))))
+           ((:import-from :shadowing-import-from)
+            (dep (string (first arguments))))
+           #+package-local-nicknames
+           ((:local-nicknames)
+            (loop :for (nil actual-package-name) :in arguments :do
+              (dep (string actual-package-name))))
+           ((:nicknames :documentation :shadow :export :intern :unintern :recycle))
+
+           ;;; SBCL extensions to defpackage relating to package locks.
+           ;; See https://www.sbcl.org/manual/#Implementation-Packages .
+           #+(or sbcl ecl) ;; MKCL too?
+           ((:lock)
+            ;; A :LOCK clause introduces no dependencies.
+            nil)
+           #+sbcl
+           ((:implement)
+            ;; A :IMPLEMENT clause introduces dependencies on the listed packages,
+            ;; as it's not meaningful to :IMPLEMENT a package which hasn't yet been defined.
+            (dolist (p arguments) (dep (string p))))
+
+           #+lispworks
+           ((:add-use-defaults) nil)
+
+           #+allegro
+           ((:implementation-packages :alternate-name :flat) nil)
+
+           ;; When encountering an unknown OPTION, signal a continuable error.
+           ;; We cannot in general know whether the unknown clause should introduce any dependencies,
+           ;; so we cannot do anything other than signal an error here,
+           ;; but users may know that certain extensions do not introduce dependencies,
+           ;; and may wish to manually continue building.
+           (otherwise (cerror "Treat the unknown option as introducing no package dependencies"
+                              'package-inferred-system-unknown-defpackage-option-error
+                              :system system
+                              :pathname pathname
+                              :option option
+                              :arguments arguments)))))
      :from-end t :test 'equal))
 
   (defun package-designator-name (package)
@@ -4649,28 +4935,37 @@ otherwise return a default system name computed from PACKAGE-NAME."
                             (equal (slot-value child 'relative-pathname) subpath))))))))
 
   ;; sysdef search function to push into *system-definition-search-functions*
-  (defun sysdef-package-inferred-system-search (system)
-    (let ((primary (primary-system-name system)))
-      (unless (equal primary system)
+  (defun sysdef-package-inferred-system-search (system-name)
+  "Takes SYSTEM-NAME and returns an initialized SYSTEM object, or NIL.  Made to be added to
+*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*."
+    (let ((primary (primary-system-name system-name)))
+      ;; this function ONLY does something if the primary system name is NOT the same as
+      ;; SYSTEM-NAME.  It is used to find the systems with names that are relative to
+      ;; the primary system's name, and that are not explicitly specified in the system
+      ;; definition
+      (unless (equal primary system-name)
         (let ((top (find-system primary nil)))
           (when (typep top 'package-inferred-system)
             (if-let (dir (component-pathname top))
-              (let* ((sub (subseq system (1+ (length primary))))
-                     (f (probe-file* (subpathname dir sub :type "lisp")
+              (let* ((sub (subseq system-name (1+ (length primary))))
+                     (component-type (class-for-type top :file))
+                     (file-type (file-type (make-instance component-type)))
+                     (f (probe-file* (subpathname dir sub :type file-type)
                                      :truename *resolve-symlinks*)))
                 (when (file-pathname-p f)
-                  (let ((dependencies (package-inferred-system-file-dependencies f system))
-                        (previous (registered-system system))
+                  (let ((dependencies (package-inferred-system-file-dependencies f system-name))
+                        (previous (registered-system system-name))
                         (around-compile (around-compile-hook top)))
-                    (if (same-package-inferred-system-p previous system dir sub around-compile dependencies)
+                    (if (same-package-inferred-system-p previous system-name dir sub around-compile dependencies)
                         previous
-                        (eval `(defsystem ,system
+                        (eval `(defsystem ,system-name
                                  :class package-inferred-system
-                                 :source-file nil
+                                 :default-component-class ,component-type
+                                 :source-file ,(system-source-file top)
                                  :pathname ,dir
                                  :depends-on ,dependencies
                                  :around-compile ,around-compile
-                                 :components ((cl-source-file "lisp" :pathname ,sub)))))))))))))))
+                                 :components ((,component-type file-type :pathname ,sub)))))))))))))))
 
 (with-upgradability ()
   (pushnew 'sysdef-package-inferred-system-search *system-definition-search-functions*)
@@ -4873,7 +5168,7 @@ and the order is by decreasing length of namestring of the source pathname.")
     (when inherit
       (process-output-translations (first inherit) :collect collect :inherit (rest inherit))))
 
-  (defun* (process-output-translations-directive) (directive &key inherit collect)
+  (defun process-output-translations-directive (directive &key inherit collect)
     (if (atom directive)
         (ecase directive
           ((:enable-user-cache)
@@ -4966,25 +5261,25 @@ effectively disabling the output translation facility."
 
 
   ;; Top-level entry-point to _use_ output-translations
-  (defun* (apply-output-translations) (path)
+  (defun apply-output-translations (path)
     (etypecase path
       (logical-pathname
        path)
       ((or pathname string)
        (ensure-output-translations)
-       (loop* :with p = (resolve-symlinks* path)
-              :for (source destination) :in (car *output-translations*)
-              :for root = (when (or (eq source t)
-                                    (and (pathnamep source)
-                                         (not (absolute-pathname-p source))))
-                            (pathname-root p))
-              :for absolute-source = (cond
-                                       ((eq source t) (wilden root))
-                                       (root (merge-pathnames* source root))
-                                       (t source))
-              :when (or (eq source t) (pathname-match-p p absolute-source))
-              :return (translate-pathname* p absolute-source destination root source)
-              :finally (return p)))))
+       (loop :with p = (resolve-symlinks* path)
+             :for (source destination) :in (car *output-translations*)
+             :for root = (when (or (eq source t)
+                                   (and (pathnamep source)
+                                        (not (absolute-pathname-p source))))
+                           (pathname-root p))
+             :for absolute-source = (cond
+                                      ((eq source t) (wilden root))
+                                      (root (merge-pathnames* source root))
+                                      (t source))
+             :when (or (eq source t) (pathname-match-p p absolute-source))
+               :return (translate-pathname* p absolute-source destination root source)
+             :finally (return p)))))
 
 
   ;; Hook into uiop's output-translation mechanism
@@ -5112,7 +5407,7 @@ after having found a .asd file? True by default.")
                    (recurse-beyond-asds *recurse-beyond-asds*) ignore-cache)
     (let ((visited (make-hash-table :test 'equalp)))
       (flet ((collectp (dir)
-               (unless (and (not ignore-cache) (process-source-registry-cache directory collect))
+               (unless (and (not ignore-cache) (process-source-registry-cache dir collect))
                  (let ((asds (collect-asds-in-directory dir collect)))
                    (or recurse-beyond-asds (not asds)))))
              (recursep (x)                    ; x will be a directory pathname
@@ -5255,11 +5550,11 @@ after having found a .asd file? True by default.")
 
   (defgeneric process-source-registry (spec &key inherit register))
 
-  (defun* (inherit-source-registry) (inherit &key register)
+  (defun inherit-source-registry (inherit &key register)
     (when inherit
       (process-source-registry (first inherit) :register register :inherit (rest inherit))))
 
-  (defun* (process-source-registry-directive) (directive &key inherit register)
+  (defun process-source-registry-directive (directive &key inherit register)
     (destructuring-bind (kw &rest rest) (if (consp directive) directive (list directive))
       (ecase kw
         ((:include)
@@ -5710,7 +6005,8 @@ system or its dependencies if it has already been loaded."
   ;; Note: (1) we are NOT automatically reexporting everything from previous packages.
   ;; (2) we only reexport UIOP functionality when backward-compatibility requires it.
   (:export
-   #:defsystem #:find-system #:load-asd #:locate-system #:coerce-name #:primary-system-name
+   #:defsystem #:find-system #:load-asd #:locate-system #:coerce-name
+   #:primary-system-name #:primary-system-p
    #:oos #:operate #:make-plan #:perform-plan #:sequential-plan
    #:system-definition-pathname
    #:search-for-system-definition #:find-component #:component-find-path
@@ -5770,6 +6066,7 @@ system or its dependencies if it has already been loaded."
    #:system-maintainer
    #:system-license
    #:system-licence
+   #:system-version
    #:system-source-file
    #:system-source-directory
    #:system-relative-pathname
@@ -5872,8 +6169,8 @@ system or its dependencies if it has already been loaded."
         :asdf/system ;; used by ECL
         :asdf/upgrade :asdf/system-registry :asdf/operate :asdf/bundle)
   ;; Happily, all those implementations all have the same module-provider hook interface.
-  #+(or abcl clasp cmucl clozure ecl mkcl sbcl)
-  (:import-from #+abcl :sys #+(or clasp cmucl ecl) :ext #+clozure :ccl #+mkcl :mk-ext #+sbcl sb-ext
+  #+(or abcl clasp cmucl clozure ecl mezzano mkcl sbcl)
+  (:import-from #+abcl :sys #+(or clasp cmucl ecl) :ext #+clozure :ccl #+mkcl :mk-ext #+sbcl sb-ext #+mezzano :sys.int
                 #:*module-provider-functions*
                 #+ecl #:*load-hooks*)
   #+(or clasp mkcl) (:import-from :si #:*load-hooks*))
@@ -5882,14 +6179,29 @@ system or its dependencies if it has already been loaded."
 
 ;;;; Register ASDF itself and all its subsystems as preloaded.
 (with-upgradability ()
-  (dolist (s '("asdf" "uiop" "asdf-package-system"))
+  (dolist (s '("asdf" "asdf-package-system"))
     ;; Don't bother with these system names, no one relies on them anymore:
     ;; "asdf-utils" "asdf-bundle" "asdf-driver" "asdf-defsystem"
-    (register-preloaded-system s :version *asdf-version*)))
+    (register-preloaded-system s :version *asdf-version*))
+  (register-preloaded-system "uiop" :version *uiop-version*))
 
+;;;; Ensure that the version slot on the registered preloaded systems are
+;;;; correct, by CLEARing the system. However, we do not CLEAR-SYSTEM
+;;;; unconditionally. This is because it's possible the user has upgraded the
+;;;; systems using ASDF itself, meaning that the registered systems have real
+;;;; data from the file system that we want to preserve instead of blasting
+;;;; away and replacing with a blank preloaded system.
+(with-upgradability ()
+  (unless (equal (system-version (registered-system "asdf")) (asdf-version))
+    (clear-system "asdf"))
+  ;; 3.1.2 is the last version where asdf-package-system was a separate system.
+  (when (version< "3.1.2" (system-version (registered-system "asdf-package-system")))
+    (clear-system "asdf-package-system"))
+  (unless (equal (system-version (registered-system "uiop")) *uiop-version*)
+    (clear-system "uiop")))
 
 ;;;; Hook ASDF into the implementation's REQUIRE and other entry points.
-#+(or abcl clasp clisp clozure cmucl ecl mkcl sbcl)
+#+(or abcl clasp clisp clozure cmucl ecl mezzano mkcl sbcl)
 (with-upgradability ()
   ;; Hook into CL:REQUIRE.
   #-clisp (pushnew 'module-provide-asdf *module-provider-functions*)
@@ -5931,6 +6243,13 @@ system or its dependencies if it has already been loaded."
   #+allegro ;; restore *w-o-n-r-c* setting as saved in uiop/common-lisp
   (when (boundp 'excl:*warn-on-nested-reader-conditionals*)
     (setf excl:*warn-on-nested-reader-conditionals* uiop/common-lisp::*acl-warn-save*))
+
+  #+(and allegro allegro-v10.1) ;; check for patch needed for upgradeability
+  (unless (assoc "ma040" (cdr (assoc :lisp sys:*patches*)) :test 'equal)
+    (warn 'asdf-install-warning
+          :format-control "On Allegro Common Lisp 10.1, patch pma040 is ~
+needed for correct ASDF upgrading. Please update your Allegro image ~
+using (SYS:UPDATE-ALLEGRO)."))
 
   ;; Advertise the features we provide.
   (dolist (f '(:asdf :asdf2 :asdf3 :asdf3.1 :asdf3.2 :asdf3.3)) (pushnew f *features*))

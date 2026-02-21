@@ -58,5 +58,5 @@ echo "New ASDF version is ${VERSION}"
 ) > asdf.lisp
 
 # Updated documentation
-cp "${UPSTREAM_DIR}/README.md" .
-cp "${UPSTREAM_DIR}/doc/asdf.texinfo" .
+# cp "${UPSTREAM_DIR}/README.md" .
+# cp "${UPSTREAM_DIR}/doc/asdf.texinfo" .

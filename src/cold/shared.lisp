@@ -691,9 +691,10 @@
 
     ;; nice friendly traditional return value
     (pathname obj)))
+
 (compile 'compile-stem)
 
-(defparameter *host-quirks* '(:host-quirks-sbcl))) ; not so much a "quirk", but consistent anyway
+(defparameter *host-quirks* '(:host-quirks-sbcl)) ; not so much a "quirk", but consistent anyway
 
 ;;; Execute function FN in an environment appropriate for compiling the
 ;;; cross-compiler's source code in the cross-compilation host.

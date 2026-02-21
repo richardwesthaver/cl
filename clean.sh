@@ -19,10 +19,6 @@ else
     done
 fi
 
-# Ensure that we know GNUMAKE.
-. ./find-gnumake.sh
-find_gnumake
-
 # Ask some other directories to clean themselves up.
 original_pwd=`pwd`
 for d in tools-for-build; do
@@ -32,7 +28,7 @@ for d in tools-for-build; do
     # this script is just the operations done by these make's, which
     # is misleading when this script does lots of other operations too.
     # -- WHN
-    $GNUMAKE -I ../src/runtime -s clean
+    make -I ../src/runtime -s clean
     cd "$original_pwd" > /dev/null
 done
 ( cd ./doc && sh ./clean.sh )

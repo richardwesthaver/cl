@@ -1,0 +1,16 @@
+;;; skelfile --- Cursed Lisp -*- mode: skel; -*-
+:name "cl"
+:description "Cursed Lisp"
+:version "0.1.0-alpha"
+:tags (lisp sbcl)
+:vc (:hg "https://vc.compiler.company/cl"
+     (cb (:git "ssh://git@codeberg.org/c-c/cl"))
+     (gh (:git "ssh://git@github.com/richardwesthaver/cl")))
+:rules
+((default (build))
+ (version () (with-output-to-file (f "version.lisp-expr" :if-exists :supersede) 
+              (write (version *skel-project*) :stream f)))
+ (build () (run-program "./make.sh" '("--dynamic-space-size=8Gb" "--fancy") :output t))
+ (all-cores () (run-program *shell* '("build-all-cores.sh") :output t))
+ (install () (with-sudo "./install.sh")))
+
