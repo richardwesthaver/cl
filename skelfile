@@ -3,6 +3,11 @@
 :description "Cursed Lisp"
 :version "0.1.0-alpha"
 :tags (lisp sbcl)
+:bind
+((emacs-locals
+  :dir-locals
+  (nil . ((indent-tabs-mode . nil)))
+  (makefile-mode . ((indent-tabs-mode . t)))))
 :vc (:hg "https://vc.compiler.company/cl"
      (cb (:git "ssh://git@codeberg.org/c-c/cl"))
      (gh (:git "ssh://git@github.com/richardwesthaver/cl")))

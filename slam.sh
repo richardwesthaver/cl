@@ -112,9 +112,6 @@ export SBCL_XC_HOST
 # (We don't do make-host-1.sh at all. Hopefully nothing relevant has
 # changed.)
 
-. ./find-gnumake.sh
-find_gnumake
-
 make -C src/runtime all
 
 # Instead of doing the full make-host-2.sh, we (1) use after-xc.core
