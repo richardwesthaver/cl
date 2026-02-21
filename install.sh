@@ -54,13 +54,8 @@ ensure_dirs ()
     done;
 }
 
-if [ "$OSTYPE" = "cygwin" -o "$OSTYPE" = "msys" ] ; then
-    RUNTIME=sbcl.exe
-    OLD_RUNTIME=sbcl.exe.old
-else
-    RUNTIME=cl
-    OLD_RUNTIME=cl.old
-fi
+RUNTIME=cl
+OLD_RUNTIME=cl.old
 
 # Before doing anything else, make sure we have an SBCL to install
 #if [ -f src/runtime/$RUNTIME ]; then
@@ -112,7 +107,7 @@ test -f "$BUILD_ROOT$SBCL_HOME"/cl.core && \
     mv "$BUILD_ROOT$SBCL_HOME"/cl.core "$BUILD_ROOT$SBCL_HOME"/cl.core.old
 
 # cp src/runtime/$RUNTIME "$BUILD_ROOT$INSTALL_ROOT"/bin/
-cp src/runtime/sbcl "$BUILD_ROOT$INSTALL_ROOT"/bin/
+cp src/runtime/sbcl "$BUILD_ROOT$INSTALL_ROOT"/bin/cl
 cp output/sbcl.core "$BUILD_ROOT$SBCL_HOME"/cl.core
 test -f src/runtime/libsbcl.so && \
     cp src/runtime/libsbcl.so "$BUILD_ROOT$INSTALL_ROOT"/lib/
