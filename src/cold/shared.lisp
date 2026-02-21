@@ -77,30 +77,6 @@
   (defun getpid () (funcall (intern "UNIX-GETPID" "HOST-SB-UNIX")))
   (defun posix-wait () (funcall (intern "WAIT" "HOST-SB-POSIX"))))
 
-#+clisp
-(progn
-  (setq *make-host-parallelism*
-        (let ((envvar (ext:getenv "SBCL_MAKE_PARALLEL")))
-          (when envvar
-            (parse-make-host-parallelism envvar))))
-  ;; FFI symbols won't exist if libffcall could not be found at build time.
-  (defmacro with-subprocesses (&rest rest)
-    (cons (or (find-symbol "WITH-SUBPROCESSES" "POSIX") 'progn) rest))
-  ;; clisp doesn't expose fork() and consequently doesn't behave
-  ;; correctly when (EXT:EXIT) is called in a forked child process.
-  (defun exit-process (arg) (ext:exit arg))
-  #+#.(cl:if (cl:find-package "FFI") '(and) '(or))
-  (progn (ffi:def-call-out exit-subprocess (:name "exit") (:arguments (arg ffi:int))
-                  (:library :default) (:language :stdc))
-         (ffi:def-call-out posix-fork (:name "fork") (:return-type ffi:int)
-                  (:library :default) (:language :stdc)))
-  (defun getpid () (posix:process-id))
-  (defun posix-wait ()
-    (multiple-value-bind (pid status code) (posix:wait)
-      (if (eql status :exited)
-          (values pid code)
-          (values pid (- code))))))
-
 ;;; If TRUE, then COMPILE-FILE is being invoked only to process
 ;;; :COMPILE-TOPLEVEL forms, not to produce an output file.
 ;;; This is part of the implementation of parallelized make-host-2.
@@ -140,7 +116,7 @@
 ;;; when it reads #- and #+ syntax)
 (declaim (type function *in-target-compilation-mode-fn*))
 (defvar *in-target-compilation-mode-fn*)
-
+
 ;;;; some tools
 
 ;;; Take the file named X and make it into a file named Y. Sorta like
@@ -225,12 +201,6 @@
          (when (member ext (package-use-list "CL-USER"))
            (unuse-package ext "CL-USER")))
 
-#+cmu
-(progn
-  ;; too much noise, can't see the actual warnings
-  (setq cl:*compile-print* nil
-        ext:*gc-verbose* nil))
-
 #+sbcl
 (progn
   (setq cl:*compile-print* nil)
@@ -240,7 +210,7 @@
             (satisfies unable-to-optimize-note-p)
             (satisfies optional+key-style-warning-p)
             sb-ext:code-deletion-note)))
-
+
 ;;;; special read-macros for building the cold system (and even for
 ;;;; building some of our tools for building the cold system)
 
@@ -425,7 +395,7 @@
   (when failed-test-descriptions
     (error "Feature compatibility check failed, ~S"
            (reverse failed-test-descriptions))))
-
+
 ;;;; cold-init-related PACKAGE and SYMBOL tools
 
 ;;; Once we're done with possibly ANSIfying the COMMON-LISP package,
@@ -438,7 +408,7 @@
 (when (member :sb-show sb-xc:*features*)
   (load (find-bootstrap-file "^snapshot"))
   (setq *cl-snapshot* (take-snapshot "COMMON-LISP")))
-
+
 ;;;; master list of source files and their properties
 
 ;;; flags which can be used to describe properties of source files
@@ -612,30 +582,7 @@
                         (if *compile-for-effect-only* "-scratch" "-tmp")))
          (compilation-fn
                        (ecase mode
-                         (:host-compile
-                          #+abcl ; ABCL complains about its own deficiency and then returns T
-                          ;; for warnings and failure. "Unable to compile function" is not our problem,
-                          ;; but I tried everything to muffle it, and nothing worked; so if it occurs,
-                          ;; treat the file as a success despite any actual problems that may exist.
-                          (lambda (&rest args)
-                            (let (compiler-bug)
-                              ;; Even though COMPILER-UNSUPPORTED-FEATURE-ERROR is a condition class,
-                              ;; HANDLER-BIND seems unable to match it. What the hell? Bugs all the way down.
-                              (handler-bind ((condition
-                                              (lambda (c)
-                                                (when (search "Using interpreted form" (princ-to-string c))
-                                                  (setq compiler-bug t)))))
-                                (multiple-value-bind (fasl warn err) (apply #'compile-file args)
-                                  (if compiler-bug (values fasl nil nil) (values fasl warn err))))))
-                          #+ccl ; CCL doesn't like NOTINLINE on unknown functions
-                          (lambda (&rest args)
-                            (handler-bind ((ccl:compiler-warning
-                                             (lambda (c)
-                                               (when (eq (ccl::compiler-warning-warning-type c)
-                                                         :unknown-declaration-function)
-                                                 (muffle-warning c)))))
-                              (apply #'compile-file args)))
-                          #-(or abcl ccl) #'compile-file)
+                         (:host-compile #'compile-file)
                          (:target-compile
                           (intern (if (find :assem flags) "ASSEMBLE-FILE" "COMPILE-FILE")
                                   "SB-C"))))
@@ -698,7 +645,6 @@
                                         ;; completely broken from the
                                         ;; beginning of SBCL history
                                         ;; until version 2.0.2.
-                                        #+sbcl
                                         (or (eq mode :target-compile)
                                             (and (find-symbol "SPLIT-VERSION-STRING" "HOST-SB-C")
                                                  (funcall (find-symbol "VERSION>=" "HOST-SB-C")
@@ -747,11 +693,7 @@
     (pathname obj)))
 (compile 'compile-stem)
 
-(defparameter *host-quirks*
-  (or #+cmu  '(:host-quirks-cmu)
-      #+ecl  '(:host-quirks-ecl)
-      #+ccl  '(:host-quirks-ccl)
-      #+sbcl '(:host-quirks-sbcl))) ; not so much a "quirk", but consistent anyway
+(defparameter *host-quirks* '(:host-quirks-sbcl))) ; not so much a "quirk", but consistent anyway
 
 ;;; Execute function FN in an environment appropriate for compiling the
 ;;; cross-compiler's source code in the cross-compilation host.
@@ -899,10 +841,8 @@
 
 (defun perfect-hash-generator-program ()
   ;; The path depends on what the host is, not what the target is
-  #+unix "tools-for-build/perfecthash"
-  #+win32 "tools-for-build/perfecthash.exe")
+  #+unix "tools-for-build/perfecthash")
 
-#+(or sbcl ecl ccl clisp cmucl)
 (when (probe-file (perfect-hash-generator-program))
   (pushnew :use-host-hash-generator cl:*features*)
   (setq *perfect-hash-generator-mode* :RECORD))
@@ -967,59 +907,7 @@
              (sb-ext:process-close process)
              (unless (zerop (sb-ext:process-exit-code process))
                (error "Error running perfecthash: exit code ~D"
-                      (sb-ext:process-exit-code process))))
-           #+cmu
-           (launch ()
-             (let ((process (ext:run-program (perfect-hash-generator-program)
-                                             '()
-                                             :input :stream :output :stream
-                                             :wait nil)))
-               (values (ext:process-output process)
-                       (ext:process-input process)
-                       process)))
-           #+cmu
-           (wait (process)
-             (ext:process-wait process)
-             (ext:process-close process)
-             (unless (zerop (ext:process-exit-code process))
-               (error "Error running perfecthash: exit code ~D"
-                      (ext:process-exit-code process))))
-           #+clisp
-           (launch ()
-             (multiple-value-bind (io-stream input-stream output-stream)
-                 (ext:run-program (perfect-hash-generator-program)
-                                  :input :stream :output :stream)
-               (declare (ignore io-stream))
-               (values input-stream output-stream nil)))
-           #+(or clisp ccl)
-           (wait (process)
-             process)
-           #+ecl
-           (launch ()
-             (let ((process
-                     (nth-value 2 (ext:run-program (perfect-hash-generator-program)
-                                                   ()
-                                                   :input :stream :output :stream
-                                                   :wait nil))))
-               (values (ext:external-process-output process)
-                       (ext:external-process-input process)
-                       process)))
-           #+ecl
-           (wait (process)
-             (multiple-value-bind (status code) (ext:external-process-wait process t)
-               (unless (and (eq status :exited)
-                            (zerop code))
-                 (error "Error running perfecthash: exit code ~D" code))))
-           #+ccl
-           (launch ()
-             (let ((process
-                     (ccl:run-program (perfect-hash-generator-program)
-                                      ()
-                                      :wait nil
-                                      :input :stream :output :stream)))
-               (values (ccl:external-process-output-stream process)
-                       (ccl:external-process-input-stream process)
-                       process))))
+                      (sb-ext:process-exit-code process)))))
       (multiple-value-bind (input-stream output-stream process) (launch)
         (format output-stream "~{~X~%~}" (coerce input 'list))
         (close output-stream)
@@ -1028,7 +916,6 @@
               do (write-char char result))
         (close input-stream)
         (wait process)))))
-
 
 (defun emulate-generate-perfect-hash-sexpr (array identifier digest)
   (declare #-use-host-hash-generator (ignore identifier))
