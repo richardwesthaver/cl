@@ -1,9 +1,0 @@
-EXPORTS
-	log1p
-        log2
-        trunc
-        truncf
-        ceilf
-        ceil
-        floor
-        floorf

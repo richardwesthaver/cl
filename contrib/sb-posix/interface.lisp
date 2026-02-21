@@ -118,26 +118,18 @@
 
 
 ;;; filesystem access
-(defmacro define-call* (name &rest arguments)
-  #-win32 `(define-call ,name ,@arguments)
-  #+win32 `(define-call ,(if (consp name)
-                             `(,(concatenate 'string "_" (car name))
-                                ,@(cdr name))
-                             (concatenate 'string "_" name))
-               ,@arguments))
-
-(define-call* "access" int minusp (pathname filename) (mode int))
-(define-call* "chdir" int minusp (pathname filename))
-(define-call* "chmod" int minusp (pathname filename) (mode mode-t))
-(define-call* "close" int minusp (fd file-descriptor))
-(define-call* "creat" int minusp (pathname filename) (mode mode-t))
-(define-call* "dup" int minusp (oldfd file-descriptor))
-(define-call* "dup2" int minusp (oldfd file-descriptor)
+(define-call "access" int minusp (pathname filename) (mode int))
+(define-call "chdir" int minusp (pathname filename))
+(define-call "chmod" int minusp (pathname filename) (mode mode-t))
+(define-call "close" int minusp (fd file-descriptor))
+(define-call "creat" int minusp (pathname filename) (mode mode-t))
+(define-call "dup" int minusp (oldfd file-descriptor))
+(define-call "dup2" int minusp (oldfd file-descriptor)
               (newfd file-descriptor))
-(define-call* ("lseek" :options :largefile)
+(define-call ("lseek" :options :largefile)
     off-t minusp (fd file-descriptor) (offset off-t)
     (whence int))
-(define-call* "mkdir" int minusp (pathname filename) (mode mode-t))
+(define-call "mkdir" int minusp (pathname filename) (mode mode-t))
 (macrolet ((def (x)
                `(progn
                  (define-call-internally open-with-mode ,x int minusp
@@ -149,15 +141,15 @@
                    (if mode-supplied
                        (open-with-mode pathname flags mode)
                        (open-without-mode pathname flags))))))
-    (def #-win32 "open" #+win32 "_open"))
+    (def "open"))
 (define-call "rename" int minusp (oldpath filename) (newpath filename))
-(define-call* "rmdir" int minusp (pathname filename))
-(define-call* "unlink" int minusp (pathname filename))
+(define-call "rmdir" int minusp (pathname filename))
+(define-call "unlink" int minusp (pathname filename))
 (define-call #-netbsd "opendir" #+netbsd "_opendir"
     (* t) null-alien (pathname filename))
-(define-call* "read" ssize-t minusp
+(define-call "read" ssize-t minusp
     (fd file-descriptor) (buf (* t)) (count size-t))
-(define-call* "write" ssize-t minusp
+(define-call "write" ssize-t minusp
   (fd file-descriptor) (buf (* t)) (count size-t))
 
 (declaim (inline null-alien-and-errno-plusp))
@@ -182,10 +174,9 @@
   (dir (* t)))
 (define-call "closedir" int minusp (dir (* t)))
 ;; need to do this here because we can't do it in the DEFPACKAGE
-(define-call* "umask" mode-t never-fails (mode mode-t))
-(define-call* "getpid" pid-t never-fails)
+(define-call "umask" mode-t never-fails (mode mode-t))
+(define-call "getpid" pid-t never-fails)
 
-#-win32
 (progn
   (define-call "chown" int minusp (pathname filename)
                (owner uid-t) (group gid-t))
@@ -245,10 +236,7 @@
                       (export ',lisp-name)))))
     ;; FIXME: The man page for it says "Never use mktemp()"
     (def-mk*temp mktemp "mktemp" (* char) null-alien nil nil)
-    ;; FIXME: Windows does have _mktemp, which has a slightly different
-    ;; interface
     (def-mk*temp mkstemp "mkstemp" int minusp nil t)
-    ;; FIXME: What about Windows?
     (def-mk*temp mkdtemp "mkdtemp" (* char) null-alien t nil))
   (define-call-internally ioctl-without-arg "ioctl" int minusp
                           (fd file-descriptor) (cmd unsigned-long))
@@ -426,7 +414,6 @@ not supported."
                       (when ,buffer
                         (free-alien ,buffer)))))))))
 
-#-win32
 (progn
   (export 'readlink :sb-posix)
   (defun readlink (pathspec)
@@ -451,8 +438,8 @@ not supported."
     #-(or android linux openbsd freebsd netbsd sunos darwin dragonfly haiku)
     (flet ((%getcwd (buffer size)
              (alien-funcall
-              (extern-alien #-win32 "getcwd"
-                            #+win32 "_getcwd" (function c-string (* t) int))
+              (extern-alien "getcwd"
+                            (function c-string (* t) int))
               buffer size)))
      (sb-int:possibly-base-stringize
       (with-growing-c-string (buf size)
@@ -462,7 +449,6 @@ not supported."
                 ((/= (get-errno) sb-posix:erange)
                  (syscall-error 'getcwd)))))))))
 
-#-win32
 (progn
  (export 'wait :sb-posix)
  (declaim (inline wait))
@@ -475,7 +461,6 @@ not supported."
        (when statusptr (setf (aref statusptr 0) status))
        (values pid status)))))
 
-#-win32
 (progn
  (export 'waitpid :sb-posix)
  (declaim (inline waitpid))
@@ -499,7 +484,6 @@ not supported."
  (define-call "wifcontinued" boolean never-fails (status int)))
 
 ;;; mmap, msync
-#-win32
 (progn
  (define-call ("mmap" :options :largefile) sb-sys:system-area-pointer
    (lambda (res)
@@ -512,26 +496,6 @@ not supported."
 
  (define-call "msync" int minusp
    (addr sb-sys:system-area-pointer) (length unsigned) (flags int)))
-#+win32
-(progn
-  ;; No attempt is made to offer a full mmap-like interface on Windows.
-  ;; It would be possible to do so (and has been done by AK on his
-  ;; branch), but the use case is unclear to me.  However, the following
-  ;; definitions are needed to keep existing code in sb-simple-streams
-  ;; running. --DFL
-  (defconstant PROT-READ #x02)
-  (defconstant PROT-WRITE #x04)
-  (defconstant PROT-EXEC #x10)
-  (defconstant PROT-NONE 0)
-  (defconstant MAP-SHARED 0)
-  (defconstant MAP-PRIVATE 1)
-  (defconstant MS-ASYNC nil)
-  (defconstant MS-SYNC nil)
-  (export                            ;export on the fly like define-call
-   (defun msync (address length flags)
-     (declare (ignore flags))
-     (when (zerop (sb-win32:flush-view-of-file address length))
-       (sb-win32::win32-error "FlushViewOfFile")))))
 
 ;;; mlockall, munlockall
 (define-call "mlockall" int minusp (flags int))
@@ -544,7 +508,7 @@ not supported."
 ;;; passwd database
 ;; The docstrings are copied from the descriptions in SUSv3,
 ;; where present.
-#-(or android win32)
+#-android
 (define-protocol-class passwd alien-passwd ()
   ((name :initarg :name :accessor passwd-name
          :documentation "User's login name.")
@@ -566,7 +530,7 @@ not supported."
    "Instances of this class represent entries in the system's user database."))
 
 ;;; group database
-#-(or android win32)
+#-android
 (define-protocol-class group alien-group ()
   ((name :initarg :name :accessor group-name
          :documentation "The name of the group.")
@@ -589,7 +553,7 @@ not supported."
 ;; getpw* or getgr* calls if they want to do things safely. (Note that
 ;; on #-sb-thread, this still protects against reentrancy, but doesn't
 ;; grab a lock.)
-#-(or android win32)
+#-android
 (macrolet ((define-database-protection-form (dbname)
   (let* ((macro-name (intern (format nil "WITH-~A-DATABASE" dbname) :sb-posix))
          (lock-var (intern (format nil "*~A-DATABASE-LOCK*" dbname) :sb-posix))
@@ -622,7 +586,7 @@ not supported."
 (define-database-protection-form passwd)
 (define-database-protection-form group))
 
-#-(or win32 android)
+#-android
 (macrolet ((define-obj-call (name result-type conv with-macro assertion
                              &optional arg arg-type)
   ;; FIXME: this isn't the documented way of doing this, surely?
@@ -679,7 +643,7 @@ not supported."
 (define-enumerator-call "endgrent" assert-with-group-database)
 ) ; end MACROLET
 
-#-(or android win32)
+#-android
 (macrolet ((define-database-iterator (dbname with set get end)
   (let* ((name (intern (format nil "DO-~AS" dbname) :sb-posix))
          (docstring
@@ -709,7 +673,6 @@ not supported."
   (define-database-iterator group with-group-database
                             setgrent getgrent endgrent))
 
-#-win32
 (define-protocol-class timeval alien-timeval ()
   ((sec :initarg :tv-sec :accessor timeval-sec
         :documentation "Seconds.")
@@ -766,22 +729,15 @@ not supported."
               (syscall-error ',lisp-name))
             (alien-to-stat a-stat stat)))))))
 
-(define-stat-call #-win32 "stat" #+win32 "_stat"
+(define-stat-call "stat"
                   pathname filename
                   (function int (c-string :not-null t) (* alien-stat)))
 
-#-win32
 (define-stat-call "lstat"
                   pathname filename
                   (function int (c-string :not-null t) (* alien-stat)))
-;;; No symbolic links on Windows, so use stat
-#+win32
-(progn
-  (declaim (inline lstat))
-  (export (defun lstat (filename &optional stat)
-            (if stat (stat filename stat) (stat filename)))))
 
-(define-stat-call #-win32 "fstat" #+win32 "_fstat"
+(define-stat-call "fstat"
                   fd file-descriptor
                   (function int int (* alien-stat)))
 
@@ -795,7 +751,6 @@ not supported."
 (define-call "s_islnk" boolean never-fails (mode mode-t))
 (define-call "s_issock" boolean never-fails (mode mode-t))
 
-#-win32
 (progn
  (export 'pipe :sb-posix)
  (declaim (inline pipe))
@@ -809,7 +764,6 @@ not supported."
      (when filedes2 (setf (aref filedes2 0) fd0 (aref filedes2 1) fd1))
      (values fd0 fd1))))
 
-#-win32
 (define-protocol-class termios alien-termios ()
   ((iflag :initarg :iflag :accessor sb-posix:termios-iflag
           :documentation "Input modes.")
@@ -824,7 +778,6 @@ not supported."
   (:documentation
    "Instances of this class represent I/O characteristics of the terminal."))
 
-#-win32
 (progn
  (export 'tcsetattr :sb-posix)
  (declaim (inline tcsetattr))
@@ -910,7 +863,6 @@ not supported."
                     a-termios))))
 
 
-#-win32
 (progn
   (export 'time :sb-posix)
   (defun time ()
@@ -969,7 +921,6 @@ not supported."
 (declaim (ftype (function (t) (values (or simple-string null) &optional)) getenv))
 (setf (fdefinition 'getenv) #'sb-ext:posix-getenv)
 
-#-win32
 (progn
   (define-call "setenv" int minusp
                (name (c-string :not-null t))
@@ -992,23 +943,7 @@ not supported."
               (unsetenv (subseq string 0 p))
               (setenv (subseq string 0 p) (subseq string (1+ p)) 1))
           (error "Invalid argument to putenv: ~S" string)))))
-#+win32
-(progn
-  ;; Windows doesn't define a POSIX setenv, but happily their _putenv is sane.
-  (define-call* "putenv" int minusp (string (c-string :not-null t)))
-  (export 'setenv :sb-posix)
-  (defun setenv (name value overwrite)
-    (declare (string name value))
-    (if (and (zerop overwrite) (sb-posix:getenv name))
-        0
-        (putenv (concatenate 'string name "=" value))))
-  (export 'unsetenv :sb-posix)
-  (defun unsetenv (name)
-    (declare (string name))
-    (putenv (concatenate 'string name "="))))
-
 ;;; syslog
-#-win32
 (progn
   (export 'openlog :sb-posix)
   (export 'syslog :sb-posix)

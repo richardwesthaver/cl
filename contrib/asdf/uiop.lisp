@@ -2310,22 +2310,7 @@ suitable for use as a directory name to segregate Lisp FASLs, C dynamic librarie
   (defun chdir (x)
     "Change current directory, as per POSIX chdir(2), to a given pathname object"
     (if-let (x (pathname x))
-      #+(or abcl genera mezzano xcl) (setf *default-pathname-defaults* (truename x)) ;; d-p-d is canonical!
-      #+allegro (excl:chdir x)
-      #+clisp (ext:cd x)
-      #+clozure (setf (ccl:current-directory) x)
-      #+(or cmucl scl) (unix:unix-chdir (ext:unix-namestring x))
-      #+cormanlisp (unless (zerop (win32::_chdir (namestring x)))
-                     (error "Could not set current directory to ~A" x))
-      #+ecl (ext:chdir x)
-      #+clasp (ext:chdir x t)
-      #+gcl (system:chdir x)
-      #+lispworks (hcl:change-directory x)
-      #+mkcl (mk-ext:chdir x)
-      #+sbcl (progn (require :sb-posix) (symbol-call :sb-posix :chdir (sb-ext:native-namestring x)))
-      #-(or abcl allegro clasp clisp clozure cmucl cormanlisp ecl gcl genera lispworks mkcl sbcl scl xcl)
-      (not-implemented-error 'chdir))))
-
+      (progn (require :sb-posix) (symbol-call :sb-posix :chdir (sb-ext:native-namestring x))))))
 
 ;;;; -----------------------------------------------------------------
 ;;;; Windows shortcut support.  Based on:
@@ -3784,29 +3769,9 @@ in an atomic way if the implementation allows."
 
   (defun delete-empty-directory (directory-pathname)
     "Delete an empty directory"
-    #+(or abcl digitool gcl) (delete-file directory-pathname)
-    #+allegro (excl:delete-directory directory-pathname)
-    #+clisp (ext:delete-directory directory-pathname)
-    #+clozure (ccl::delete-empty-directory directory-pathname)
-    #+(or cmucl scl) (multiple-value-bind (ok errno)
-                       (unix:unix-rmdir (native-namestring directory-pathname))
-                     (unless ok
-                       #+cmucl (error "Error number ~A when trying to delete directory ~A"
-                                    errno directory-pathname)
-                       #+scl (error "~@<Error deleting ~S: ~A~@:>"
-                                    directory-pathname (unix:get-unix-error-msg errno))))
-    #+cormanlisp (win32:delete-directory directory-pathname)
-    #+(or clasp ecl) (si:rmdir directory-pathname)
-    #+genera (fs:delete-directory directory-pathname)
-    #+lispworks (lw:delete-directory directory-pathname)
-    #+mkcl (mkcl:rmdir directory-pathname)
-    #+sbcl #.(if-let (dd (find-symbol* :delete-directory :sb-ext nil))
+    #.(if-let (dd (find-symbol* :delete-directory :sb-ext nil))
                `(,dd directory-pathname) ;; requires SBCL 1.0.44 or later
-               `(progn (require :sb-posix) (symbol-call :sb-posix :rmdir directory-pathname)))
-    #+xcl (symbol-call :uiop :run-program `("rmdir" ,(native-namestring directory-pathname)))
-    #-(or abcl allegro clasp clisp clozure cmucl cormanlisp digitool ecl gcl genera lispworks mkcl sbcl scl xcl)
-    (not-implemented-error 'delete-empty-directory "(on your platform)")) ; genera
-
+               `(progn (require :sb-posix) (symbol-call :sb-posix :rmdir directory-pathname))))
   (defun delete-directory-tree (directory-pathname &key (validate nil validatep) (if-does-not-exist :error))
     "Delete a directory including all its recursive contents, aka rm -rf.
 
@@ -4666,26 +4631,11 @@ before the image dump hooks are called and before the image is dumped.")
 This is designed to abstract away the implementation specific quit forms."
     (when finish-output ;; essential, for ClozureCL, and for standard compliance.
       (finish-outputs))
-    #+(or abcl xcl) (ext:quit :status code)
-    #+allegro (excl:exit code :quiet t)
-    #+(or clasp ecl) (si:quit code)
-    #+clisp (ext:quit code)
-    #+clozure (ccl:quit code)
-    #+cormanlisp (win32:exitprocess code)
-    #+(or cmucl scl) (unix:unix-exit code)
-    #+gcl (system:quit code)
-    #+genera (error "~S: You probably don't want to Halt Genera. (code: ~S)" 'quit code)
-    #+lispworks (lispworks:quit :status code :confirm nil :return nil :ignore-errors-p t)
-    #+mcl (progn code (ccl:quit)) ;; or should we use FFI to call libc's exit(3) ?
-    #+mkcl (mk-ext:quit :exit-code code)
-    #+sbcl #.(let ((exit (find-symbol* :exit :sb-ext nil))
+    #.(let ((exit (find-symbol* :exit :sb-ext nil))
                    (quit (find-symbol* :quit :sb-ext nil)))
                (cond
                  (exit `(,exit :code code :abort (not finish-output)))
-                 (quit `(,quit :unix-status code :recklessly-p (not finish-output)))))
-    #-(or abcl allegro clasp clisp clozure cmucl ecl gcl genera lispworks mcl mkcl sbcl scl xcl)
-    (not-implemented-error 'quit "(called with exit code ~S)" code))
-
+                 (quit `(,quit :unix-status code :recklessly-p (not finish-output))))))
   (defun die (code format &rest arguments)
     "Die in error with some error message"
     (with-safe-io-syntax ()
@@ -6606,7 +6556,7 @@ could block because its output buffers are full."
                        (not-implemented-error 'launch-program))
            #+clozure 'ccl:run-program
            #+(or cmucl ecl scl) 'ext:run-program
-           
+
            #+lispworks ,@'('system:run-shell-command `("/usr/bin/env" ,@command)) ; full path needed
            #+mkcl 'mk-ext:run-program
            #+sbcl 'sb-ext:run-program
@@ -7551,15 +7501,13 @@ directive.")
     "Semi-portable implementation of a subset of LispWorks' sys:get-folder-path,
 this function tries to locate the Windows FOLDER for one of
 :LOCAL-APPDATA, :APPDATA or :COMMON-APPDATA.
-     Returns NIL when the folder is not defined (e.g., not on Windows)."
-    (or #+(and lispworks os-windows) (sys:get-folder-path folder)
-        ;; read-windows-registry HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\AppData
-        (ecase folder
-          (:local-appdata (or (getenv-absolute-directory "LOCALAPPDATA")
-                              (subpathname* (get-folder-path :appdata) "Local")))
-          (:appdata (getenv-absolute-directory "APPDATA"))
-          (:common-appdata (or (getenv-absolute-directory "ALLUSERSAPPDATA")
-                               (subpathname* (getenv-absolute-directory "ALLUSERSPROFILE") "Application Data/"))))))
+     Returns NIL when the folder is not defined."
+    (ecase folder
+      (:local-appdata (or (getenv-absolute-directory "LOCALAPPDATA")
+                          (subpathname* (get-folder-path :appdata) "Local")))
+      (:appdata (getenv-absolute-directory "APPDATA"))
+      (:common-appdata (or (getenv-absolute-directory "ALLUSERSAPPDATA")
+                           (subpathname* (getenv-absolute-directory "ALLUSERSPROFILE") "Application Data/")))))
 
 
   ;; Support for the XDG Base Directory Specification

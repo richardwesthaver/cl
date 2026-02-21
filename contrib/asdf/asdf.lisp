@@ -1303,7 +1303,6 @@ Going forward, we recommend new users should be using the source-registry.")
   ;; Function to look for an asd file of given NAME under a directory provided by DEFAULTS.
   ;; Return the truename of that file if it is found and TRUENAME is true.
   ;; Return NIL if the file is not found.
-  ;; On Windows, follow shortcuts to .asd files.
   (defun probe-asd (name defaults &key truename)
     (block nil
       (when (directory-pathname-p defaults)
@@ -1313,18 +1312,7 @@ Going forward, we recommend new users should be using the source-registry.")
                         #'(lambda () (ensure-absolute-pathname defaults 'get-pathname-defaults nil))
                         nil)
                        :truename truename))
-          (return file))
-        #-(or clisp genera) ; clisp doesn't need it, plain genera doesn't have read-sequence(!)
-        (os-cond
-         ((os-windows-p)
-          (when (physical-pathname-p defaults)
-            (let ((shortcut
-                    (make-pathname
-                     :defaults defaults :case :local
-                     :name (strcat name ".asd")
-                     :type "lnk")))
-              (when (probe-file* shortcut)
-                (ensure-pathname (parse-windows-shortcut shortcut) :namestring :native)))))))))
+          (return file)))))
 
   ;; Function to push onto *s-d-s-f* to use the *central-registry*
   (defun sysdef-central-registry-search (system)

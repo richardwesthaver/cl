@@ -30,9 +30,6 @@
 ;;; then the stuff we're looking for
 ((:integer af-inet "AF_INET" "IP Protocol family" t)
 
- ;; KLUDGE: These types simply do not seem to exist on Windows,
- ;; but we'll provide these anyways -- at least in a way that should
- ;; match with stat.
  (:type uid-t   #-win32 "uid_t"   #+win32 "short")
  (:type gid-t   #-win32 "gid_t"   #+win32 "short")
  (:type nlink-t #-win32 "nlink_t" #+win32 "short")
@@ -566,8 +563,6 @@
  (:integer tcion "TCION" nil t)
  (:integer tcooff "TCOOFF" nil t)
  (:integer tcoon "TCOON" nil t)
-
- ;; syslog -- does this exist at all on Windows?
 
  ;; SUSv3-standard openlog() facilities
  #-win32
