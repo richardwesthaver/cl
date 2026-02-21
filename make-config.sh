@@ -274,16 +274,12 @@ echo "$SBCL_DYNAMIC_SPACE_SIZE" > output/dynamic-space-size.txt
 # whether the cross-compilation host returns suitable values from
 # UPGRADED-ARRAY-ELEMENT-TYPE?)
 
-. ./find-gnumake.sh
-find_gnumake
-
-./generate-version.sh
+# ./generate-version.sh
 
 # Now that we've done our option parsing and found various
 # dependencies, write them out to a file to be sourced by other
 # scripts.
 
-echo "GNUMAKE=\"$GNUMAKE\"; export GNUMAKE" >> output/build-config
 echo "SBCL_XC_HOST=\"$SBCL_XC_HOST\"; export SBCL_XC_HOST" >> output/build-config
 if [ -n "$SBCL_HOST_LOCATION" ]; then
     echo "SBCL_HOST_LOCATION=\"$SBCL_HOST_LOCATION\"; export SBCL_HOST_LOCATION" >> output/build-config
@@ -536,7 +532,7 @@ case "$sbcl_os" in
         # openbsd 6.0 and newer restrict mmap of RWX pages
         if [ `uname -r | tr -d .` -gt 60 ]; then
             rm -f tools-for-build/mmap-rwx
-            LDFLAGS="$LDFLAGS -Wl,-zwxneeded" $GNUMAKE -C tools-for-build mmap-rwx -I ../src/runtime
+            LDFLAGS="$LDFLAGS -Wl,-zwxneeded" make -C tools-for-build mmap-rwx -I ../src/runtime
             if ! ./tools-for-build/mmap-rwx; then
                 echo "Can't mmap() RWX pages!"
                 echo "Is the current filesystem mounted with wxallowed?"
@@ -736,12 +732,12 @@ case "$sbcl_arch" in
     printf ' :sb-simd-pack :sb-simd-pack-256 :avx2' >> $ltf # not mandatory
 
     if $android; then
-        $GNUMAKE -C tools-for-build avx2 2> /dev/null
+        make -C tools-for-build avx2 2> /dev/null
         if ! android_run tools-for-build/avx2 ; then
             SBCL_CONTRIB_BLOCKLIST="$SBCL_CONTRIB_BLOCKLIST sb-simd"
         fi
     else
-        if ! $GNUMAKE -C tools-for-build avx2 2> /dev/null || tools-for-build/avx2 ; then
+        if ! make -C tools-for-build avx2 2> /dev/null || tools-for-build/avx2 ; then
             SBCL_CONTRIB_BLOCKLIST="$SBCL_CONTRIB_BLOCKLIST sb-simd"
         fi
     fi
@@ -795,7 +791,7 @@ else
         $CC tools-for-build/determine-endianness.c -o tools-for-build/determine-endianness
         android_run tools-for-build/determine-endianness >> $ltf
     else
-        $GNUMAKE -C tools-for-build determine-endianness -I ../src/runtime
+        make -C tools-for-build determine-endianness -I ../src/runtime
         tools-for-build/determine-endianness >> $ltf
     fi
     export sbcl_os sbcl_arch android

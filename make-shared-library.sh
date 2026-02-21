@@ -5,4 +5,4 @@
 echo //entering make-shared-library.sh
 echo //building sbcl runtime into a shared library
 
-$GNUMAKE -C src/runtime libsbcl.so
+make -C src/runtime libsbcl.so

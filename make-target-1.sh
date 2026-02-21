@@ -36,8 +36,8 @@ fi
 # the cross compiler; that doesn't matter.)
 echo //building runtime system and symbol table file
 
-$GNUMAKE -C src/runtime clean
-$GNUMAKE $SBCL_MAKE_JOBS -C src/runtime all
+make -C src/runtime clean
+make $SBCL_MAKE_JOBS -C src/runtime all
 
 # Use a little C program to grab stuff from the C header files and
 # smash it into Lisp source code.
@@ -48,7 +48,7 @@ then
     . ./tools-for-build/android_run.sh
     android_run tools-for-build/grovel-headers > output/stuff-groveled-from-headers.lisp
 else
-    ( cd tools-for-build; $GNUMAKE -I../src/runtime grovel-headers )
+    ( cd tools-for-build; make -I../src/runtime grovel-headers )
     tools-for-build/grovel-headers > output/stuff-groveled-from-headers.lisp
 fi
 touch -r tools-for-build/grovel-headers.c output/stuff-groveled-from-headers.lisp

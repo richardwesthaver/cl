@@ -15,7 +15,7 @@ main()
     return (0);
 }
 EOF
-if $GNUMAKE "${base}" > /dev/null 2>&1 && "./${base}" > /dev/null 2>&1
+if make "${base}" > /dev/null 2>&1 && "./${base}" > /dev/null 2>&1
 then
     echo '#define OS_OPENBSD_FPSTATE_IN_SIGFRAME'
 fi
@@ -33,7 +33,7 @@ main()
     return (0);
 }
 EOF
-if $GNUMAKE "${base}" > /dev/null 2>&1 && "./${base}" > /dev/null 2>&1
+if make "${base}" > /dev/null 2>&1 && "./${base}" > /dev/null 2>&1
 then
     echo '#define OS_OPENBSD_FPSTATE_IN_SIGCONTEXT'
 fi

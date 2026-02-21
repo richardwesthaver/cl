@@ -115,7 +115,7 @@ export SBCL_XC_HOST
 . ./find-gnumake.sh
 find_gnumake
 
-$GNUMAKE -C src/runtime all
+make -C src/runtime all
 
 # Instead of doing the full make-host-2.sh, we (1) use after-xc.core
 # to rebuild only obviously-out-of-date Lisp files, then (2) run

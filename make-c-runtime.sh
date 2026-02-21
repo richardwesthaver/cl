@@ -25,4 +25,4 @@ EOF
 
 diff -r output/genesis-2 src/runtime/genesis
 
-(cd src/runtime ; $GNUMAKE)
+(cd src/runtime ; make)

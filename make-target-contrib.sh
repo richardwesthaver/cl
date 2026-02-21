@@ -49,11 +49,11 @@ SBCL="$SBCL_TOP/src/runtime/sbcl --noinform --core $SBCL_TOP/output/sbcl.core \
 --lose-on-corruption --disable-debugger --no-sysinit --no-userinit"
 export SBCL
 
-set -e # exit with failure if any $GNUMAKE fails
+set -e # exit with failure if any make command fails
 if [ -z "$*" ]; then
-    $GNUMAKE $SBCL_MAKE_JOBS -k -C contrib
+    make $SBCL_MAKE_JOBS -k -C contrib
 else
     for x in "$@"; do
-        $GNUMAKE -C contrib $x.fasl
+        make -C contrib $x.fasl
     done
 fi

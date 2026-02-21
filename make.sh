@@ -32,7 +32,7 @@ sh make-config.sh "$@" --check-host-lisp || exit $?
 echo //building host tools
 # Build the perfect-hash-generator. It's actually OK if this fails,
 # as long as xperfecthash.lisp-expr is up-to-date
-$GNUMAKE -C tools-for-build perfecthash || true
+make -C tools-for-build perfecthash || true
 
 build_started=`date`
 echo "//Starting build: $build_started"
