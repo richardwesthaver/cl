@@ -321,7 +321,7 @@ void create_main_lisp_thread(lispobj function) {
     /* WIN32 has a special stack arrangement, calling
      * call_into_lisp_first_time will put the new stack in the middle
      * of the current stack */
-#if !defined(OS_THREAD_STACK)) \
+#if !defined(OS_THREAD_STACK) \
     && (defined(LISP_FEATURE_X86) || defined(LISP_FEATURE_X86_64))
     call_into_lisp_first_time(function, NULL, 0);
 #else

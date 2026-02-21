@@ -1,6 +1,5 @@
 #if !defined(_INCLUDE_THREAD_H_)
 #define _INCLUDE_THREAD_H_
-#endif
 #include <sys/types.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -25,7 +24,7 @@ void set_thread_state(struct thread *thread, char state, bool);
 
 #if defined(LISP_FEATURE_SB_SAFEPOINT)
 struct gcing_safety {
-    lispobj csp_around_foreign_call;
+  lispobj csp_around_foreign_call;
 };
 
 int handle_safepoint_violation(os_context_t *context, os_vm_address_t addr);
@@ -41,54 +40,54 @@ void assert_on_stack(struct thread *th, void *esp);
  * so there is no need for a pointer from one to the other */
 struct extra_thread_data
 {
-    // Lisp needs to be able to access this array. KEEP IT AS THE FIRST FIELD!
-    os_context_t* sigcontexts[MAX_INTERRUPTS];
+  // Lisp needs to be able to access this array. KEEP IT AS THE FIRST FIELD!
+  os_context_t* sigcontexts[MAX_INTERRUPTS];
 
-    // Data from here down are never looked at from Lisp.
-    struct interrupt_data interrupt_data;
+  // Data from here down are never looked at from Lisp.
+  struct interrupt_data interrupt_data;
 #if THREADS_USING_GCSIGNAL
-    // 'state_sem' is a binary semaphore used just like a mutex.
-    // I guess we figure that semaphores are OK to use in signal handlers (which is
-    // technically false), whereas a mutex would be more certainly wrong?
-    os_sem_t state_sem;
-    // These are basically "gates" a la SB-CONCURRENCY:GATE. They might be better
-    // as condition variables, but condvars are not allowed in signal handlers.
-    // Strictly speaking, sem_wait isn't either, but it seems to work.
-    os_sem_t state_not_running_sem;
-    os_sem_t state_not_stopped_sem;
-    // We count waiters on each gate to know how many times to sem_post() to open them.
-    // The counts themselves are protected against concurrent access by 'state_sem'.
-    // Since we're not constrained by compiler/generic/objdef any more, we can
-    // make these "only" 4 bytes each, instead of lispwords.
-    uint32_t state_not_running_waitcount;
-    uint32_t state_not_stopped_waitcount;
+  // 'state_sem' is a binary semaphore used just like a mutex.
+  // I guess we figure that semaphores are OK to use in signal handlers (which is
+  // technically false), whereas a mutex would be more certainly wrong?
+  os_sem_t state_sem;
+  // These are basically "gates" a la SB-CONCURRENCY:GATE. They might be better
+  // as condition variables, but condvars are not allowed in signal handlers.
+  // Strictly speaking, sem_wait isn't either, but it seems to work.
+  os_sem_t state_not_running_sem;
+  os_sem_t state_not_stopped_sem;
+  // We count waiters on each gate to know how many times to sem_post() to open them.
+  // The counts themselves are protected against concurrent access by 'state_sem'.
+  // Since we're not constrained by compiler/generic/objdef any more, we can
+  // make these "only" 4 bytes each, instead of lispwords.
+  uint32_t state_not_running_waitcount;
+  uint32_t state_not_stopped_waitcount;
 #endif
 #ifdef LISP_FEATURE_NONSTOP_FOREIGN_CALL
-    pthread_mutex_t foreign_exit_lock;
-    int gc_inhibited;
+  pthread_mutex_t foreign_exit_lock;
+  int gc_inhibited;
 #endif
 
 #if defined LISP_FEATURE_SB_THREAD && defined LISP_FEATURE_UNIX
-    // According to https://github.com/adrienverge/openfortivpn/issues/105
-    //   "using GCD semaphore in signal handlers is documented to be unsafe"
-    // which seems almost impossible to believe, considering that sem_t is
-    // documented to be safe, yet the sem_ functions produce a warning:
-    //  warning: 'sem_init' is deprecated [-Wdeprecated-declarations]
-    // So how could there be no signal-safe replacement?
-    os_sem_t sprof_sem;
+  // According to https://github.com/adrienverge/openfortivpn/issues/105
+  //   "using GCD semaphore in signal handlers is documented to be unsafe"
+  // which seems almost impossible to believe, considering that sem_t is
+  // documented to be safe, yet the sem_ functions produce a warning:
+  //  warning: 'sem_init' is deprecated [-Wdeprecated-declarations]
+  // So how could there be no signal-safe replacement?
+  os_sem_t sprof_sem;
 #endif
-    int sprof_lock;
-    int arena_count; // number of structures in arena_saveareas
-    arena_state* arena_savearea;
-    // opaque pointer to zstd decompression context so it doesn't matter whether
-    // core-compression and/or static linking are enabled.
-    void* zstd_dcontext;
-    // These values influence get_alloc_start_page() when arenas are in use
-    // and allocation switches back and forth between arena and heap.
-    page_index_t mixed_page_hint;
-    page_index_t cons_page_hint;
+  int sprof_lock;
+  int arena_count; // number of structures in arena_saveareas
+  arena_state* arena_savearea;
+  // opaque pointer to zstd decompression context so it doesn't matter whether
+  // core-compression and/or static linking are enabled.
+  void* zstd_dcontext;
+  // These values influence get_alloc_start_page() when arenas are in use
+  // and allocation switches back and forth between arena and heap.
+  page_index_t mixed_page_hint;
+  page_index_t cons_page_hint;
 };
-#define thread_extra_data(thread) \
+#define thread_extra_data(thread)                                        \
   ((struct extra_thread_data*)((char*)(thread) + dynamic_values_bytes))
 #define nth_interrupt_context(n,thread) thread_extra_data(thread)->sigcontexts[n]
 #define thread_interrupt_data(thread) thread_extra_data(thread)->interrupt_data
@@ -120,39 +119,41 @@ extern int dynamic_values_bytes;
  * threads only. */
 #if defined LISP_FEATURE_SB_THREAD || defined LISP_FEATURE_X86_64
 #define get_binding_stack_pointer(thread)       \
-    ((thread)->binding_stack_pointer)
-#define set_binding_stack_pointer(thread,value) \
-    ((thread)->binding_stack_pointer = (lispobj *)(value))
-#define access_control_stack_pointer(thread) \
-    ((thread)->control_stack_pointer)
+  ((thread)->binding_stack_pointer)
+#define set_binding_stack_pointer(thread,value)                        \
+  ((thread)->binding_stack_pointer = (lispobj *)(value))
+#define access_control_stack_pointer(thread)        \
+  ((thread)->control_stack_pointer)
 #  if !defined(LISP_FEATURE_X86) && !defined(LISP_FEATURE_X86_64)
-#define access_control_frame_pointer(thread) \
-    ((thread)->control_frame_pointer)
+#define access_control_frame_pointer(thread)        \
+  ((thread)->control_frame_pointer)
 #  endif
 #else
 #  if defined(BINDING_STACK_POINTER)
 #define get_binding_stack_pointer(thread)       \
-    SymbolValue(BINDING_STACK_POINTER, thread)
-#define set_binding_stack_pointer(thread,value) \
-    SetSymbolValue(BINDING_STACK_POINTER, (lispobj)(value), thread)
+  SymbolValue(BINDING_STACK_POINTER, thread)
+#define set_binding_stack_pointer(thread,value)                                \
+  SetSymbolValue(BINDING_STACK_POINTER, (lispobj)(value), thread)
 #  else
 #define get_binding_stack_pointer(thread)       \
-    (current_binding_stack_pointer)
-#define set_binding_stack_pointer(thread,value) \
-    (current_binding_stack_pointer = (lispobj *)(value))
+  (current_binding_stack_pointer)
+#define set_binding_stack_pointer(thread,value)                \
+  (current_binding_stack_pointer = (lispobj *)(value))
 #  endif
 #define access_control_stack_pointer(thread)    \
-    (current_control_stack_pointer)
+  (current_control_stack_pointer)
 #  if !defined(LISP_FEATURE_X86) && !defined(LISP_FEATURE_X86_64)
-#define access_control_frame_pointer(thread) \
-    (current_control_frame_pointer)
+#define access_control_frame_pointer(thread)        \
+  (current_control_frame_pointer)
 #  endif
 #endif
 
 #ifdef LISP_FEATURE_SB_THREAD
 # ifdef LISP_FEATURE_GCC_TLS
 extern __thread struct thread *current_thread;
+#else
 extern pthread_key_t current_thread;
+#endif
 #endif
 
 #if defined(LISP_FEATURE_SB_SAFEPOINT) || defined(LISP_FEATURE_NONSTOP_FOREIGN_CALL)
@@ -164,18 +165,18 @@ extern pthread_key_t current_thread;
 /* sigaltstack() - "Signal stacks are automatically adjusted
  * for the direction of stack growth and alignment requirements." */
 static inline void* calc_altstack_base(struct thread* thread) {
-    // Refer to the picture in the comment above alloc_thread_struct().
-    // Always return the lower limit as the base even if stack grows down.
-    return ((char*) thread) + dynamic_values_bytes
-        + ALIGN_UP(sizeof (struct extra_thread_data), N_WORD_BYTES);
+  // Refer to the picture in the comment above alloc_thread_struct().
+  // Always return the lower limit as the base even if stack grows down.
+  return ((char*) thread) + dynamic_values_bytes
+    + ALIGN_UP(sizeof (struct extra_thread_data), N_WORD_BYTES);
 }
 extern void* calc_altstack_end(struct thread* thread);
 static inline int calc_altstack_size(struct thread* thread) {
-    // 'end' is calculated as exactly the end address we got from the OS.
-    // The usually ends up making the stack slightly larger than ALT_STACK_SIZE
-    // bytes due to the addition of THREAD_ALIGNMENT_BYTES of padding.
-    // If the memory was as aligned as we'd like, the padding is ours to keep.
-    return (char*)calc_altstack_end(thread) - (char*)calc_altstack_base(thread);
+  // 'end' is calculated as exactly the end address we got from the OS.
+  // The usually ends up making the stack slightly larger than ALT_STACK_SIZE
+  // bytes due to the addition of THREAD_ALIGNMENT_BYTES of padding.
+  // If the memory was as aligned as we'd like, the padding is ours to keep.
+  return (char*)calc_altstack_end(thread) - (char*)calc_altstack_base(thread);
 }
 
 /* This is clearly per-arch and possibly even per-OS code, but we can't
@@ -186,54 +187,54 @@ static inline int calc_altstack_size(struct thread* thread) {
 static inline struct thread *get_sb_vm_thread(void)
 {
 #if !defined(LISP_FEATURE_SB_THREAD)
-     return all_threads;
+  return all_threads;
 
 #else
 
 # if defined(LISP_FEATURE_X86)
-    if (!all_threads) return 0;
+  if (!all_threads) return 0;
 #endif
 
-    /* Otherwise, use pthreads to find the right value.  We do not load
-     * directly from %fs:this even on x86 platforms (like Linux and
-     * Solaris) with dependable %fs, because we want to return NULL if
-     * called by a non-Lisp thread, and %fs would not be initialized
-     * suitably in that case. */
-    struct thread *th;
+  /* Otherwise, use pthreads to find the right value.  We do not load
+   * directly from %fs:this even on x86 platforms (like Linux and
+   * Solaris) with dependable %fs, because we want to return NULL if
+   * called by a non-Lisp thread, and %fs would not be initialized
+   * suitably in that case. */
+  struct thread *th;
 # ifdef LISP_FEATURE_GCC_TLS
-    th = current_thread;
+  th = current_thread;
 # else
-    th = pthread_getspecific(current_thread);
+  th = pthread_getspecific(current_thread);
 # endif
 
 # if defined LISP_FEATURE_X86 && (defined LISP_FEATURE_DARWIN || defined LISP_FEATURE_FREEBSD)
-    /* Restore the %FS register. This is potentially an "expensive" call.
-     * It rightfully belongs with RESTORE_FP_CONTROL_WORD, but I don't care to try it. */
-    if (th) {
-        void arch_os_load_ldt(struct thread*);
-        arch_os_load_ldt(th);
-    }
+  /* Restore the %FS register. This is potentially an "expensive" call.
+   * It rightfully belongs with RESTORE_FP_CONTROL_WORD, but I don't care to try it. */
+  if (th) {
+    void arch_os_load_ldt(struct thread*);
+    arch_os_load_ldt(th);
+  }
 # endif
 
-    return th;
+  return th;
 #endif
 }
 
 inline static int lisp_thread_p(os_context_t __attribute__((unused)) *context) {
 #ifdef LISP_FEATURE_SB_THREAD
 # ifdef LISP_FEATURE_GCC_TLS
-    return current_thread != 0;
+  return current_thread != 0;
 # else
-    return pthread_getspecific(current_thread) != NULL;
+  return pthread_getspecific(current_thread) != NULL;
 # endif
 #elif defined(LISP_FEATURE_C_STACK_IS_CONTROL_STACK)
-    char *csp = (char *)*os_context_sp_addr(context);
-    return (char *)all_threads->control_stack_start < csp &&
-        (char *)all_threads->control_stack_end > (char *) csp;
+  char *csp = (char *)*os_context_sp_addr(context);
+  return (char *)all_threads->control_stack_start < csp &&
+    (char *)all_threads->control_stack_end > (char *) csp;
 #else
-    /* Can't really tell since pthreads are required to get the
-       dimensions of the C stack. */
-    return 1;
+  /* Can't really tell since pthreads are required to get the
+     dimensions of the C stack. */
+  return 1;
 #endif
 }
 extern char* vm_thread_name(struct thread*);
@@ -241,9 +242,9 @@ extern char* vm_thread_name(struct thread*);
 extern void record_backtrace_from_context(void*,struct thread*);
 
 typedef struct init_thread_data {
-    sigset_t oldset;
+  sigset_t oldset;
 #ifdef LISP_FEATURE_SB_SAFEPOINT
-    struct gcing_safety safety;
+  struct gcing_safety safety;
 #endif
 } init_thread_data;
 
@@ -263,29 +264,29 @@ extern void thread_register_gc_trigger();
 static inline
 void push_gcing_safety(struct gcing_safety *into)
 {
-    struct thread* th = get_sb_vm_thread();
-    asm volatile ("");
-    into->csp_around_foreign_call = csp_around_foreign_call(th);
-    csp_around_foreign_call(th) = 0;
-    asm volatile ("");
+  struct thread* th = get_sb_vm_thread();
+  asm volatile ("");
+  into->csp_around_foreign_call = csp_around_foreign_call(th);
+  csp_around_foreign_call(th) = 0;
+  asm volatile ("");
 }
 
 static inline
 void pop_gcing_safety(struct gcing_safety *from)
 {
-    struct thread* th = get_sb_vm_thread();
-    asm volatile ("");
-    csp_around_foreign_call(th) = from->csp_around_foreign_call;
-    asm volatile ("");
+  struct thread* th = get_sb_vm_thread();
+  asm volatile ("");
+  csp_around_foreign_call(th) = from->csp_around_foreign_call;
+  asm volatile ("");
 }
 
 #define WITH_GC_AT_SAFEPOINTS_ONLY_hygenic(var)        \
-    struct gcing_safety var;                    \
-    push_gcing_safety(&var);                    \
-    RUN_BODY_ONCE(var, pop_gcing_safety(&var))
+  struct gcing_safety var;                        \
+  push_gcing_safety(&var);                        \
+  RUN_BODY_ONCE(var, pop_gcing_safety(&var))
 
-#define WITH_GC_AT_SAFEPOINTS_ONLY()                           \
-    WITH_GC_AT_SAFEPOINTS_ONLY_hygenic(sbcl__gc_safety)
+#define WITH_GC_AT_SAFEPOINTS_ONLY()                        \
+  WITH_GC_AT_SAFEPOINTS_ONLY_hygenic(sbcl__gc_safety)
 
 int check_pending_thruptions(os_context_t *ctx);
 
@@ -295,7 +296,7 @@ int check_pending_thruptions(os_context_t *ctx);
 
 extern void create_main_lisp_thread(lispobj);
 
-#elif defined LISP_FEATURE_SB_THREAD
+#if defined LISP_FEATURE_SB_THREAD
 extern pthread_mutex_t all_threads_lock;
 #endif
 
@@ -326,5 +327,4 @@ extern void scrub_thread_control_stack(struct thread *);
 extern void scavenge_control_stack(struct thread *th);
 extern void scavenge_interrupt_contexts(struct thread *thread);
 extern void gc_close_thread_regions(struct thread*, int);
-
 #endif /* _INCLUDE_THREAD_H_ */
