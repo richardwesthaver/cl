@@ -28,11 +28,10 @@
 (defvar *cached-struct-classification* nil)
 
 (defconstant max-int-args #.(length *c-call-register-arg-offsets*))
-(defconstant max-xmm-args #+win32 4 #-win32 8)
+(defconstant max-xmm-args 8)
 
 (defun int-arg (state prim-type reg-sc stack-sc)
-  (let ((reg-args (max (arg-state-register-args state)
-                       #+win32 (arg-state-xmm-args state))))
+  (let ((reg-args (max (arg-state-register-args state))))
     (cond ((< reg-args max-int-args)
            (setf (arg-state-register-args state) (1+ reg-args))
            (make-wired-tn* prim-type reg-sc
@@ -52,8 +51,7 @@
   (int-arg state 'system-area-pointer sap-reg-sc-number sap-stack-sc-number))
 
 (defun float-arg (state prim-type reg-sc stack-sc)
-  (let ((xmm-args (max (arg-state-xmm-args state)
-                        #+win32 (arg-state-register-args state))))
+  (let ((xmm-args (max (arg-state-xmm-args state))))
     (cond ((< xmm-args max-xmm-args)
            (setf (arg-state-xmm-args state) (1+ xmm-args))
            (make-wired-tn* prim-type reg-sc
@@ -125,7 +123,6 @@
 
 ;;;; Struct Return-by-Value Support (System V AMD64 ABI)
 
-#-win32
 (defun classify-field-sysv-amd64 (type)
   "Classify a single field type for SysV AMD64 ABI.
    Returns :INTEGER, :DOUBLE, or :MEMORY."
@@ -154,7 +151,6 @@
     (t :memory)))
 
 ;;; Merge two classes within an eightbyte per ABI rules
-#-win32
 (defun merge-classes (class1 class2)
   "Merge two classes within an eightbyte per ABI rules.
    INTEGER dominates SSE; MEMORY dominates everything."
@@ -167,7 +163,6 @@
     (t :double)))
 
 ;;; Main classification function for x86-64 System V AMD64 ABI
-#-win32
 (defun classify-struct (record-type)
   "Classify struct for x86-64 System V ABI return.
    Returns STRUCT-CLASSIFICATION."
@@ -217,44 +212,9 @@
        :alignment alignment
        :memory-p (member :memory eightbytes)))))
 
-#+win32
-(defun classify-struct (record-type)
-  "Classify struct for Windows AMD64 ABI.
-Size-based only: <=8 bytes in single integer register, >8 bytes via pointer.
-Floats are passed in integer registers."
-  (let* ((bits (sb-alien::alien-type-bits record-type))
-         (byte-size (ceiling bits 8))
-         (alignment (sb-alien::alien-type-alignment record-type)))
-    (if (> byte-size 8)
-        ;; Large struct: hidden pointer
-        (sb-alien::make-struct-classification
-         :register-slots '(:memory)
-         :size byte-size
-         :alignment alignment
-         :memory-p t)
-        ;; Small struct: single integer
-        (sb-alien::make-struct-classification
-         :register-slots '(:integer)
-         :size byte-size
-         :alignment alignment
-         :memory-p nil))))
-
 ;;; Result TN generation for record types
 ;;; Called from src/code/c-call.lisp
 
-;;; Windows verison: large struct uses pointer in RAX, otherwise value in RAX
-
-#+win32
-(defun record-result-tn (type state)
-  "Handle struct return values."
-  (let ((classification (or *cached-struct-classification*
-                            (classify-struct type))))
-    (setf (result-state-num-results state) 1)
-    (if (sb-alien::struct-classification-memory-p classification)
-        (make-wired-tn* 'system-area-pointer sap-reg-sc-number rax-offset)
-        (make-wired-tn* 'unsigned-byte-64 unsigned-reg-sc-number rax-offset))))
-
-#-win32
 (defun record-result-tn (type state)
   "Handle struct return values."
   (let ((classification (or *cached-struct-classification*
@@ -338,40 +298,8 @@ Floats are passed in integer registers."
 ;;; Arg TN generation for record types
 ;;; Called from src/code/c-call.lisp
 
-;;; Windows: structs >8 bytes passed by pointer, <=8 bytes in
-;;; integer register.
-#+win32
-(defun record-arg-tn (type state)
-  "Handle struct arguments."
-  (let ((classification (classify-struct type))
-        (arg-tn (int-arg state 'unsigned-byte-64
-                         unsigned-reg-sc-number unsigned-stack-sc-number)))
-    (sb-c::make-arg-tn-loader
-     (list arg-tn)
-     (if (sb-alien::struct-classification-memory-p classification)
-         (lambda (arg call block nsp)
-           (declare (ignore nsp))
-           (let ((sap-tn (sb-c::lvar-tn call block arg)))
-             (sb-c::emit-and-insert-vop
-              call block
-              (sb-c::template-or-lose 'load-sap-int-arg)
-              (sb-c::reference-tn sap-tn nil)
-              (sb-c::reference-tn arg-tn t)
-              nil
-              nil)))
-         (lambda (arg call block nsp)
-           (declare (ignore nsp))
-           (sb-c::emit-and-insert-vop
-            call block
-            (sb-c::template-or-lose 'load-struct-int-arg)
-            (sb-c::reference-tn (sb-c::lvar-tn call block arg) nil)
-            (sb-c::reference-tn arg-tn t)
-            nil
-            (list 0)))))))
-
 ;;; System V: structs >16 bytes copied to stack, <=16 bytes in up to 2
 ;;; registers.
-#-win32
 (defun record-arg-tn (type state)
   "Handle struct arguments.
    For large structs (>16 bytes), copies to stack per System V AMD64 ABI.
@@ -439,14 +367,6 @@ Floats are passed in integer registers."
                            (list off)))))))))))
 
 ;;; VOP to set up hidden struct return pointer in first arg register.
-#+win32
-(define-vop (set-struct-return-pointer)
-  (:args (sap :scs (sap-reg) :target rcx))
-  (:temporary (:sc sap-reg :offset rcx-offset) rcx)
-  (:generator 1
-    (move rcx sap)))
-
-#-win32
 (define-vop (set-struct-return-pointer)
   (:args (sap :scs (sap-reg) :target rdi))
   (:temporary (:sc sap-reg :offset rdi-offset :from (:argument 0)) rdi)  ; RDI is the first arg register
@@ -649,7 +569,7 @@ Floats are passed in integer registers."
     #+(or sb-safepoint nonstop-foreign-call)
     '((:save-p t))
     #-(or sb-safepoint nonstop-foreign-call)
-    (let ((gprs (list '#:rcx '#:rdx #-win32 '#:rsi #-win32 '#:rdi
+    (let ((gprs (list '#:rcx '#:rdx '#:rsi '#:rdi
                       '#:r8 '#:r9 '#:r10 '#:r11))
           (vars))
       (append
@@ -674,17 +594,13 @@ Floats are passed in integer registers."
   (:temporary (:sc unsigned-reg :offset rax-offset :to :result) rax)
   #+sb-safepoint
   (:temporary (:sc unsigned-stack :from :eval :to :result) pc-save)
-  #+win32
-  (:temporary (:sc unsigned-reg :offset r15-offset :from :eval :to :result) r15)
   (:ignore results)
   (:vop-var vop)
   (:generator 0
     (move rbx function)
     (emit-c-call vop rax rbx args
                  sb-alien::*alien-fun-type-varargs-default*
-                 #+sb-safepoint pc-save
-                 #+win32 rbx))
-  #+win32 (:ignore r15)
+                 #+sb-safepoint pc-save))
   . #.(destroyed-c-registers))
 
 ;;; Calls to C can generally be made without loading a register
@@ -696,23 +612,18 @@ Floats are passed in integer registers."
   (:temporary (:sc unsigned-reg :offset rax-offset :to :result) rax)
   #+sb-safepoint
   (:temporary (:sc unsigned-stack :from :eval :to :result) pc-save)
-  #+win32
-  (:temporary (:sc unsigned-reg :offset r15-offset :from :eval :to :result) r15)
-  #+win32
-  (:ignore r15)
   (:temporary (:sc unsigned-reg :offset rbx-offset :from :eval :to :result) rbx)
   (:ignore results)
   (:vop-var vop)
   (:generator 0
     (progn rbx)
     (emit-c-call vop rax c-symbol args varargsp
-                 #+sb-safepoint pc-save
-                 #+win32 rbx))
+                 #+sb-safepoint pc-save))
   . #.(destroyed-c-registers))
 
 ;;; Remember when changing this to check that these work:
 ;;; - disassembly, undefined alien, and conversion to ELF core
-(defun emit-c-call (vop rax fun args varargsp #+sb-safepoint pc-save #+win32 rbx)
+(defun emit-c-call (vop rax fun args varargsp #+sb-safepoint pc-save)
   (declare (ignorable varargsp))
   ;; Current PC - don't rely on function to keep it in a form that
   ;; GC understands
@@ -729,7 +640,6 @@ Floats are passed in integer registers."
         ((null arg))
       ;; KLUDGE: assume all parameters are 8 bytes or less
       (inst mov :qword (ea n rax) 0)))
-  #-win32
   ;; ABI: AL contains amount of arguments passed in XMM registers
   ;; for vararg calls.
   (when varargsp
@@ -746,14 +656,11 @@ Floats are passed in integer registers."
              (policy (sb-c::vop-node vop) (/= sb-c:insert-safepoints 0)))
     (inst mov (thread-slot-ea thread-saved-csp-offset) rsp-tn))
 
-  #+win32 (inst sub rsp-tn #x20)       ;MS_ABI: shadow zone
-
   ;; Immobile code uses "CALL rel32" to reach the linkage table entry,
   ;; but movable code computes the linkage entry address into RBX first.
   ;; N.B.: if you change how the call is emitted, you will also have to adjust
   ;; the UNDEFINED-ALIEN-TRAMP lisp asm routine to recognize the various shapes
   ;; this instruction sequence can take.
-  #-win32
   (pseudo-atomic (:elide-if (not (call-out-pseudo-atomic-p vop)))
     (inst call
           #-immobile-space ; always call via RBX
@@ -771,24 +678,8 @@ Floats are passed in integer registers."
               ;; due to the possibility of any random bytes preceding the call.
               (dolist (b '(#x0f #x1f #x00) fun) (inst byte b)))))
 
-  ;; On win64, calls go through a thunk defined in set_up_win64_seh_data().
-  #+win32
-  (progn
-    (cond ((tn-p fun) (move rbx fun)) ; wasn't this already done by the VOP ?
-          ;; Compute address of entrypoint in the alien linkage table into RBX
-          ((code-immobile-p vop)
-           (inst lea rbx (rip-relative-ea (make-fixup fun :foreign))))
-          (t
-           #-immobile-space (inst lea rbx (ea (make-fixup fun :foreign) null-tn))
-           #+immobile-space
-           (progn (inst mov rbx (make-fixup fun :foreign))
-                  (inst add rbx (static-constant-ea alien-linkage-table)))))
-    (invoke-asm-routine 'call 'seh-trampoline vop))
-
   ;; For the undefined alien error
   (note-this-location vop :internal-error)
-  #+win32 (inst add rsp-tn #x20)       ;MS_ABI: remove shadow space
-
   ;; Zero the saved CSP, unless this code shouldn't ever stop for GC
   #+sb-safepoint
   (when (policy (sb-c::vop-node vop) (/= sb-c:insert-safepoints 0))
@@ -853,16 +744,12 @@ Floats are passed in integer registers."
                   (sb-alien::struct-classification-memory-p result-classification)))
            (segment (make-segment))
            (rax rax-tn)
-           #+win32 (rcx rcx-tn)
-           #-(and win32 sb-thread) (rdi rdi-tn)
-           #-(and win32 sb-thread) (rsi rsi-tn)
+           #-sb-thread (rdi rdi-tn)
+           #-sb-thread (rsi rsi-tn)
            (rdx rdx-tn)
            (rbp rbp-tn)
            (rsp rsp-tn)
-           #+(and win32 sb-thread) (r8 r8-tn)
-           #+win32 (r11 r11-tn)  ; scratch register for struct copy (not an arg register)
            (xmm0 float0-tn)
-           #-win32
            (xmm1 float1-tn)
            ([rsp] (ea rsp))
            ;; Calculate total argument vector size in bytes
@@ -870,7 +757,7 @@ Floats are passed in integer registers."
              (loop for type in argument-types
                    sum (round-up-to-word (argument-byte-size type))))
            ;; How many arguments have been copied from the C stack
-           (stack-argument-count #-win32 0 #+win32 4)
+           (stack-argument-count 0)
            ;; Byte offset into argument vector
            (arg-offset 0)
            ;; Count of 8-byte slots consumed (for stack offset calculation)
@@ -885,15 +772,10 @@ Floats are passed in integer registers."
            (fprs (let ((all-fprs (mapcar (make-tn-maker 'double-reg)
                                          ;; Only 8 first XMM registers are used for
                                          ;; passing arguments
-                                         (subseq *float-regs* 0 #-win32 8 #+win32 4))))
+                                         (subseq *float-regs* 0 8))))
                    ;; On Windows, when there's a hidden return pointer in RCX (slot 0),
                    ;; the float arguments shift: XMM0 is "consumed" by slot 0, so
                    ;; actual float args start at XMM1.
-                   #+win32
-                   (if large-struct-return-p
-                       (rest all-fprs)
-                       all-fprs)
-                   #-win32
                    all-fprs))
            ;; Calculate return value slot count (in 8-byte words)
            ;; For large struct returns, we need enough space for the entire struct
@@ -914,8 +796,7 @@ Floats are passed in integer registers."
         ;; For large struct returns, save the hidden pointer before using it
         ;; Windows: RCX (first arg register), SysV: RDI (first arg register)
         (when large-struct-return-p
-          #+win32 (inst push rcx)
-          #-win32 (inst push rdi))
+          (inst push rdi))
         ;; Make room on the stack for argument vector.
         (when (plusp total-arg-bytes)
           (inst sub rsp total-arg-bytes))
@@ -932,36 +813,6 @@ Floats are passed in integer registers."
             (cond
               ;; Struct types
               ((sb-alien::alien-record-type-p type)
-               #+win32
-               (let* ((classification (classify-struct type))
-                      (memory-p (sb-alien::struct-classification-memory-p classification))
-                      (struct-size (sb-alien::struct-classification-size classification)))
-                 (cond
-                   ;; Large struct: pointer passed in register
-                   (memory-p
-                    (let ((gpr (pop gprs)))
-                      (pop fprs) ; Windows: consume paired FPR slot
-                      (unless gpr
-                        (incf stack-argument-count)
-                        (setf gpr rax)
-                        (inst mov gpr stack-arg-tn))
-                      ;; gpr now contains pointer to struct; copy struct data to arg vector
-                      ;; Use r11 as scratch (not an arg register) to avoid clobbering other args
-                      (let ((num-words (ceiling struct-size n-word-bytes)))
-                        (loop for i from 0 below num-words
-                              for dst-off from arg-offset by n-word-bytes
-                              do (inst mov r11 (ea (* i n-word-bytes) gpr))
-                                 (inst mov (ea dst-off rsp) r11)))))
-                   ;; Small struct: single integer register
-                   (t
-                    (let ((gpr (pop gprs)))
-                      (pop fprs)
-                      (unless gpr
-                        (incf stack-argument-count)
-                        (setf gpr rax)
-                        (inst mov gpr stack-arg-tn))
-                      (inst mov (ea arg-offset rsp) gpr)))))
-               #-win32
                (let* ((classification (classify-struct type))
                       (memory-p (sb-alien::struct-classification-memory-p classification))
                       (slots (sb-alien::struct-classification-register-slots classification))
@@ -1006,7 +857,6 @@ Floats are passed in integer registers."
               ;; Integer/pointer types
               ((not (alien-float-type-p type))
                (let ((gpr (pop gprs)))
-                 #+win32 (pop fprs)
                  ;; Argument not in register, copy it from the old
                  ;; stack location to a temporary register.
                  (unless gpr
@@ -1021,7 +871,6 @@ Floats are passed in integer registers."
               ((or (alien-single-float-type-p type)
                    (alien-double-float-type-p type))
                (let ((fpr (pop fprs)))
-                 #+win32 (pop gprs)
                  (cond (fpr
                         ;; Copy from float register to target location.
                         (inst movq target-tn fpr))
@@ -1070,18 +919,16 @@ Floats are passed in integer registers."
         #+sb-thread
         (progn
           ;; arg0 to ENTER-ALIEN-CALLBACK (trampoline index)
-          (inst mov #-win32 rdi #+win32 rcx (fixnumize index))
+          (inst mov rdi (fixnumize index))
           ;; arg1 to ENTER-ALIEN-CALLBACK (pointer to argument vector)
-          (inst mov #-win32 rsi #+win32 rdx rsp)
+          (inst mov rsi rsp)
           ;; add room on stack for return value
           (inst sub rsp (* return-slot-count-aligned n-word-bytes))
           ;; arg2 to ENTER-ALIEN-CALLBACK (pointer to return value)
-          (inst mov #-win32 rdx #+win32 r8 rsp)
+          (inst mov rdx rsp)
           ;; Make new frame
           (inst push rbp)
           (inst mov  rbp rsp)
-          #+win32 (inst sub rsp #x20)
-          #+win32 (inst and rsp #x-20)
           ;; Call
           (call-wrapper)
 
@@ -1101,22 +948,6 @@ Floats are passed in integer registers."
           ((alien-void-type-p result-type))
           ;; Struct return types
           ((alien-record-type-p result-type)
-           #+win32
-           ;; Windows: large structs via hidden pointer (from RCX), small structs in RAX
-           (cond
-             ;; Large struct: copy result to hidden pointer location, return pointer
-             (large-struct-return-p
-              (let ((struct-size (sb-alien::struct-classification-size result-classification)))
-                ;; Retrieve saved hidden pointer (was pushed at start from RCX)
-                (inst mov rax (ea (* (+ arg-slot-count return-slot-count-aligned) n-word-bytes) rsp))
-                ;; Copy struct data from stack to hidden pointer destination
-                (loop for off from 0 below struct-size by 8
-                      do (inst mov rdx (ea off rsp))
-                         (inst mov (ea off rax) rdx))))
-             ;; Small struct (<=8 bytes): just load into RAX
-             (t
-              (inst mov rax [rsp])))
-           #-win32
            ;; SysV: large structs via hidden pointer (from RDI), small structs in RAX/RDX/XMM0/XMM1
            (cond
              (large-struct-return-p

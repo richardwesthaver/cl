@@ -25,7 +25,7 @@
 
 /* Minimize conditionalization for different OS naming schemes. */
 #if defined __linux__  || defined LISP_FEATURE_HAIKU || defined LISP_FEATURE_FREEBSD || \
-   defined __OpenBSD__ || defined __NetBSD__ || defined __sun || defined _WIN64 || defined __DragonFly__
+   defined __OpenBSD__ || defined __NetBSD__ || defined __sun || defined __DragonFly__
 #define GNAME(var) var
 #else
 #define GNAME(var) _##var
@@ -41,18 +41,12 @@
 
 /* Get the right type of alignment. Linux, FreeBSD and OpenBSD
  * want alignment in bytes. */
-#if defined(__linux__) || defined(LISP_FEATURE_FREEBSD) || defined(__OpenBSD__) || defined __NetBSD__ || defined(__sun) || defined _WIN64 || defined(__DragonFly__)
+#if defined(__linux__) || defined(LISP_FEATURE_FREEBSD) || defined(__OpenBSD__) || defined __NetBSD__ || defined(__sun) || defined(__DragonFly__)
 #define align_16byte	16
 #else
 #define	align_16byte	4
 #endif
 
-/*
- * The assembler used for win32 doesn't like .type or .size directives,
- * so we want to conditionally kill them out. So let's wrap them in macros
- * that are defined to be no-ops on win32. Hopefully this still works on
- * other platforms.
- */
 #if !defined(LISP_FEATURE_DARWIN)
 #define TYPE(name) .type name,@function
 #define SIZE(name) .size name,.-name

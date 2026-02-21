@@ -1109,7 +1109,6 @@ SB-KERNEL) have been undone, but probably more remain.")
    "FD-STREAM" "FD-STREAM-FD" "FD-STREAM-P"
    "FIND-DYNAMIC-FOREIGN-SYMBOL-ADDRESS"
    "FIND-FOREIGN-SYMBOL-ADDRESS"
-   #+(and win32 x86-64) "FOREIGN-HEAP-CORRUPTION"
    "FOREIGN-SYMBOL-SAP"
    "FOREIGN-SYMBOL-ADDRESS"
    "FOREIGN-SYMBOL-DATAREF-SAP"
@@ -1748,7 +1747,6 @@ is a good idea, but see SB-SYS re. blurring of boundaries.")
            "INTEGER-DECODE-DOUBLE-FLOAT"
            #+long-float "INTEGER-DECODE-LONG-FLOAT"
            "INTEGER-DECODE-SINGLE-FLOAT" "INTERNAL-ERROR"
-           #+win32 "HANDLE-WIN32-EXCEPTION"
            "INTERNAL-TIME" "INTERNAL-SECONDS"
            "INTERNAL-SECONDS-LIMIT" "SAFE-INTERNAL-SECONDS-LIMIT"
            "INTERPRETED-FUNCTION"
@@ -3124,7 +3122,6 @@ structure representations")
            "VECTOR-WEAK-VISITED-FLAG"
            "VECTOR-HASHING-FLAG"
            "VECTOR-ADDR-HASHING-FLAG"
-           #+(and win32 x86-64) "WIN64-SEH-DATA-ADDR"
            "WEAK-POINTER-NEXT-SLOT"
            "WEAK-POINTER-SIZE" "WEAK-POINTER-WIDETAG"
            "WEAK-POINTER-VALUE-SLOT"
@@ -3133,7 +3130,6 @@ structure representations")
            "WITH-ARENA" "WITHOUT-ARENA" "FIND-CONTAINING-ARENA"
            "THREAD-CURRENT-ARENA"
            "WORD" "WORD-REG-SC-NUMBER" "WORD-SHIFT"
-           #+win32 "CONTEXT-RESTORE-TRAP"
            "ZERO-SC-NUMBER")
   (:export "TEXT-SPACE-START" "*TEXT-SPACE-FREE-POINTER*")
   #+permgen
